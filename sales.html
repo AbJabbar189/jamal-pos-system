@@ -1,0 +1,1321 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        animation: slideUpFade 0.4s ease-out forwards;
+    }
+
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-control:focus, .form-select:focus, .search-input-modern:focus {
+        transform: scale(1.01);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15) !important;
+        border-color: #0ea5e9 !important;
+    }
+
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: scale(0.95);
+    }
+    
+    .modal.show .modal-dialog {
+        transform: scale(1);
+    }
+
+    .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn:active {
+        transform: scale(0.96);
+    }
+
+    .search-box-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-box-wrapper svg {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 16px;
+        color: #94a3b8;
+    }
+
+    body.lang-ur .search-box-wrapper svg {
+        left: auto;
+        right: 16px;
+    }
+
+    .search-input-modern {
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--card-border, #cbd5e1);
+        border-radius: 12px;
+        padding: 12px 18px 12px 45px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-main);
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+    body.lang-ur .search-input-modern {
+        padding: 12px 45px 12px 18px;
+    }
+
+    .search-input-modern:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    .date-filter-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .pill-btn {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #cbd5e1);
+        color: var(--text-muted, #475569);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pill-btn:hover {
+        border-color: #0284c7;
+        color: #0284c7;
+        background: #f0f9ff;
+    }
+
+    .pill-btn.active {
+        background: #0284c7;
+        color: #ffffff !important;
+        border-color: #0284c7;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc !important;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 14px 18px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .table-modern thead th:last-child {
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .table-modern tbody tr {
+        background: #ffffff !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-3px) scale(1.002);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .table-modern td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a !important;
+    }
+
+    .table-modern td:first-child {
+        border-left: 1px solid #e2e8f0;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .table-modern td:last-child {
+        border-right: 1px solid #e2e8f0;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .badge-type-cash {
+        background-color: #dcfce7;
+        color: #15803d !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #bbf7d0;
+        display: inline-block;
+    }
+
+    .badge-type-credit {
+        background-color: #fee2e2;
+        color: #b91c1c !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #fecaca;
+        display: inline-block;
+    }
+
+    .badge-type-credit-paid {
+        background-color: #ecfdf5;
+        color: #047857 !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #a7f3d0;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .badge-type-returned {
+        background-color: #f1f5f9;
+        color: #475569 !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        display: inline-block;
+    }
+
+    .btn-receipt {
+        background: #f0fdf4;
+        color: #15803d !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #22c55e;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-receipt:hover {
+        background: #15803d;
+        color: #ffffff !important;
+    }
+
+    .btn-edit-sale {
+        background: #eff6ff;
+        color: #0284c7 !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #0284c7;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit-sale:hover {
+        background: #0284c7;
+        color: #ffffff !important;
+    }
+
+    .btn-return-sale {
+        background: #fff1f2;
+        color: #e11d48 !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1.5px solid #f43f5e;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-return-sale:hover {
+        background: #e11d48;
+        color: #ffffff !important;
+    }
+
+    .sales-subtitle {
+        color: #64748b;
+    }
+
+    body.dark-mode .sales-subtitle {
+        color: #cbd5e1 !important;
+    }
+
+    body.dark-mode .search-input-modern {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    body.dark-mode .pill-btn {
+        background: #1e293b;
+        color: #e2e8f0;
+        border-color: #334155;
+    }
+
+    body.dark-mode .pill-btn.active {
+        background: #0284c7;
+        color: #ffffff !important;
+    }
+
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">SALES INVOICES &amp; REVENUE REPORT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Filter: <span>{{ selected_date if selected_date else 'All Dates' }}</span></div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    {% set total_sales_cnt = sales|length %}
+    {% set total_turnover = sales|map(attribute='total')|sum if sales else 0 %}
+    {% set total_paid = sales|map(attribute='paid')|sum if sales else 0 %}
+    {% set total_due = total_turnover - total_paid %}
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Invoices:</strong> {{ total_sales_cnt }}</div>
+                <div><strong>Gross Turnover:</strong> Rs. {{ "{:,.2f}".format(total_turnover) }}</div>
+            </div>
+            <div>
+                <div><strong>Paid (Cash/Bank):</strong> <span style="color: #16a34a; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_paid) }}</span></div>
+                <div><strong>Balance Due:</strong> <span style="color: #dc2626; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_due) }}</span></div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Payment Status:</strong></div>
+                <div style="font-weight: 700; color: {% if total_due > 0 %}#dc2626{% else %}#16a34a{% endif %};">
+                    {% if total_due > 0 %}Receivables Pending{% else %}All Cleared / Paid{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Title & Print Button Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h4 class="fw-bold m-0 text-main">
+            <svg width="22" height="22" fill="#0284c7" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .974.607l-.604.79-.424-.257zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+            </svg>
+            <span class="lang-text" data-en="Sales History & Invoices" data-ur="سیل ہسٹری و بلز">Sales History & Invoices</span>
+            <span class="badge bg-primary rounded-pill font-monospace fs-6 align-middle ms-2" id="totalSalesCountBadge">{{ sales|length }} Bills</span>
+        </h4>
+        <small class="sales-subtitle lang-text" data-en="Log of all customer transactions, cash sales, edit and return bills" data-ur="تمام کسٹمر بلز، نقد سیل، بل ایڈٹ / تبدیلی اور واپسی لاگ">Log of all customer transactions, cash sales, edit and return bills</small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-dark fw-bold px-4 py-2 shadow-sm rounded-3 d-inline-flex align-items-center gap-2" onclick="window.print()">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            <span class="lang-text" data-en="Print Current List" data-ur="موجودہ لسٹ پرنٹ کریں">Print Current List</span>
+        </button>
+        <a href="/api/sales_list/pdf{% if selected_date %}?date={{ selected_date }}&{% else %}?{% endif %}download=1" class="btn btn-danger fw-bold px-4 py-2 shadow-sm rounded-3 d-inline-flex align-items-center gap-2" title="سیلز لسٹ پی ڈی ایف ڈاؤن لوڈ کریں">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف لسٹ">Save as PDF</span>
+        </a>
+    </div>
+</div>
+
+<!-- 📅 تاریخ فلٹر بار مع کیلنڈر -->
+<!-- 📅 تاریخ فلٹر بار مع کیلنڈر -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 p-3 bg-light rounded-4 shadow-sm border no-print">
+    <div class="date-filter-pills m-0 d-flex flex-wrap align-items-center gap-2">
+        <span class="fw-bold small text-primary me-2 lang-text" data-en="Filter by Date:" data-ur="تاریخ کے مطابق فلٹر:">Filter by Date:</span>
+        <a href="/sales" class="pill-btn {% if not selected_date %}active{% endif %} shadow-sm">
+            <span class="lang-text" data-en="All Dates" data-ur="تمام تاریخیں">All Dates</span>
+        </a>
+        {% for dt in recent_dates %}
+        <a href="/sales?date={{ dt }}" class="pill-btn {% if selected_date == dt %}active{% endif %} shadow-sm">
+            <span class="font-monospace">{{ dt }}</span>
+        </a>
+        {% endfor %}
+    </div>
+
+    <form method="GET" action="/sales" class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+        <div class="input-group shadow-sm" style="border-radius: 8px; overflow: hidden;">
+            <span class="input-group-text bg-white border-0 text-muted">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4V.5zm5.402 9.746c.625 0 1.184-.484 1.184-1.18 0-.832-.527-1.23-1.16-1.23-.586 0-1.168.387-1.168 1.21 0 .817.543 1.2 1.144 1.2z"/></svg>
+            </span>
+            <input type="date" name="date" class="form-control border-0 font-monospace fw-bold text-dark" value="{{ selected_date }}" style="width: 140px;">
+            <button type="submit" class="btn btn-primary fw-bold px-3 border-0 lang-text" data-en="Filter" data-ur="فلٹر کریں" style="background: linear-gradient(135deg, #0284c7, #0369a1);">Filter</button>
+        </div>
+        {% if selected_date %}
+        <a href="/sales" class="btn btn-outline-danger shadow-sm fw-bold px-3 lang-text" data-en="Clear" data-ur="صاف کریں" style="border-radius: 8px;">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- 🔍 سرچ بار -->
+<div class="search-box-wrapper no-print">
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+    </svg>
+    <input type="text" id="salesSearchInput" class="search-input-modern lang-placeholder" data-en="Search by bill #, customer name, or amount..." data-ur="بل نمبر، گاہک کا نام یا رقم سے تلاش کریں..." placeholder="Search by bill #, customer name, or amount..." autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onkeyup="filterSalesTable()">
+</div>
+
+<div class="custom-card" id="printArea">
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0" id="salesTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;" class="lang-text" data-en="#" data-ur="نمبر">#</th>
+                    <th style="width: 80px;" class="lang-text" data-en="# Bill" data-ur="# بل"># Bill</th>
+                    <th class="lang-text" data-en="Date / Time" data-ur="تاریخ / وقت">Date / Time</th>
+                    <th class="lang-text" data-en="Customer Name" data-ur="گاہک کا نام">Customer Name</th>
+                    <th class="lang-text" data-en="Type / Status" data-ur="قسم / حیثیت">Type / Status</th>
+                    <th class="lang-text" data-en="Total Amount" data-ur="کل رقم">Total Amount</th>
+                    <th class="lang-text" data-en="Paid Amount" data-ur="ادا شدہ رقم">Paid Amount</th>
+                    <th class="lang-text" data-en="Balance Due" data-ur="بقایا ادھار">Balance Due</th>
+                    <th class="text-center no-print lang-text" data-en="Actions" data-ur="کارروائی">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sales %}
+                {% set total = s.total | float %}
+                {% set paid = s.paid | float %}
+                {% set balance = s.balance | float if s.balance is defined and s.balance is not none else (total - paid) %}
+                <tr class="sales-row-item {% if s.type == 'returned' %}table-light opacity-75{% endif %}">
+                    <td class="text-center font-monospace fw-bold text-muted row-sr-no">{{ loop.index }}</td>
+                    <td>
+                        <span class="font-monospace fw-bold" style="color: #0f172a !important;">#{{ s.id }}</span>
+
+                    </td>
+                    <td class="font-monospace" style="color: #334155 !important; font-size: 0.88rem;">
+                        {{ s.date }}
+                    </td>
+                    <td>
+                        <div class="fw-bold fs-6" style="color: #0f172a !important;">{{ s.customer_name or 'Cash Customer' }}</div>
+                    </td>
+                    <td>
+                        {% if s.type == 'returned' %}
+                            <span class="badge-type-returned lang-text" data-en="Returned" data-ur="واپس / منسوخ">Returned</span>
+                        {% elif s.type == 'credit' and balance <= 0 %}
+                            <span class="badge-type-credit-paid" title="یہ مال ادھار پر خریدا گیا تھا لیکن اب تمام رقم ادا ہو چکی ہے">
+                                <span>💳</span>
+                                <span class="lang-text" data-en="Credit (Paid)" data-ur="ادھار (ادا شدہ)">Credit (Paid)</span>
+                            </span>
+                        {% elif s.type == 'credit' or balance > 0 %}
+                            <span class="badge-type-credit lang-text" data-en="Credit (Due)" data-ur="ادھار (باقیہ)">Credit (Due)</span>
+                        {% else %}
+                            <span class="badge-type-cash lang-text" data-en="Cash" data-ur="نقد">Cash</span>
+                        {% endif %}
+                    </td>
+                    <td class="font-monospace fw-bold" style="color: #0f172a !important;">
+                        Rs. {{ "{:,.1f}".format(total) }}
+                        {% if s.discount and s.discount > 0 %}
+                        <div class="small text-danger fw-bold font-monospace" style="font-size: 0.76rem;">(رعایت: Rs. {{ "{:,.0f}".format(s.discount) }})</div>
+                        {% endif %}
+                    </td>
+                    <td class="font-monospace fw-bold text-success">
+                        Rs. {{ "{:,.1f}".format(paid) }}
+                    </td>
+                    <td class="font-monospace">
+                        {% if s.type == 'returned' %}
+                            <span class="text-muted fw-bold lang-text" data-en="Returned" data-ur="منسوخ">Returned</span>
+                        {% elif balance > 0 %}
+                            <span class="text-danger fw-bold">Rs. {{ "{:,.1f}".format(balance) }}</span>
+                        {% else %}
+                            <span style="color: #64748b;">Rs. 0.0</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center no-print">
+                        <div class="d-flex justify-content-center align-items-center gap-2">
+                            <button type="button" class="btn-receipt border-0 cursor-pointer shadow-none" onclick="openReceiptModal('{{ s.id }}', '{{ s.invoice_no or s.id }}')">
+                                <span class="lang-text" data-en="View Receipt" data-ur="رسید دیکھیں">View Receipt</span>
+                            </button>
+                            <a href="/api/sale/pdf/{{ s.id }}" class="btn-receipt text-decoration-none d-inline-flex align-items-center gap-1" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5; padding: 4px 10px; font-weight: 700;" title="سیل پی ڈی ایف بل ڈاؤن لوڈ کریں">
+                                <span>📄</span> <span>PDF</span>
+                            </a>
+
+                            {% if balance > 0 and s.type != 'returned' %}
+                            <button type="button" class="btn btn-sm btn-success px-2 py-1 fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="openPaySaleModal('{{ s.id }}', '{{ s.customer_name or 'Cash Customer' }}', '{{ balance }}', '{{ s.paid }}', '{{ s.total }}')" title="اس بل کی بقایا رقم وصول کریں" style="font-size: 0.8rem; border-radius: 6px;">
+                                <span>💰</span> <span class="lang-text" data-en="Pay" data-ur="وصولی">Pay</span>
+                            </button>
+                            {% endif %}
+
+                            {% if s.type != 'returned' %}
+                            <button class="btn-edit-sale" onclick="openEditSaleModal('{{ s.id }}')" title="بل میں سامان یا رقم تبدیل کریں">
+                                <span>✏️</span> <span class="lang-text" data-en="Edit" data-ur="ایڈٹ">Edit</span>
+                            </button>
+
+                            <button class="btn-return-sale" onclick="returnSaleInvoice('{{ s.id }}')" title="بل منسوخ اور مال واپس کریں">
+                                <span>↩</span> <span class="lang-text" data-en="Return" data-ur="واپسی">Return</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr id="emptySalesRow">
+                    <td colspan="9" class="text-center py-5 fw-bold lang-text" style="color: #64748b !important;" data-en="No sales records found." data-ur="سیل کا کوئی ریکارڈ موجود نہیں ہے۔">No sales records found.</td>
+                </tr>
+                {% endfor %}
+                <tr id="noSearchMatchesRow" style="display: none;">
+                    <td colspan="9" class="text-center py-4 fw-bold text-muted lang-text" data-en="No matching sales found" data-ur="کوئی مماثل بل یا گاہک نہیں ملا">No matching sales found</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="print-footer">
+        Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+    </div>
+</div>
+
+<!-- 📝 بل ایڈٹ موڈل (Interactive Sales Bill Editor) -->
+<div class="modal fade" id="editSaleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header py-3">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <span>✏️</span>
+                    <span><span class="lang-text" data-en="Edit Invoice #" data-ur="بل میں ترمیم #">Edit Invoice #</span><span id="editSaleIdDisp"></span></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="editSaleId">
+                <div class="row g-3 mb-4 p-3 bg-light rounded-4 border align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-primary small mb-1 lang-text" data-en="Customer Name" data-ur="گاہک کا نام (کھاتہ)">Customer Name</label>
+                        <input list="editCustomerDatalist" id="editCustName" class="form-control fw-bold shadow-sm border-0" style="border-radius: 8px;" placeholder="گاہک کا نام یا تلاش..." onchange="onEditCustomerChange()">
+                        <datalist id="editCustomerDatalist"></datalist>
+                        <input type="hidden" id="editCustId">
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label fw-bold text-primary small d-block mb-1 text-start lang-text" data-en="Add New Item (Product, Unit, Qty, Rate)" data-ur="نیا آئٹم شامل کریں (پروڈکٹ، یونٹ، تعداد، ریٹ)">Add New Item (Product, Unit, Qty, Rate)</label>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <div style="flex: 2; min-width: 170px;">
+                                <input list="editProductDatalist" id="editAddProductSelect" class="form-control shadow-sm border-0 fw-bold lang-placeholder" data-en="Search item by name/code..." data-ur="نام یا کوڈ سے تلاش کریں..." placeholder="Search item by name/code..." style="border-radius: 8px;" onchange="onEditProductChange()">
+                                <datalist id="editProductDatalist"></datalist>
+                            </div>
+                            <div style="width: 110px;">
+                                <select id="editAddUnitSelect" class="form-select shadow-sm border-0 fw-bold" style="border-radius: 8px;" onchange="onEditUnitChange()">
+                                    <option value="Pcs">Pcs</option>
+                                </select>
+                            </div>
+                            <div style="width: 85px;">
+                                <input type="number" step="any" min="0.1" id="editAddQtyInput" class="form-control shadow-sm border-0 fw-bold text-center font-monospace" placeholder="تعداد" value="1" title="تعداد (Qty)" style="border-radius: 8px;">
+                            </div>
+                            <div style="width: 110px;">
+                                <input type="number" step="any" id="editAddPriceInput" class="form-control shadow-sm border-0 fw-bold text-center font-monospace text-primary" placeholder="ریٹ (روپے)" value="0" title="اپنی مرضی کا ریٹ درج کریں" style="border-radius: 8px;">
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-success fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 8px; background: linear-gradient(135deg, #10b981, #059669); border: none; height: 38px;" onclick="addEditRowFromSelect()">
+                                    <span>+</span> <span class="lang-text" data-en="Add" data-ur="شامل کریں">Add</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+                    <table class="table table-hover align-middle text-center mb-0" style="background: white;">
+                        <thead style="background: linear-gradient(135deg, #334155, #1e293b); color: white;">
+                            <tr>
+                                <th class="text-start py-3 px-4 lang-text" data-en="Item Name" data-ur="پروڈکٹ کا نام">Item Name</th>
+                                <th style="width: 140px;" class="lang-text" data-en="Unit" data-ur="یونٹ">Unit</th>
+                                <th style="width: 120px;" class="lang-text" data-en="Qty" data-ur="تعداد">Qty</th>
+                                <th style="width: 150px;" class="lang-text" data-en="Rate (Rs)" data-ur="قیمت">Rate (Rs)</th>
+                                <th style="width: 150px;" class="lang-text" data-en="Total (Rs)" data-ur="ٹوٹل">Total (Rs)</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="editSaleItemsBody" class="border-top-0">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row g-3 bg-light p-4 rounded-4 shadow-sm border align-items-center mb-2">
+                    <div class="col-md-3 border-end">
+                        <label class="form-label small fw-bold mb-1 text-muted lang-text" data-en="Subtotal" data-ur="خالص رقم">Subtotal</label>
+                        <div class="fs-4 fw-bold font-monospace text-dark">Rs. <span id="editDispSubtotal">0</span></div>
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <label class="form-label small fw-bold mb-1 text-muted lang-text" data-en="GST %" data-ur="ٹیکس فیصد">GST %</label>
+                        <input type="number" step="any" id="editTaxRate" class="form-control font-monospace fw-bold shadow-sm border-0" placeholder="0" oninput="recalcEditTotals()" style="border-radius: 8px;">
+                    </div>
+                    <div class="col-md-3 border-end">
+                        <label class="form-label small fw-bold mb-1 text-muted lang-text" data-en="Discount (% / Rs)" data-ur="ڈسکاؤنٹ (% / روپے)">Discount (% / Rs)</label>
+                        <div class="input-group input-group-sm shadow-sm" style="border-radius: 8px; overflow: hidden; background: #fff;">
+                            <span class="input-group-text bg-white text-primary fw-bold px-1 border-0" style="font-size: 0.8rem;">%</span>
+                            <input type="number" step="any" id="editDiscountPct" class="form-control font-monospace fw-bold border-0 text-center px-1" placeholder="0" oninput="onEditDiscountPctChange()" style="max-width: 55px;">
+                            <span class="input-group-text bg-white text-danger fw-bold px-1 border-0" style="font-size: 0.8rem;">Rs.</span>
+                            <input type="number" step="any" id="editDiscount" class="form-control font-monospace fw-bold border-0 px-1" placeholder="0" oninput="onEditDiscountAmountChange()">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold mb-1 text-muted lang-text" data-en="Grand Total" data-ur="کل بل">Grand Total</label>
+                        <div class="fs-4 fw-bold text-primary font-monospace">Rs. <span id="editDispTotal">0</span></div>
+                    </div>
+                </div>
+
+                <div class="row mt-4 align-items-center">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold mb-1 text-success lang-text" data-en="Paid Amount (Rs)" data-ur="وصول شدہ نقد رقم">Paid Amount (Rs)</label>
+                        <input type="number" step="any" id="editPaidAmount" class="form-control form-control-lg font-monospace fw-bold text-success shadow-sm border-success border-opacity-50" placeholder="0" oninput="recalcEditTotals()" style="border-radius: 8px;">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold mb-1 text-danger lang-text" data-en="Balance Due (Rs)" data-ur="بقایا ادھار کھاتہ">Balance Due (Rs)</label>
+                        <div class="fs-3 fw-bold text-danger font-monospace mt-1">Rs. <span id="editDispDue">0</span></div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button type="button" class="btn btn-secondary px-4 py-2 fw-bold shadow-sm me-2 lang-text" data-bs-dismiss="modal" style="border-radius: 8px;" data-en="Cancel" data-ur="کینسل">Cancel</button>
+                        <button type="button" class="btn btn-primary px-4 py-2 fw-bold shadow-sm lang-text" style="border-radius: 8px; background: linear-gradient(135deg, #0ea5e9, #0284c7); border: none;" onclick="submitEditSale()" data-en="Save Changes" data-ur="تبدیلی محفوظ کریں">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 💰 ادھار وصولی موڈل (Pay Due Modal) -->
+<div class="modal fade" id="paySaleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header py-3" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <span>💰</span>
+                    <span><span class="lang-text" data-en="Receive Payment for Bill #" data-ur="بل کی بقایا رقم وصول کریں #">Receive Payment for Bill #</span><span id="paySaleIdDisp"></span></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="paySaleId">
+                <div class="bg-light p-3 rounded-3 mb-3 border">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small lang-text" data-en="Customer:" data-ur="گاہک:">Customer:</span>
+                        <span class="fw-bold" id="paySaleCustName">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small lang-text" data-en="Total Bill:" data-ur="کل بل:">Total Bill:</span>
+                        <span class="fw-bold font-monospace" id="paySaleTotalDisp">Rs. 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted small lang-text" data-en="Already Paid:" data-ur="پہلے سے ادا شدہ:">Already Paid:</span>
+                        <span class="fw-bold text-success font-monospace" id="paySalePaidDisp">Rs. 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between pt-2 border-top">
+                        <span class="fw-bold text-danger lang-text" data-en="Current Due:" data-ur="موجودہ بقایا ادھار:">Current Due:</span>
+                        <span class="fw-bold text-danger fs-5 font-monospace" id="paySaleDueDisp">Rs. 0</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-success small mb-1 lang-text" data-en="Amount Receiving Now (Rs)" data-ur="اب موصول شدہ رقم (روپے)">Amount Receiving Now (Rs)</label>
+                    <input type="number" step="any" id="payAmountInput" class="form-control form-control-lg font-monospace fw-bold text-success shadow-sm" style="border-radius: 8px;">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold small text-muted mb-1 lang-text" data-en="Payment Note / Description" data-ur="تفصیل / نوٹ">Payment Note / Description</label>
+                    <input type="text" id="payNoteInput" class="form-control shadow-sm" placeholder="مثلاً نقد وصولی / آن لائن..." style="border-radius: 8px;">
+                </div>
+            </div>
+            <div class="modal-footer py-2 bg-light border-top d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary px-3 py-2 fw-bold lang-text" data-bs-dismiss="modal" data-en="Cancel" data-ur="منسوخ">Cancel</button>
+                <button type="button" class="btn btn-success px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 8px; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="submitPaySaleDue()">
+                    <span>✓</span> <span class="lang-text" data-en="Save Payment" data-ur="وصولی محفوظ کریں">Save Payment</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentEditItems = [];
+let allProductsCache = [];
+
+function filterSalesTable() {
+    const input = document.getElementById("salesSearchInput");
+    const filter = (input ? input.value : "").toLowerCase().trim();
+    const tokens = filter.split(/\s+/).filter(Boolean);
+    const rows = document.querySelectorAll(".sales-row-item");
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const text = (row.textContent || row.innerText || "").toLowerCase();
+        const matches = tokens.length === 0 || tokens.every(tok => text.includes(tok));
+        if (matches) {
+            row.style.display = "";
+            visibleCount++;
+            let srCell = row.querySelector('.row-sr-no');
+            if (srCell) srCell.innerText = visibleCount;
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    let badge = document.getElementById('totalSalesCountBadge');
+    if (badge) {
+        if (tokens.length > 0) {
+            badge.innerText = `${visibleCount} / {{ sales|length }} Bills`;
+        } else {
+            badge.innerText = `{{ sales|length }} Bills`;
+        }
+    }
+
+    const noMatches = document.getElementById("noSearchMatchesRow");
+    if (noMatches) {
+        noMatches.style.display = (visibleCount === 0 && rows.length > 0) ? "" : "none";
+    }
+}
+
+function returnSaleInvoice(saleId) {
+    openPartialReturnModal(saleId);
+}
+
+let allCustomersCache = [];
+
+// ✏️ اوپن ایڈٹ موڈل
+function openEditSaleModal(saleId) {
+    fetch('/api/sale/get/' + saleId)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            alert(data.message || 'بل لوڈ نہیں ہو سکا');
+            return;
+        }
+
+        document.getElementById('editSaleId').value = saleId;
+        document.getElementById('editSaleIdDisp').innerText = saleId;
+        
+        let cId = data.sale.customer_id || '';
+        document.getElementById('editCustId').value = cId;
+        document.getElementById('editCustName').value = data.sale.customer_name || 'Cash Customer';
+        
+        // Fill Customer Datalist
+        allCustomersCache = data.customers || [];
+        let cDatalist = document.getElementById('editCustomerDatalist');
+        if (cDatalist) {
+            cDatalist.innerHTML = '';
+            allCustomersCache.forEach(c => {
+                let lbl = `${c.name}${c.phone ? ' (' + c.phone + ')' : ''}`;
+                cDatalist.innerHTML += `<option data-id="${c.id}" value="${c.name}">${lbl}</option>`;
+            });
+        }
+
+        document.getElementById('editTaxRate').value = data.sale.tax_rate || '';
+        let initDisc = parseFloat(data.sale.discount) || 0;
+        document.getElementById('editDiscount').value = initDisc > 0 ? initDisc : '';
+        let initSubtotal = data.items.reduce((s, i) => s + ((parseFloat(i.quantity) || 1) * (parseFloat(i.price) || 0)), 0);
+        if (initDisc > 0 && initSubtotal > 0) {
+            let pct = ((initDisc / initSubtotal) * 100).toFixed(1);
+            if (pct.endsWith('.0')) pct = pct.substring(0, pct.length - 2);
+            document.getElementById('editDiscountPct').value = pct;
+        } else {
+            document.getElementById('editDiscountPct').value = '';
+        }
+        document.getElementById('editPaidAmount').value = data.sale.paid || 0;
+
+        currentEditItems = data.items.map(it => {
+            let q = parseFloat(it.quantity) || 1;
+            let bq = parseFloat(it.base_quantity) || q;
+            return {
+                product_id: it.product_id,
+                product_name: it.product_name,
+                qty: q,
+                price: parseFloat(it.price) || 0,
+                unit: it.unit || 'Pcs',
+                conversion_factor: bq / q,
+                weight: parseFloat(it.weight || 0)
+            };
+        });
+
+        allProductsCache = data.products || [];
+        let prodInput = document.getElementById('editAddProductSelect');
+        prodInput.value = ''; // clear previous
+        let dataList = document.getElementById('editProductDatalist');
+        dataList.innerHTML = '';
+        allProductsCache.forEach(p => {
+            let label = `[#${p.code || p.id}] ${p.name}`;
+            dataList.innerHTML += `<option data-id="${p.id}" value="${label}"></option>`;
+        });
+
+        let qInput = document.getElementById('editAddQtyInput');
+        if (qInput) qInput.value = '1';
+        let pInput = document.getElementById('editAddPriceInput');
+        if (pInput) pInput.value = '0';
+
+        renderEditItems();
+        if (typeof applyLanguage === 'function') {
+            applyLanguage(localStorage.getItem('pos_lang') || 'ur');
+        }
+        let modal = new bootstrap.Modal(document.getElementById('editSaleModal'));
+        modal.show();
+    })
+    .catch(e => alert('Error fetching sale details: ' + e));
+}
+
+function onEditCustomerChange() {
+    let inputVal = document.getElementById('editCustName').value.trim();
+    let hiddenId = document.getElementById('editCustId');
+    let matched = (allCustomersCache || []).find(c => c.name.toLowerCase() === inputVal.toLowerCase());
+    if (matched) {
+        hiddenId.value = matched.id;
+    } else {
+        hiddenId.value = '';
+    }
+}
+
+function onEditProductChange() {
+    let pInput = document.getElementById('editAddProductSelect');
+    let uSelect = document.getElementById('editAddUnitSelect');
+    let priceInput = document.getElementById('editAddPriceInput');
+    uSelect.innerHTML = '';
+    
+    let val = pInput.value;
+    if (!val) {
+        uSelect.innerHTML = '<option value="Pcs">Pcs</option>';
+        if (priceInput) priceInput.value = '0';
+        return;
+    }
+    
+    let dataList = document.getElementById('editProductDatalist');
+    let opt = Array.from(dataList.options).find(o => o.value === val);
+    if (!opt) {
+        uSelect.innerHTML = '<option value="Pcs">Pcs</option>';
+        if (priceInput) priceInput.value = '0';
+        return;
+    }
+    
+    let pId = parseInt(opt.getAttribute('data-id'));
+    let prod = allProductsCache.find(p => p.id === pId);
+    
+    if (prod && prod.units && prod.units.length > 0) {
+        prod.units.forEach(u => {
+            uSelect.innerHTML += `<option value="${u.unit_name}" data-conv="${u.conversion_factor}" data-price="${u.sale_price}">${u.unit_name} (Rs. ${u.sale_price})</option>`;
+        });
+    } else if (prod) {
+        uSelect.innerHTML = `<option value="${prod.unit || 'Pcs'}" data-conv="1" data-price="${prod.sale_price}">${prod.unit || 'Pcs'} (Rs. ${prod.sale_price})</option>`;
+    } else {
+        uSelect.innerHTML = '<option value="Pcs">Pcs</option>';
+    }
+    onEditUnitChange();
+}
+
+function onEditUnitChange() {
+    let uSelect = document.getElementById('editAddUnitSelect');
+    let priceInput = document.getElementById('editAddPriceInput');
+    let uOpt = uSelect.options[uSelect.selectedIndex];
+    if (uOpt && priceInput) {
+        priceInput.value = parseFloat(uOpt.getAttribute('data-price')) || 0;
+    }
+}
+
+function addEditRowFromSelect() {
+    let pInput = document.getElementById('editAddProductSelect');
+    let uSelect = document.getElementById('editAddUnitSelect');
+    let qtyInput = document.getElementById('editAddQtyInput');
+    let priceInput = document.getElementById('editAddPriceInput');
+    
+    let val = pInput.value;
+    if (!val) return alert('پہلے پروڈکٹ منتخب کریں / Please select a product');
+
+    let dataList = document.getElementById('editProductDatalist');
+    let pOpt = Array.from(dataList.options).find(o => o.value === val);
+    if (!pOpt) return alert('غلط پروڈکٹ / Invalid product');
+
+    let uOpt = uSelect.options[uSelect.selectedIndex];
+    if (!uOpt) return;
+
+    let pId = parseInt(pOpt.getAttribute('data-id'));
+    let prod = allProductsCache.find(p => p.id === pId);
+    let pName = prod ? prod.name : val;
+    
+    let customQty = parseFloat(qtyInput ? qtyInput.value : 1) || 1;
+    let customPrice = parseFloat(priceInput ? priceInput.value : 0) || 0;
+    let unitName = uOpt.value;
+    let conv = parseFloat(uOpt.getAttribute('data-conv')) || 1.0;
+
+    let exist = currentEditItems.find(i => i.product_id === pId && i.unit === unitName);
+    if (exist) {
+        exist.qty += customQty;
+        exist.price = customPrice;
+    } else {
+        currentEditItems.push({
+            product_id: pId,
+            product_name: pName,
+            qty: customQty,
+            price: customPrice,
+            unit: unitName,
+            conversion_factor: conv,
+            weight: 0
+        });
+    }
+    pInput.value = '';
+    if (qtyInput) qtyInput.value = '1';
+    if (priceInput) priceInput.value = '0';
+    onEditProductChange();
+    renderEditItems();
+}
+
+function renderEditItems() {
+    let tbody = document.getElementById('editSaleItemsBody');
+    if (currentEditItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-4 text-muted lang-text" data-en="No items added." data-ur="کوئی پروڈکٹ شامل نہیں ہے۔">No items added.</td></tr>';
+        if (typeof applyLanguage === 'function') {
+            applyLanguage(localStorage.getItem('pos_lang') || 'ur');
+        }
+        recalcEditTotals();
+        return;
+    }
+
+    let html = '';
+    currentEditItems.forEach((it, idx) => {
+        let rowTotal = it.qty * it.price;
+        html += `
+            <tr>
+                <td class="text-start fw-bold text-dark">${it.product_name}</td>
+                <td class="fw-bold text-secondary font-monospace">
+                    ${it.unit || 'Pcs'}
+                    ${it.weight > 0 ? `<br><small class="text-muted" style="font-size: 0.75rem;">وزن: ${it.weight} KG</small>` : ''}
+                </td>
+                <td>
+                    <input type="number" step="any" min="0.1" class="form-control form-control-sm text-center font-monospace fw-bold shadow-sm" 
+                           value="${it.qty}" oninput="updateEditItemQtyFast(${idx}, this.value)" style="border-radius: 6px;">
+                </td>
+                <td>
+                    <input type="number" step="any" class="form-control form-control-sm text-center font-monospace fw-bold shadow-sm text-primary" 
+                           value="${it.price}" oninput="updateEditItemPriceFast(${idx}, this.value)" style="border-radius: 6px;">
+                </td>
+                <td class="fw-bold font-monospace text-primary" id="editRowTot_${idx}">Rs. ${Math.round(rowTotal).toLocaleString()}</td>
+                <td>
+                    <button class="btn btn-sm text-danger fw-bold fs-5 p-0" onclick="removeEditItem(${idx})">×</button>
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(localStorage.getItem('pos_lang') || 'ur');
+    }
+    recalcEditTotals();
+}
+
+function updateEditItemQtyFast(idx, val) {
+    let q = parseFloat(val) || 0;
+    currentEditItems[idx].qty = q;
+    let tot = q * (currentEditItems[idx].price || 0);
+    let cell = document.getElementById(`editRowTot_${idx}`);
+    if (cell) cell.innerText = 'Rs. ' + Math.round(tot).toLocaleString();
+    recalcEditTotals();
+}
+
+function updateEditItemPriceFast(idx, val) {
+    let p = parseFloat(val) || 0;
+    currentEditItems[idx].price = p;
+    let tot = (currentEditItems[idx].qty || 0) * p;
+    let cell = document.getElementById(`editRowTot_${idx}`);
+    if (cell) cell.innerText = 'Rs. ' + Math.round(tot).toLocaleString();
+    recalcEditTotals();
+}
+
+function removeEditItem(idx) {
+    currentEditItems.splice(idx, 1);
+    renderEditItems();
+}
+
+function onEditDiscountPctChange() {
+    let subtotal = currentEditItems.reduce((s, i) => s + (i.qty * i.price), 0);
+    let pctVal = document.getElementById('editDiscountPct').value;
+    let pct = parseFloat(pctVal) || 0;
+    if (pct > 0 && subtotal > 0) {
+        let disc = Math.round((subtotal * pct) / 100);
+        document.getElementById('editDiscount').value = disc > 0 ? disc : '';
+    } else if (pctVal === '') {
+        document.getElementById('editDiscount').value = '';
+    }
+    recalcEditTotals();
+}
+
+function onEditDiscountAmountChange() {
+    let subtotal = currentEditItems.reduce((s, i) => s + (i.qty * i.price), 0);
+    let amtVal = document.getElementById('editDiscount').value;
+    let amt = parseFloat(amtVal) || 0;
+    if (subtotal > 0 && amt > 0) {
+        let pct = ((amt / subtotal) * 100).toFixed(1);
+        if (pct.endsWith('.0')) pct = pct.substring(0, pct.length - 2);
+        document.getElementById('editDiscountPct').value = pct;
+    } else if (amtVal === '') {
+        document.getElementById('editDiscountPct').value = '';
+    }
+    recalcEditTotals();
+}
+
+function recalcEditTotals() {
+    let subtotal = currentEditItems.reduce((s, i) => s + (i.qty * i.price), 0);
+    let taxRate = parseFloat(document.getElementById('editTaxRate').value) || 0;
+    let taxAmt = (subtotal * taxRate) / 100.0;
+    let discount = parseFloat(document.getElementById('editDiscount').value) || 0;
+
+    let grandTotal = Math.max(0, subtotal + taxAmt - discount);
+    let paid = parseFloat(document.getElementById('editPaidAmount').value) || 0;
+    let due = Math.max(0, grandTotal - paid);
+
+    document.getElementById('editDispSubtotal').innerText = Math.round(subtotal).toLocaleString();
+    document.getElementById('editDispTotal').innerText = Math.round(grandTotal).toLocaleString();
+    document.getElementById('editDispDue').innerText = Math.round(due).toLocaleString();
+}
+
+function submitEditSale() {
+    let saleId = document.getElementById('editSaleId').value;
+    if (!saleId) return;
+    if (currentEditItems.length === 0) return alert('کم از کم ایک آئٹم شامل کریں');
+
+    let subtotal = currentEditItems.reduce((s, i) => s + (i.qty * i.price), 0);
+    let taxRate = parseFloat(document.getElementById('editTaxRate').value) || 0;
+    let taxAmt = (subtotal * taxRate) / 100.0;
+    let discount = parseFloat(document.getElementById('editDiscount').value) || 0;
+    let grandTotal = Math.max(0, subtotal + taxAmt - discount);
+    let paid = parseFloat(document.getElementById('editPaidAmount').value) || 0;
+
+    let payload = {
+        customer_id: document.getElementById('editCustId').value || null,
+        customer_name: document.getElementById('editCustName').value.trim(),
+        items: currentEditItems,
+        subtotal: subtotal,
+        tax_rate: taxRate,
+        tax_amount: taxAmt,
+        discount: discount,
+        total_amount: grandTotal,
+        paid_amount: paid
+    };
+
+    fetch('/api/sale/edit/' + saleId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            alert(res.message);
+            location.reload();
+        } else {
+            alert('خرابی: ' + res.message);
+        }
+    })
+    .catch(err => alert('Request Error: ' + err));
+}
+
+// 💰 ادھار وصولی فنکشنز
+function openPaySaleModal(saleId, custName, balance, paid, total) {
+    document.getElementById('paySaleId').value = saleId;
+    document.getElementById('paySaleIdDisp').innerText = saleId;
+    document.getElementById('paySaleCustName').innerText = custName;
+    document.getElementById('paySaleTotalDisp').innerText = 'Rs. ' + parseFloat(total || 0).toLocaleString();
+    document.getElementById('paySalePaidDisp').innerText = 'Rs. ' + parseFloat(paid || 0).toLocaleString();
+    document.getElementById('paySaleDueDisp').innerText = 'Rs. ' + parseFloat(balance || 0).toLocaleString();
+    document.getElementById('payAmountInput').value = parseFloat(balance || 0);
+    document.getElementById('payNoteInput').value = 'بل #' + saleId + ' نقد بقایا وصولی';
+
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(localStorage.getItem('pos_lang') || 'ur');
+    }
+    let m = new bootstrap.Modal(document.getElementById('paySaleModal'));
+    m.show();
+}
+
+function submitPaySaleDue() {
+    let saleId = document.getElementById('paySaleId').value;
+    let amt = parseFloat(document.getElementById('payAmountInput').value) || 0;
+    let note = document.getElementById('payNoteInput').value.trim();
+
+    if (amt <= 0) return alert('براہ کرم درست رقم درج کریں');
+
+    fetch('/api/sale/pay_due/' + saleId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt, note: note })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            alert(res.message);
+            location.reload();
+        } else {
+            alert('خرابی: ' + res.message);
+        }
+    })
+    .catch(e => alert('Request Error: ' + e));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+</script>
+
+<!-- 🧾 تھرمل رسید دیکھنے اور پرنٹ کرنے کا اندرونی موڈل (Inline Receipt Modal) -->
+<div class="modal fade" id="viewReceiptModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
+            <div class="modal-header py-2 bg-dark text-white">
+                <h6 class="modal-title fw-bold m-0 d-flex align-items-center gap-2">
+                    <span>🧾</span>
+                    <span class="lang-text" data-en="Sales Tax Invoice" data-ur="سیلز ٹیکس انوائس رسید">Sales Tax Invoice</span>
+                    <span class="badge bg-primary font-monospace" id="receiptModalInvNo"></span>
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" style="background: #f1f5f9;">
+                <iframe id="receiptIframe" src="" style="width: 100%; height: 500px; border: none; background: white;"></iframe>
+            </div>
+            <div class="modal-footer py-2 bg-light d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm fw-bold px-3" data-bs-dismiss="modal">
+                    <span class="lang-text" data-en="Close" data-ur="بند کریں">Close</span>
+                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <a id="receiptModalPdfBtn" href="#" class="btn btn-danger btn-sm fw-bold px-3 d-inline-flex align-items-center gap-1 shadow-sm" title="انوائس پی ڈی ایف ڈاؤن لوڈ کریں">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        </svg>
+                        <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف بل">Save as PDF</span>
+                    </a>
+                    <button type="button" class="btn btn-success btn-sm fw-bold px-4 d-inline-flex align-items-center gap-2 shadow-sm" onclick="printReceiptIframe()">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                        <span class="lang-text" data-en="Print Receipt" data-ur="پرنٹ رسید">Print Receipt</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+function openReceiptModal(saleId, invNo) {
+    document.getElementById('receiptModalInvNo').innerText = invNo ? `#${invNo}` : `#${saleId}`;
+    let iframe = document.getElementById('receiptIframe');
+    iframe.src = '/receipt/' + saleId;
+    document.getElementById('receiptModalPdfBtn').href = '/api/sale/pdf/' + saleId;
+    let modal = new bootstrap.Modal(document.getElementById('viewReceiptModal'));
+    modal.show();
+}
+
+function printReceiptIframe() {
+    let iframe = document.getElementById('receiptIframe');
+    if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    }
+}
+
+function getSalesListPdfUrl() {
+    let selectedDate = "{{ selected_date }}";
+    return '/api/sales_list/pdf' + (selectedDate ? '?date=' + encodeURIComponent(selectedDate) : '');
+}
+
+function printSalesListPdf() {
+    window.print();
+}
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+
+function openPartialReturnModal(saleId) {
+    fetch('/api/sale/get/' + saleId)
+    .then(r => r.json())
+    .then(res => {
+        if (!res.success) {
+            alert('Error: ' + res.message);
+            return;
+        }
+        let tbody = document.getElementById('partialReturnTableBody');
+        tbody.innerHTML = '';
+        
+        let canReturnAny = false;
+        
+        res.items.forEach(it => {
+            let purchased = parseFloat(it.quantity || 0);
+            let returned = parseFloat(it.returned_qty || 0);
+            let available = purchased - returned;
+            
+            let tr = document.createElement('tr');
+            
+            let nameTd = document.createElement('td');
+            nameTd.innerText = it.product_name;
+            
+            let purcTd = document.createElement('td');
+            purcTd.innerText = purchased + ' ' + (it.unit || '');
+            
+            let retTd = document.createElement('td');
+            retTd.innerText = returned + ' ' + (it.unit || '');
+            
+            let actionTd = document.createElement('td');
+            
+            if (available > 0) {
+                canReturnAny = true;
+                actionTd.innerHTML = `
+                    <div class="input-group input-group-sm" style="width: 150px;">
+                        <input type="number" step="any" class="form-control" id="retQty_${it.id}" max="${available}" placeholder="Qty">
+                        <button class="btn btn-danger" onclick="submitPartialReturn(${saleId}, ${it.id}, ${available})">Return</button>
+                    </div>
+                `;
+            } else {
+                actionTd.innerHTML = `<span class="badge bg-success">Fully Returned</span>`;
+            }
+            
+            tr.appendChild(nameTd);
+            tr.appendChild(purcTd);
+            tr.appendChild(retTd);
+            tr.appendChild(actionTd);
+            tbody.appendChild(tr);
+        });
+        
+        if (!canReturnAny) {
+            alert('All items in this invoice have already been returned.');
+            return;
+        }
+        
+        let fullBtn = document.getElementById('fullReturnBtn');
+        fullBtn.onclick = function() {
+            if (!confirm(`کیا آپ واقعی اس انوائس #${saleId} کو مکمل واپس (Full Return) کرنا چاہتے ہیں؟`)) return;
+            fetch('/api/sale/return/' + saleId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    alert('Full invoice returned successfully.');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + res.message);
+                }
+            })
+            .catch(e => alert('Error: ' + e));
+        };
+        
+        let modal = new bootstrap.Modal(document.getElementById('partialReturnModal'));
+        modal.show();
+    })
+    .catch(e => alert('Error: ' + e));
+}
+
+function submitPartialReturn(saleId, itemId, maxQty) {
+    let qtyInput = document.getElementById('retQty_' + itemId);
+    let qty = parseFloat(qtyInput.value);
+    if (!qty || qty <= 0 || qty > maxQty) {
+        alert('Invalid quantity. Must be between 0.1 and ' + maxQty);
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to return ${qty} of this item?`)) return;
+    
+    fetch('/api/sale/return_partial/' + saleId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({item_id: itemId, qty: qty})
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            alert('Item returned successfully.');
+            // Refresh modal
+            let modalEl = document.getElementById('partialReturnModal');
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            if(modal) modal.hide();
+            setTimeout(() => window.location.reload(), 500);
+        } else {
+            alert('Error: ' + res.message);
+        }
+    })
+    .catch(e => alert('Error: ' + e));
+}
+
+</script>
+
+<!-- Partial Return Modal -->
+<div class="modal fade" id="partialReturnModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header py-3 bg-danger text-white">
+                <h5 class="modal-title fw-bold">Return Items / آدھا یا پورا مال واپس</h5>
+                <div>
+                    <button type="button" class="btn btn-outline-light btn-sm fw-bold me-3" id="fullReturnBtn" onclick="">Full Return Invoice</button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Bought Qty</th>
+                                <th>Returned Qty</th>
+                                <th>Return Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="partialReturnTableBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

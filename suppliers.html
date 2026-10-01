@@ -1,0 +1,2193 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+
+    body.dark-mode .custom-card {
+        background-color: #111827 !important;
+        border-color: #1f2937 !important;
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        width: 100%;
+        background: transparent !important;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        padding: 14px 18px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .table-modern thead th:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+    .table-modern tbody tr {
+        background: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+
+    body.dark-mode .table-modern tbody tr {
+        background-color: #1e293b !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    }
+
+    .table-modern td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        color: #0f172a !important;
+        background-color: transparent !important;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .table-modern td {
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    .table-modern td:first-child { border-left: 1px solid #e2e8f0; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .table-modern td:last-child { border-right: 1px solid #e2e8f0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+    body.dark-mode .table-modern td:first-child, body.dark-mode .table-modern td:last-child { border-color: #334155 !important; }
+
+    .btn-action-pay {
+        background-color: #10b981 !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 6px 12px;
+        border: none;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.82rem;
+        transition: all 0.2s;
+    }
+    .btn-action-pay:hover {
+        background-color: #059669 !important;
+        transform: scale(1.03);
+    }
+
+    .btn-action-ledger {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 6px 12px;
+        border: 1px solid #334155;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.82rem;
+        transition: all 0.2s;
+    }
+    .btn-action-ledger:hover {
+        background-color: #1e293b !important;
+        transform: scale(1.03);
+    }
+
+    .btn-action-edit {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #0f172a !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-edit:hover {
+        background: #0284c7;
+        border-color: #0284c7;
+        color: #ffffff !important;
+    }
+
+    .btn-action-delete {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626 !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-delete:hover {
+        background: #dc2626;
+        color: #ffffff !important;
+    }
+
+    .statement-box {
+        background: #ffffff;
+        color: #000000;
+        padding: 24px;
+        border: 1px solid #cbd5e1;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .dashed-divider {
+        border-top: 1.5px dashed #000000;
+        margin: 12px 0;
+    }
+
+    .ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #000000;
+        font-size: 0.88rem;
+    }
+
+    .ledger-table thead th {
+        border-top: 1.5px dashed #000000;
+        border-bottom: 1.5px dashed #000000;
+        padding: 8px 6px;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        font-weight: 800;
+    }
+
+    .ledger-table tbody td {
+        padding: 8px 6px;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: top;
+    }
+
+    .summary-card-box {
+        border-top: 1.5px dashed #000000;
+        border-bottom: 1.5px dashed #000000;
+        padding: 10px 0;
+        margin-top: 14px;
+    }
+
+
+
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2); }
+        50% { box-shadow: 0 6px 22px rgba(14, 165, 233, 0.45); }
+    }
+
+    @keyframes popIn {
+        from { opacity: 0; transform: translateY(12px) scale(0.98); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .animated-tab-content {
+        animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Supplier Ledger Smooth Animations */
+    #supplierLedgerModal.fade .modal-dialog {
+        transform: scale(0.94) translateY(-18px);
+        opacity: 0;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+    }
+    #supplierLedgerModal.show .modal-dialog {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    #supLedgerTimelineBody tr {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #supLedgerTimelineBody tr:hover {
+        background-color: #f1f5f9 !important;
+        transform: translateX(3px);
+    }
+    .ledger-action-btn {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ledger-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+    }
+
+    /* Modern Glass Switcher */
+    .modern-tab-switcher {
+        display: inline-flex;
+        background: #f8fafc;
+        padding: 5px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    body.dark-mode .modern-tab-switcher {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
+    .modern-tab-btn {
+        border: none;
+        background: transparent;
+        padding: 10px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modern-tab-btn:hover {
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.8);
+    }
+
+    body.dark-mode .modern-tab-btn:hover {
+        color: #f8fafc;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .modern-tab-btn.active {
+        background: linear-gradient(135deg, #0284c7, #0369a1) !important;
+        color: #ffffff !important;
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+        transform: translateY(-2px);
+    }
+
+    /* Ultra Modern Filter Bar */
+    .premium-filter-hub {
+        background: linear-gradient(145deg, #0f172a, #1e293b);
+        border-radius: 16px;
+        padding: 20px 24px;
+        color: #ffffff;
+        box-shadow: 0 12px 30px -5px rgba(15, 23, 42, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 24px;
+    }
+
+    .date-pill-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #cbd5e1;
+        padding: 7px 15px;
+        border-radius: 20px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .date-pill-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .date-pill-btn.active {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+        color: #ffffff !important;
+        border-color: #38bdf8 !important;
+        font-weight: 700;
+        box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45);
+        transform: translateY(-2px) scale(1.05);
+    }
+
+    /* Modern Stat Cards */
+    .stat-card-glass {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-glass::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .card-accent-blue::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+    .card-accent-green::before { background: linear-gradient(90deg, #16a34a, #4ade80); }
+    .card-accent-red::before { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+    .stat-card-glass:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+    }
+
+    body.dark-mode .stat-card-glass {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">SUPPLIERS &amp; PAYABLES AUDIT REPORT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Scope: Active Suppliers</div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    {% set total_supp_cnt = suppliers|length %}
+    {% set total_supp_balance = suppliers|map(attribute='balance')|map('float')|sum if suppliers else 0 %}
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Suppliers:</strong> {{ total_supp_cnt }}</div>
+                <div><strong>Total Outstanding Balance:</strong> <span style="color: #dc2626; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_supp_balance) }}</span></div>
+            </div>
+            <div>
+                <div><strong>Account Scope:</strong> Hardware Vendors &amp; Mills</div>
+                <div><strong>Payables Status:</strong> Verified Supplier Ledger</div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Audit Summary:</strong> Verified Active Accounts</div>
+                <div style="font-weight: 700; color: {% if total_supp_balance > 0 %}#dc2626{% else %}#16a34a{% endif %};">
+                    {% if total_supp_balance > 0 %}Payables Outstanding{% else %}All Cleared{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Executive Clean Header & Tab Bar -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 no-print">
+    <div>
+        <h4 class="fw-bold m-0 lang-text" data-en="Suppliers & Purchases Hub" data-ur="سپلائرز کھاتے و خریداری سینٹر">Suppliers & Purchases Hub</h4>
+        <small class="text-muted lang-text" data-en="Manage supplier accounts, debts, daily purchases, and stock inward" data-ur="سپلائرز کے کھاتے، بقایا ادھار، روزانہ خریداری بلز اور اسٹاک کا انتظام">Manage supplier accounts, debts, daily purchases, and stock inward</small>
+    </div>
+
+    <!-- Sleek Minimalist Tab Switcher (No Stickers) -->
+    <div class="modern-tab-switcher shadow-sm">
+        <button type="button" class="modern-tab-btn active" id="tabBtnSuppliers" onclick="switchSupplierTab('suppliers')">
+            <span class="lang-text" data-en="Suppliers Accounts" data-ur="سپلائرز کھاتے">Suppliers Accounts</span>
+            <span class="badge bg-primary rounded-pill font-monospace ms-1">{{ suppliers|length }}</span>
+        </button>
+        <button type="button" class="modern-tab-btn" id="tabBtnPurchases" onclick="switchSupplierTab('purchases')">
+            <span class="lang-text" data-en="Purchase Invoices" data-ur="خریداری بلز">Purchase Invoices</span>
+            <span class="badge bg-secondary rounded-pill font-monospace ms-1">{{ purchases|length }}</span>
+        </button>
+    </div>
+
+    <!-- Action Buttons (Only Once) -->
+    <div class="d-flex gap-2">
+        <button class="btn btn-dark fw-bold btn-sm px-3 shadow-sm lang-text" data-en="Print List" data-ur="پرنٹ لسٹ" onclick="window.print()">Print List</button>
+        <a href="/api/suppliers/pdf?download=1" class="btn btn-danger fw-bold btn-sm px-3 shadow-sm d-inline-flex align-items-center gap-1" title="سپلائرز بیلنس لسٹ پی ڈی ایف">
+            <span>📄</span> <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف لسٹ">Save as PDF</span>
+        </a>
+        <button id="btnAddSupplierHeader" class="btn btn-primary fw-bold btn-sm px-3 shadow-sm lang-text" data-en="+ Add Supplier" data-ur="+ نیا سپلائر شامل کریں" data-bs-toggle="modal" data-bs-target="#newSupplierModal">+ Add Supplier</button>
+    </div>
+</div>
+
+<div id="suppliersTabContent">
+
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table-modern align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;" class="lang-text" data-en="#" data-ur="نمبر">#</th>
+                    <th style="width: 70px;">ID</th>
+                    <th class="lang-text" data-en="Supplier Name" data-ur="ڈیلر / سپلائر کا نام">Supplier Name</th>
+                    <th class="lang-text" data-en="Company / Market" data-ur="کمپنی / مارکیٹ">Company / Market</th>
+                    <th class="lang-text" data-en="Phone" data-ur="فون نمبر">Phone</th>
+                    <th class="lang-text" data-en="Payable Balance" data-ur="دکان کا بقایا ادھار (Payable)">Payable Balance</th>
+                    <th class="text-center lang-text no-print" data-en="Actions" data-ur="کارروائی">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in suppliers %}
+                <tr>
+                    <td class="text-center font-monospace fw-bold text-muted row-sr-no">{{ loop.index }}</td>
+                    <td class="font-monospace fw-bold" style="color: #94a3b8 !important;">#{{ s.id }}</td>
+                    <td class="fw-bold fs-6">{{ s.name }}</td>
+                    <td>{{ s.company or '-' }}</td>
+                    <td class="font-monospace">{{ s.phone or '-' }}</td>
+                    <td>
+                        {% if s.balance > 0 %}
+                            <span class="badge bg-danger fs-6 font-monospace">Rs. {{ "{:,.0f}".format(s.balance) }} <span class="lang-text" data-en="(Due)" data-ur="(واجب الادا)">(Due)</span></span>
+                        {% else %}
+                            <span class="badge bg-success font-monospace">Rs. 0 <span class="lang-text" data-en="(Clear)" data-ur="(کلیئر)">(Clear)</span></span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center no-print">
+                        <div class="d-inline-flex gap-1">
+                            <button class="btn btn-success btn-sm fw-bold px-2 d-inline-flex align-items-center gap-1 shadow-sm" onclick="openSupPayModal('{{ s.id }}', '{{ s.name|escape }}', {{ s.balance or 0 }})" title="Record Payment">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm1 0v7h14V5H1z"/></svg>
+                                <span>Pay</span>
+                            </button>
+                            <button class="btn-action-ledger" onclick="viewSupplierLedger('{{ s.id }}')" title="کھاتہ">
+                                <span>🗎</span> <span class="lang-text" data-en="Ledger" data-ur="کھاتہ">Ledger</span>
+                            </button>
+                            <a href="/api/supplier/pdf/{{ s.id }}?download=1" download="Supplier_Khata_{{ s.name }}.pdf" class="btn-action-ledger text-decoration-none" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5;" title="لیجر پی ڈی ایف ڈاؤن لوڈ کریں">
+                                <span>📄</span> <span>PDF</span>
+                            </a>
+                            <button class="btn-action-edit" onclick="openEditSupplierModal('{{ s.id }}', '{{ s.name|replace("'", "") }}', '{{ s.company|replace("'", "") }}', '{{ s.phone|replace("'", "") }}', '{{ s.address|replace("'", "") }}', '{{ s.balance or 0 }}')" title="ترمیم">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                            </button>
+                            <form action="/api/supplier/delete/{{ s.id }}" method="POST" style="display:inline;" onsubmit="return confirmSecureDelete(event, this)">
+                                <button type="submit" class="btn-action-delete" title="ڈیلیٹ">
+                                    <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="text-center py-5 text-muted fw-bold lang-text" data-en="No suppliers found." data-ur="کوئی سپلائر درج نہیں ہے">No suppliers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="print-footer">
+        Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+    </div>
+</div>
+
+</div> <!-- End of suppliersTabContent -->
+
+<!-- TAB 2: PURCHASE INVOICES & DAILY STOCK IN -->
+<div id="purchasesTabContent" style="display: none;" class="animated-tab-content">
+    <!-- Ultra Modern Filter Hub -->
+    <div class="premium-filter-hub animated-fade-in no-print">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+            <div>
+                <h4 class="fw-bold m-0 text-white lang-text" data-en="Daily Purchase Invoices & Stock Inward" data-ur="روزانہ مال خریداری بلز و اسٹاک انورڈ">Daily Purchase Invoices & Stock Inward</h4>
+                <small class="text-white-50 lang-text" data-en="Daily record of goods bought from suppliers with date filter and bill editing" data-ur="سپلائرز سے روزانہ خریدے گئے سامان کا مکمل ریکارڈ، ایڈٹ اور تاریخ کا فلٹر">Daily record of goods bought from suppliers with date filter and bill editing</small>
+            </div>
+            <button type="button" class="btn btn-success fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#newPurchaseModal" onclick="openNewPurchaseModal()">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+                <span class="lang-text" data-en="Record New Purchase" data-ur="نیا مال خریداری درج کریں">Record New Purchase</span>
+            </button>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2 flex-wrap pt-3 border-top border-secondary border-opacity-25">
+            <span class="small text-white-50 fw-bold lang-text text-nowrap" data-en="Time Filter:" data-ur="تاریخ / مدت چنیں:">Time Filter:</span>
+            <div class="time-nav d-flex gap-2 flex-wrap">
+                <button type="button" class="date-pill-btn active purchase-tab-btn font-monospace" id="ptab-all" onclick="setPurchasePeriod('all')">
+                    <span class="lang-text" data-en="All Time" data-ur="شروع سے اب تک">All Time</span>
+                </button>
+                {% for dt in recent_dates %}
+                <button type="button" class="date-pill-btn purchase-tab-btn font-monospace" id="ptab-date-{{ dt }}" onclick="setPurchasePeriod('date:{{ dt }}')">{{ dt }}</button>
+                {% endfor %}
+                <button type="button" class="date-pill-btn purchase-tab-btn lang-text" id="ptab-15days" onclick="setPurchasePeriod('15days')" data-en="Last 15 Days" data-ur="پچھلے 15 دن">Last 15 Days</button>
+                <button type="button" class="date-pill-btn purchase-tab-btn lang-text" id="ptab-30days" onclick="setPurchasePeriod('30days')" data-en="Last 1 Month" data-ur="پچھلا 1 مہینہ">Last 1 Month</button>
+                <button type="button" class="date-pill-btn purchase-tab-btn lang-text" id="ptab-year" onclick="setPurchasePeriod('year')" data-en="Last 1 Year" data-ur="پچھلا 1 سال">Last 1 Year</button>
+            </div>
+        </div>
+    </div>
+
+<!-- Purchases Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-card-glass card-accent-blue p-3">
+                <span class="text-muted fw-bold text-uppercase lang-text small" data-en="Total Purchases Amount" data-ur="کل مال خریداری">Total Purchases Amount</span>
+                <h3 class="fw-bold font-monospace text-primary mt-2 mb-0" id="pSumTotal">Rs. 0</h3>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-card-glass card-accent-green p-3">
+                <span class="text-muted fw-bold text-uppercase lang-text small" data-en="Total Paid on Bills" data-ur="موقع پر ادا شدہ رقم">Total Paid on Bills</span>
+                <h3 class="fw-bold font-monospace text-success mt-2 mb-0" id="pSumPaid">Rs. 0</h3>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-card-glass card-accent-red p-3">
+                <span class="text-muted fw-bold text-uppercase lang-text small" data-en="Total Market Debt (Current)" data-ur="مارکیٹ کا کل قرضہ (موجودہ)">Total Market Debt (Current)</span>
+                <h3 class="fw-bold font-monospace text-danger mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_supp_balance) }}</h3>
+            </div>
+        </div>
+    </div>
+
+<!-- Purchases Data Table -->
+    <div class="custom-card">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h6 class="fw-bold m-0 lang-text" data-en="Purchases Invoice Records" data-ur="خریداری بلز کی فہرست">Purchases Invoice Records</h6>
+            <div style="width: 260px;">
+                <input type="text" id="purchaseSearchInput" class="form-control form-control-sm lang-placeholder" 
+                       data-en="Search supplier, bill #, item..." data-ur="سپلائر، بل نمبر یا آئٹم تلاش کریں..." 
+                       placeholder="Search supplier, bill #, item..." oninput="filterPurchasesTable()">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-modern align-middle mb-0" id="purchasesTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;" class="lang-text" data-en="#" data-ur="نمبر">#</th>
+                        <th style="width: 60px;">ID</th>
+                        <th class="lang-text" data-en="Date & Time" data-ur="تاریخ و وقت">Date & Time</th>
+                        <th class="lang-text" data-en="Bill / Invoice #" data-ur="بل نمبر">Bill / Invoice #</th>
+                        <th class="lang-text" data-en="Supplier Name" data-ur="سپلائر کا نام">Supplier Name</th>
+                        <th class="lang-text" data-en="Items & Qty" data-ur="آئٹمز و مقدار">Items & Qty</th>
+                        <th class="lang-text" data-en="Total Bill" data-ur="کل رقم">Total Bill</th>
+                        <th class="lang-text" data-en="Paid" data-ur="ادا شدہ">Paid</th>
+                        <th class="lang-text" data-en="Balance" data-ur="بقایا">Balance</th>
+                        <th class="text-center lang-text no-print" data-en="Actions" data-ur="کارروائی">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="purchasesTableBody">
+                    {% for p in purchases %}
+                    <tr class="purchase-row" data-date="{{ p.date[:10] }}" data-search="{{ p.supplier_name|lower }} {{ p.bill_no|lower }} {{ p.items_summary|lower }}" data-total="{{ p.total }}" data-paid="{{ p.paid }}" data-due="{{ p.due }}">
+                        <td class="text-center font-monospace fw-bold text-muted small purchase-sr-no">{{ loop.index }}</td>
+                        <td class="font-monospace fw-bold text-muted small">#{{ p.id }}</td>
+                        <td class="font-monospace small">{{ p.date }}</td>
+                        <td class="font-monospace fw-bold text-dark">{{ p.bill_no or '-' }}</td>
+                        <td class="fw-bold fs-6 text-primary">{{ p.supplier_name }}</td>
+                        <td>
+                            <div class="small fw-semibold text-truncate" style="max-width: 280px;" title="{{ p.items_summary }}">
+                                {{ p.items_summary or 'No Items' }}
+                            </div>
+                            <small class="text-muted font-monospace">({{ p.items_count }} items)</small>
+                        </td>
+                        <td class="font-monospace fw-bold fs-6 text-dark">Rs. {{ "{:,.0f}".format(p.total) }}</td>
+                        <td class="font-monospace fw-bold text-success">Rs. {{ "{:,.0f}".format(p.paid) }}</td>
+                        <td class="font-monospace fw-bold text-danger">Rs. {{ "{:,.0f}".format(p.due) }}</td>
+                        <td class="text-center no-print">
+                            {% if p.status == 'returned' %}
+                            <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold shadow-sm lang-text" data-en="Returned (Reversed)" data-ur="واپس کر دیا گیا">Returned</span>
+                            {% else %}
+                            <div class="d-inline-flex gap-1">
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-bold" onclick="viewPurchaseDetails('{{ p.id }}')" title="بل دیکھیں">
+                                    <span>👁️</span> <span class="lang-text" data-en="View" data-ur="دیکھیں">View</span>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark py-1 px-2 fw-bold" onclick="openEditPurchaseModal('{{ p.id }}')" title="بل میں تبدیلی کریں / مقدار کم کریں">
+                                    <span>✏️</span> <span class="lang-text" data-en="Edit" data-ur="ترمیم">Edit</span>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 fw-bold" onclick="returnPurchase('{{ p.id }}', '{{ p.bill_no|escape }}')" title="پورا بل واپس (Return) کریں">
+                                    <span>↩️</span> <span class="lang-text" data-en="Return" data-ur="واپسی">Return</span>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2 fw-bold" onclick="deletePurchase('{{ p.id }}', '{{ p.bill_no|escape }}')" title="بل ڈیلیٹ کریں">
+                                    <span>🗑️</span>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr id="noPurchasesRow">
+                        <td colspan="9" class="text-center py-5 text-muted fw-bold lang-text" data-en="No purchase invoices recorded yet." data-ur="ابھی تک کوئی خریداری بل درج نہیں ہے۔">No purchase invoices recorded yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- اصلی ڈیزائن والا کلاسک سپلائر لیجر ماڈل -->
+<div class="modal fade" id="supplierLedgerModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header no-print">
+                <h5 class="modal-title fw-bold lang-text" data-en="Supplier Account Ledger" data-ur="سپلائر کھاتہ لیجر اسٹیٹمنٹ">Supplier Account Ledger</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3 bg-light">
+                <div class="statement-box rounded" id="printableStatement">
+                    
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 py-1">
+                        <div>
+                            <div class="fw-bold fs-6"><span class="lang-text" data-en="Supplier:" data-ur="سپلائر:">Supplier:</span> <span id="sldSupName" class="text-dark"></span></div>
+                            <div class="small"><span class="lang-text" data-en="Company:" data-ur="کمپنی:">Company:</span> <span id="sldSupCompany" class="text-muted"></span> | <span class="lang-text" data-en="Phone:" data-ur="فون:">Phone:</span> <span id="sldSupPhone" class="font-monospace"></span></div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold small"><span class="lang-text" data-en="Account #:" data-ur="اکاؤنٹ نمبر:">Account #:</span> <span id="sldSupId" class="font-monospace"></span></div>
+                            <div class="small"><span class="lang-text" data-en="Printed:" data-ur="پرنٹ تاریخ:">Printed:</span> <span id="sldPrintDate" class="font-monospace"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="dashed-divider"></div>
+
+                    <div class="table-responsive">
+                        <table class="ledger-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 15%; text-align: left;" class="lang-text" data-en="DATE & TIME" data-ur="تاریخ / وقت">DATE & TIME</th>
+                                    <th style="width: 15%; text-align: left;" class="lang-text" data-en="REF / BILL #" data-ur="ریف / بل نمبر">REF / BILL #</th>
+                                    <th style="width: 38%; text-align: left;" class="lang-text" data-en="DESCRIPTION" data-ur="تفصیل">DESCRIPTION</th>
+                                    <th style="width: 10%; text-align: right; color: #dc2626;" class="lang-text" data-en="DEBIT" data-ur="مال لیا (Debit)">DEBIT</th>
+                                    <th style="width: 10%; text-align: right; color: #16a34a;" class="lang-text" data-en="CREDIT" data-ur="رقم دی (Credit)">CREDIT</th>
+                                    <th style="width: 12%; text-align: right;" class="lang-text" data-en="BALANCE" data-ur="بقایا">BALANCE</th>
+                                </tr>
+                            </thead>
+                            <tbody id="supLedgerTimelineBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="summary-card-box">
+                        <div class="row">
+                            <div class="col-md-6 offset-md-6">
+                                <div class="d-flex justify-content-between py-1">
+                                    <span class="fw-bold lang-text" data-en="Total Purchases:" data-ur="کل مال لیا:">Total Purchases:</span>
+                                    <span class="font-monospace fw-bold" id="sldTotalBought">Rs. 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1 text-success">
+                                    <span class="fw-bold lang-text" data-en="Total Paid:" data-ur="کل رقم ادا کی:">Total Paid:</span>
+                                    <span class="font-monospace fw-bold" id="sldTotalPaid">Rs. 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2 border-top border-dark fs-5" id="sldBalanceRow">
+                                    <span class="fw-bold lang-text" data-en="Net Balance Due:" data-ur="خالص بقایا:">Net Balance Due:</span>
+                                    <span class="font-monospace fw-bold" id="sldFinalBalance">Rs. 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashed-divider"></div>
+
+                    <div class="text-center pt-2">
+                        <div class="fw-bold small lang-text" data-en="Thank You For Your Business!" data-ur="آپ کے کاروبار کا شکریہ!">Thank You For Your Business!</div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer bg-white no-print d-flex justify-content-between flex-wrap gap-2">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-success fw-bold d-inline-flex align-items-center gap-1 shadow-sm ledger-action-btn" onclick="exportSupplierExcel()">
+                        <span>📊</span> <span class="lang-text" data-en="Export Excel" data-ur="ایکسل ڈاؤن لوڈ">Export Excel</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1 shadow-sm ledger-action-btn" onclick="saveSupplierPDF()">
+                        <span>💾</span> <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف محفوظ کریں">Save as PDF</span>
+                    </button>
+                    <button type="button" class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm ledger-action-btn" style="background-color: #25D366; color: #ffffff; border: none;" onclick="sendSupplierWhatsApp()">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.655.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.099-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.861.114-.944-.05-.084-.182-.133-.38-.232z"/></svg>
+                        <span class="lang-text" data-en="Send WhatsApp" data-ur="واٹس ایپ بھیجیں">Send WhatsApp</span>
+                    </button>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary fw-bold lang-text" data-en="Close" data-ur="بند کریں" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-dark fw-bold px-4 lang-text d-inline-flex align-items-center gap-1 ledger-action-btn" data-en="Print Statement" data-ur="پرنٹ اسٹیٹمنٹ" onclick="printSupplierLedgerStandalone()">
+                        <span>🖨️</span> <span>Print Statement</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ماڈل: نیا سپلائر -->
+<div class="modal fade" id="newSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold lang-text" data-en="Add New Supplier" data-ur="نیا ڈیلر / سپلائر شامل کریں">Add New Supplier</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/api/supplier/add" method="POST" autocomplete="off">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Supplier Name" data-ur="سپلائر کا نام">Supplier Name</label>
+                        <input type="text" name="name" class="form-control" autocomplete="off" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Company / Market" data-ur="کمپنی / مارکیٹ">Company / Market</label>
+                        <input type="text" name="company" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Phone" data-ur="فون نمبر">Phone</label>
+                        <input type="text" name="phone" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Opening Balance" data-ur="سابقہ پرانا ادھار">Opening Balance</label>
+                        <input type="number" step="any" name="balance" class="form-control font-monospace" placeholder="0" autocomplete="off">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary fw-bold px-4 lang-text" data-en="Save Supplier" data-ur="محفوظ کریں">Save Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ماڈل: ایڈٹ سپلائر -->
+<div class="modal fade" id="editSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold lang-text" data-en="Edit Supplier" data-ur="سپلائر کی معلومات تبدیل کریں">Edit Supplier</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/api/supplier/edit" method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editSupId" name="id">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Supplier Name" data-ur="سپلائر کا نام">Supplier Name</label>
+                        <input type="text" id="editSupName" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Company / Market" data-ur="کمپنی / مارکیٹ">Company / Market</label>
+                        <input type="text" id="editSupCompany" name="company" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Phone" data-ur="فون نمبر">Phone</label>
+                        <input type="text" id="editSupPhone" name="phone" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold lang-text" data-en="Address / Market" data-ur="پتہ">Address</label>
+                        <input type="text" id="editSupAddress" name="address" class="form-control">
+                    </div>
+                    <div class="mb-3 p-3 bg-light rounded-3 border border-primary border-opacity-25">
+                        <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center mb-1">
+                            <span><span class="lang-text" data-en="Total Debt / Balance (Rs.)" data-ur="کل واجب الادا ادھار / کھاتہ بقایا (روپے)">کل واجب الادا ادھار / کھاتہ بقایا (روپے)</span></span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 font-monospace" style="font-size:0.75rem;">فائنل کھاتہ</span>
+                        </label>
+                        <input type="number" step="any" id="editSupBal" name="balance" class="form-control font-monospace fw-bold fs-5 text-danger bg-white" placeholder="0" autocomplete="off">
+                        <small class="text-muted d-block mt-1 lang-text" data-en="Directly change total debt here (e.g. 20000 to 10000). Software updates ledger automatically." data-ur="سپلائر کا فائنل ادھار تبدیل کرنے کے لیے یہاں نئی رقم لکھیں (مثلاً 20,000 کو 10,000 کرنا ہو)۔ کھاتہ خودکار درست ہو جائے گا۔">سپلائر کا فائنل ادھار تبدیل کرنے کے لیے یہاں نئی رقم لکھیں (مثلاً 20,000 کو 10,000 کرنا ہو)۔ کھاتہ خودکار درست ہو جائے گا۔</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary fw-bold px-4 lang-text" data-en="Update Supplier" data-ur="محفوظ کریں">Update Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ماڈل: نیا پرچیز بل -->
+<div class="modal fade" id="newPurchaseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold lang-text" data-en="New Purchase & Stock In" data-ur="نیا مال خریداری و اسٹاک انٹری">New Purchase & Stock In</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold lang-text" data-en="Select Supplier" data-ur="سپلائر منتخب کریں">Select Supplier</label>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <input type="text" id="pSupplierInput" class="form-control fw-bold lang-placeholder" 
+                                       data-en="Type or select supplier..." data-ur="نام لکھیں یا لسٹ کھولیں..." 
+                                       placeholder="Type or select supplier..." autocomplete="off"
+                                       oninput="onSearchSupplierInput()" onclick="openSupplierDropdown()" onfocus="openSupplierDropdown()">
+                                <button class="btn btn-outline-secondary px-3" type="button" onclick="toggleSupplierDropdown(event)" title="Show all / تمام لسٹ">
+                                    <span style="font-size: 0.75rem;">▼</span>
+                                </button>
+                            </div>
+                            <ul id="pSupplierMenu" class="dropdown-menu w-100 shadow-lg border" style="max-height: 220px; overflow-y: auto; display: none; position: absolute; z-index: 1055; top: 100%; left: 0;">
+                                {% for sup in suppliers %}
+                                <li>
+                                    <a class="dropdown-item py-2 border-bottom sup-item" href="javascript:void(0)" 
+                                       data-id="{{ sup.id }}" data-name="{{ sup.name|escape }}" data-company="{{ (sup.company or '')|escape }}"
+                                       onclick="chooseSupplier('{{ sup.id }}', '{{ sup.name|escape }}', '{{ (sup.company or '')|escape }}')">
+                                        <strong>{{ sup.name }}</strong> <small class="text-muted">({{ sup.company or 'No Company' }})</small>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <input type="hidden" id="pSupplierSelectedId" value="">
+                            <input type="hidden" id="pSupplierSelectedName" value="">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold lang-text" data-en="Bill / Invoice #" data-ur="بل / انوائس نمبر">Bill / Invoice #</label>
+                        <input type="text" id="pBillNo" class="form-control" placeholder="INV-892" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold lang-text" data-en="Purchase Date" data-ur="خریداری کی تاریخ">Purchase Date</label>
+                        <input type="date" id="pDateInput" class="form-control font-monospace">
+                    </div>
+                </div>
+                <hr>
+                <div class="row g-2 mb-2 align-items-end">
+                    <div class="col-md-4 col-12">
+                        <label class="form-label fw-bold lang-text small" data-en="Product Name (Select or Type New)" data-ur="سامان / پروڈکٹ کا نام (چنیں یا نیا لکھیں)">Product Name</label>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <input type="text" id="pProdInput" class="form-control fw-bold lang-placeholder" 
+                                       data-en="Type or select product..." data-ur="پروڈکٹ نام لکھیں یا لسٹ کھولیں..." 
+                                       placeholder="Type or select product..." autocomplete="off"
+                                       oninput="onSearchProductInput()" onclick="openProductDropdown()" onfocus="openProductDropdown()">
+                                <button class="btn btn-outline-secondary px-3" type="button" onclick="toggleProductDropdown(event)" title="Show all">
+                                    <span style="font-size: 0.75rem;">▼</span>
+                                </button>
+                            </div>
+                            <ul id="pProductMenu" class="dropdown-menu w-100 shadow-lg border" style="max-height: 220px; overflow-y: auto; display: none; position: absolute; z-index: 1055; top: 100%; left: 0;">
+                                {% for p in products %}
+                                <li>
+                                    <a class="dropdown-item py-2 border-bottom prod-item" href="javascript:void(0)" 
+                                       data-id="{{ p.id }}" data-name="{{ p.name|escape }}" data-buy="{{ p.buy_price }}" data-sale="{{ p.price or p.sale_price or 0 }}" data-stock="{{ p.stock }}" data-unit="{{ p.unit or 'Pcs' }}" data-units="{{ p.units_json|tojson|forceescape }}"
+                                       onclick="chooseProduct(this)">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span><strong>{{ p.name }}</strong></span>
+                                            <span class="badge bg-light text-dark font-monospace border">{{ p.stock }} {{ p.unit or 'Pcs' }}</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <input type="hidden" id="pProdSelectedId" value="">
+                            <input type="hidden" id="pProdSelectedName" value="">
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-bold lang-text small" data-en="Stock Unit (Base)" data-ur="اکائی">Stock Unit (Base)</label>
+                        <select id="pProdUnit" class="form-select font-monospace fw-bold">
+                            <option value="Pcs" class="lang-text" data-en="Pcs" data-ur="پیس / عدد (Pcs)" selected>Pcs</option>
+                            <option value="KG" class="lang-text" data-en="KG" data-ur="کلوگرام / وزن (KG)">KG</option>
+                            <option value="Cartons" class="lang-text" data-en="Cartons" data-ur="کارٹن / ڈبے (Cartons)">Cartons</option>
+                            <option value="Bags" class="lang-text" data-en="Bags" data-ur="بوریاں / تھیلے (Bags)">Bags</option>
+                            <option value="Carton" class="d-none">Carton</option>
+                            <option value="Bag" class="d-none">Bag</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-bold lang-text small" data-en="Buy Price (Rs)" data-ur="خرید ریٹ">Buy Price (Rs)</label>
+                        <input type="number" step="any" id="pBuyPrice" class="form-control font-monospace" placeholder="0">
+                        <div class="mt-1">
+                            <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="document.getElementById('pBulkCalc').classList.toggle('d-none')">
+                                <span class="lang-text" data-en="🧮 Calculator" data-ur="🧮 ریٹ کیلکولیٹر">🧮 Calculator</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-bold lang-text small" data-en="Sale Price (Rs)" data-ur="فروخت ریٹ">Sale Price (Rs)</label>
+                        <input type="number" step="any" id="pSalePrice" class="form-control font-monospace" placeholder="0">
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-bold lang-text small" data-en="Qty" data-ur="تعداد / مقدار">Qty</label>
+                        <input type="number" step="any" id="pQty" class="form-control font-monospace" placeholder="10">
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <label class="form-label fw-bold lang-text small" data-en="Weight(KG)" data-ur="وزن">Weight(KG)</label>
+                        <input type="number" step="any" id="pWeight" class="form-control font-monospace" placeholder="Optional">
+                    </div>
+                </div>
+                
+                <!-- Advanced Selling Units Section for NEW products created inline -->
+                <div class="card bg-light border-0 shadow-sm mt-3 mb-2" id="pAdvancedUnitCard">
+                    <div class="card-header bg-transparent border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
+                        <label class="form-label fw-bold small text-uppercase text-primary mb-0 lang-text" data-en="Selling Units (Optional)" data-ur="فروخت کے متبادل یونٹس (Optional)">Selling Units (Optional)</label>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0" onclick="addPAdvancedUnitRow()">+ Add Unit</button>
+                    </div>
+                    <div class="card-body pt-2" id="pProdUnitsContainer">
+                        <!-- Dynamic rows will be added here -->
+                    </div>
+                    <small class="text-muted px-3 pb-2" style="font-size: 0.75rem;">(Units set here will only apply if this is a BRAND NEW product.)</small>
+                </div>
+
+                <!-- 🧮 Bulk Rate Calculator Box (Like Screenshot 1) -->
+                <div id="pBulkCalc" class="d-none mb-3 p-2 rounded" style="background: #f8fafc; border: 1.5px dashed #0284c7;">
+                    <div class="row g-2 align-items-center">
+                        <div class="col-md-4 col-12">
+                            <label class="small fw-bold text-muted lang-text" data-en="Total Bill / Carton Price (کل رقم):" data-ur="کل رقم / کارٹن بل:">Total Bill / Carton Price:</label>
+                            <input type="number" step="any" id="pCalcTotal" class="form-control form-control-sm font-monospace" placeholder="e.g. 25000">
+                        </div>
+                        <div class="col-md-4 col-8">
+                            <label class="small fw-bold text-muted lang-text" data-en="Total Qty in Carton (کل تعداد):" data-ur="کارٹن میں کل تعداد:">Total Qty in Carton:</label>
+                            <input type="number" step="any" id="pCalcQty" class="form-control form-control-sm font-monospace" placeholder="e.g. 1000">
+                        </div>
+                        <div class="col-md-2 col-4 align-self-end">
+                            <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="runPurchaseBulkCalc()">= Calculate</button>
+                        </div>
+                        <div class="col-md-2 col-12 align-self-end text-end">
+                            <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="document.getElementById('pBulkCalc').classList.add('d-none')">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mb-3">
+                    <button type="button" class="btn btn-dark fw-bold px-4 lang-text shadow-sm" data-en="+ Add Item to Bill" data-ur="+ آئٹم بل میں شامل کریں" onclick="addPurchaseItem()">+ Add Item to Bill</button>
+                </div>
+
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="lang-text" data-en="Item" data-ur="سامان">Item</th>
+                            <th class="lang-text" data-en="Qty & Unit" data-ur="تعداد و اکائی">Qty & Unit</th>
+                            <th class="lang-text" data-en="Buy Rate" data-ur="خرید ریٹ">Buy Rate</th>
+                            <th class="lang-text" data-en="Total" data-ur="ٹوٹل">Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="pItemsBody">
+                        <tr><td colspan="5" class="text-muted lang-text" data-en="No items added" data-ur="کوئی آئٹم شامل نہیں">No items added</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="row g-2 mt-2">
+                    <div class="col-4">
+                        <h5 class="fw-bold"><span class="lang-text" data-en="Total: " data-ur="کل بل: ">Total: </span>Rs. <span id="pTotalLbl">0</span></h5>
+                    </div>
+                    <div class="col-4">
+                        <label class="fw-bold lang-text" data-en="Paid Amount:" data-ur="ادا شدہ رقم:">Paid Amount:</label>
+                        <input type="number" step="any" id="pPaidInput" class="form-control font-monospace" placeholder="0" oninput="calcPDue()">
+                    </div>
+                    <div class="col-4">
+                        <h5 class="fw-bold text-danger"><span class="lang-text" data-en="Due: " data-ur="بقایا ادھار: ">Due: </span>Rs. <span id="pDueLbl">0</span></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success fw-bold px-4 lang-text" data-en="Save Purchase" data-ur="خریداری محفوظ کریں" onclick="submitPurchase()">Save Purchase</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+let pItems = [];
+
+function openEditSupplierModal(id, name, company, phone, address, balance) {
+    document.getElementById('editSupId').value = id;
+    document.getElementById('editSupName').value = name;
+    document.getElementById('editSupCompany').value = company || '';
+    document.getElementById('editSupPhone').value = phone || '';
+    document.getElementById('editSupAddress').value = address || '';
+    document.getElementById('editSupBal').value = balance || '0';
+    new bootstrap.Modal(document.getElementById('editSupplierModal')).show();
+}
+
+// ==========================================
+// SEARCHABLE COMBOBOX LOGIC FOR SUPPLIER
+// ==========================================
+function openSupplierDropdown() {
+    document.getElementById('pSupplierMenu').style.display = 'block';
+    filterSupplierItems('');
+}
+
+function toggleSupplierDropdown(e) {
+    if (e) e.stopPropagation();
+    let menu = document.getElementById('pSupplierMenu');
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        openSupplierDropdown();
+        document.getElementById('pSupplierInput').focus();
+    }
+}
+
+function onSearchSupplierInput() {
+    let q = document.getElementById('pSupplierInput').value.trim();
+    document.getElementById('pSupplierMenu').style.display = 'block';
+    filterSupplierItems(q);
+    
+    // Check if input exactly matches any supplier
+    let items = document.querySelectorAll('#pSupplierMenu .sup-item');
+    let matched = false;
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        let comp = (item.getAttribute('data-company') || '').toLowerCase();
+        let full = `${name} (${comp})`.toLowerCase();
+        if (name === q.toLowerCase() || full === q.toLowerCase()) {
+            document.getElementById('pSupplierSelectedId').value = item.getAttribute('data-id');
+            document.getElementById('pSupplierSelectedName').value = item.getAttribute('data-name');
+            matched = true;
+        }
+    });
+    if (!matched) {
+        document.getElementById('pSupplierSelectedId').value = '';
+        document.getElementById('pSupplierSelectedName').value = '';
+    }
+}
+
+function filterSupplierItems(query) {
+    let q = (query || '').toLowerCase().trim();
+    let tokens = q.split(/\s+/).filter(Boolean);
+    let items = document.querySelectorAll('#pSupplierMenu .sup-item');
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        let comp = (item.getAttribute('data-company') || '').toLowerCase();
+        let phone = (item.getAttribute('data-phone') || '').toLowerCase();
+        let combined = `${name} ${comp} ${phone}`;
+        let matches = tokens.length === 0 || tokens.every(tok => combined.includes(tok));
+        item.parentElement.style.display = matches ? '' : 'none';
+    });
+}
+
+
+
+function runPurchaseBulkCalc() {
+    let tot = parseFloat(document.getElementById('pCalcTotal').value) || 0;
+    let qty = parseFloat(document.getElementById('pCalcQty').value) || 0;
+    if (qty > 0 && tot > 0) {
+        let unitRate = Math.round((tot / qty) * 100) / 100;
+        document.getElementById('pBuyPrice').value = unitRate;
+        document.getElementById('pQty').value = qty;
+        document.getElementById('pBulkCalc').classList.add('d-none');
+    } else {
+        alert('Please enter total amount and quantity.');
+    }
+}
+
+function openNewPurchaseModal() {
+    pItems = [];
+    renderPItems();
+    if (document.getElementById('pSupplierInput')) document.getElementById('pSupplierInput').value = '';
+    if (document.getElementById('pSupplierSelectedId')) document.getElementById('pSupplierSelectedId').value = '';
+    if (document.getElementById('pSupplierSelectedName')) document.getElementById('pSupplierSelectedName').value = '';
+    if (document.getElementById('pBillNo')) document.getElementById('pBillNo').value = 'INV-' + Math.floor(Date.now() / 1000).toString().slice(-4);
+    if (document.getElementById('pDateInput')) document.getElementById('pDateInput').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    if (document.getElementById('pProdInput')) document.getElementById('pProdInput').value = '';
+    if (document.getElementById('pProdSelectedId')) document.getElementById('pProdSelectedId').value = '';
+    if (document.getElementById('pProdSelectedName')) document.getElementById('pProdSelectedName').value = '';
+    if (document.getElementById('pBuyPrice')) document.getElementById('pBuyPrice').value = '';
+    if (document.getElementById('pQty')) document.getElementById('pQty').value = '10';
+    if (document.getElementById('pPaidInput')) document.getElementById('pPaidInput').value = '0';
+}
+
+function chooseSupplier(id, name, company) {
+    let display = company ? `${name} (${company})` : name;
+    document.getElementById('pSupplierInput').value = display;
+    document.getElementById('pSupplierSelectedId').value = id;
+    document.getElementById('pSupplierSelectedName').value = name;
+    document.getElementById('pSupplierMenu').style.display = 'none';
+}
+
+// ==========================================
+// SEARCHABLE COMBOBOX LOGIC FOR PRODUCT
+// ==========================================
+function openProductDropdown() {
+    document.getElementById('pProductMenu').style.display = 'block';
+    filterProductItems('');
+}
+
+function toggleProductDropdown(e) {
+    if (e) e.stopPropagation();
+    let menu = document.getElementById('pProductMenu');
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+    } else {
+        openProductDropdown();
+        document.getElementById('pProdInput').focus();
+    }
+}
+
+function onSearchProductInput() {
+    let q = document.getElementById('pProdInput').value.trim();
+    document.getElementById('pProductMenu').style.display = 'block';
+    filterProductItems(q);
+
+    let items = document.querySelectorAll('#pProductMenu .prod-item');
+    let matched = false;
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        if (name === q.toLowerCase()) {
+            document.getElementById('pProdSelectedId').value = item.getAttribute('data-id');
+            document.getElementById('pProdSelectedName').value = item.getAttribute('data-name');
+            document.getElementById('pBuyPrice').value = item.getAttribute('data-buy') || '';
+            let pU = document.getElementById('pProdUnit');
+            if(pU) {
+                let uVal = item.getAttribute('data-unit') || 'Pcs';
+                if (uVal === 'Carton') uVal = 'Cartons';
+                if (uVal === 'Bag') uVal = 'Bags';
+                pU.value = uVal;
+            }
+            matched = true;
+        }
+    });
+    if (!matched) {
+        document.getElementById('pProdSelectedId').value = '';
+        document.getElementById('pProdSelectedName').value = q;
+    }
+}
+
+function filterProductItems(query) {
+    let q = (query || '').toLowerCase().trim();
+    let tokens = q.split(/\s+/).filter(Boolean);
+    let items = document.querySelectorAll('#pProductMenu .prod-item');
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        let code = (item.getAttribute('data-code') || item.getAttribute('data-id') || '').toLowerCase();
+        let combined = `${code} ${name}`;
+        let matches = tokens.length === 0 || tokens.every(tok => combined.includes(tok));
+        item.parentElement.style.display = matches ? '' : 'none';
+    });
+}
+
+function chooseProduct(el) {
+    let id = el.getAttribute('data-id');
+    let name = el.getAttribute('data-name');
+    let buyPrice = el.getAttribute('data-buy');
+    let stock = el.getAttribute('data-stock');
+    let baseUnit = el.getAttribute('data-unit') || 'Pcs';
+    let salePrice = el.getAttribute('data-sale');
+    let unitsJson = el.getAttribute('data-units');
+
+    document.getElementById('pProdInput').value = name;
+    document.getElementById('pProdSelectedId').value = id;
+    document.getElementById('pProdSelectedName').value = name;
+    
+    let pU = document.getElementById('pProdUnit');
+    if(pU) {
+        pU.innerHTML = '';
+        try {
+            if (unitsJson && unitsJson !== '[]' && unitsJson !== 'None') {
+                const units = JSON.parse(unitsJson);
+                units.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.name;
+                    opt.textContent = `${u.name} (= ${u.conversion_rate} ${baseUnit})`;
+                    opt.setAttribute('data-conv', u.conversion_rate);
+                    pU.appendChild(opt);
+                });
+                // Also add the base unit itself at the end
+                const opt = document.createElement('option');
+                opt.value = baseUnit;
+                opt.textContent = baseUnit;
+                opt.setAttribute('data-conv', '1.0');
+                pU.appendChild(opt);
+            } else {
+                throw new Error("No alternate units");
+            }
+        } catch(e) {
+            let uVal = baseUnit;
+            if (uVal === 'Carton') uVal = 'Cartons';
+            if (uVal === 'Bag') uVal = 'Bags';
+            pU.innerHTML = `<option value="${uVal}">${uVal}</option>`;
+        }
+    }
+    
+    document.getElementById('pBuyPrice').value = buyPrice || '';
+    let sP = document.getElementById('pSalePrice'); if(sP) sP.value = salePrice || '';
+    document.getElementById('pProductMenu').style.display = 'none';
+}
+
+// Global click to close comboboxes when clicking outside
+document.addEventListener('click', (e) => {
+    let supMenu = document.getElementById('pSupplierMenu');
+    let supInp = document.getElementById('pSupplierInput');
+    if (supMenu && supInp && !supMenu.contains(e.target) && e.target !== supInp && !e.target.closest('#pSupplierInput') && !e.target.closest('button[onclick*="Supplier"]')) {
+        supMenu.style.display = 'none';
+    }
+    
+    let prodMenu = document.getElementById('pProductMenu');
+    let prodInp = document.getElementById('pProdInput');
+    if (prodMenu && prodInp && !prodMenu.contains(e.target) && e.target !== prodInp && !e.target.closest('#pProdInput') && !e.target.closest('button[onclick*="Product"]')) {
+        prodMenu.style.display = 'none';
+    }
+});
+
+function addPAdvancedUnitRow() {
+    const container = document.getElementById('pProdUnitsContainer');
+    const row = document.createElement('div');
+    row.className = 'row g-2 mb-2 align-items-end p-advanced-unit-row';
+    row.innerHTML = `
+        <div class="col-4">
+            <label class="form-label small fw-bold mb-1">Unit (e.g. Box)</label>
+            <input type="text" name="p_unit_name[]" class="form-control form-control-sm fw-bold" required>
+        </div>
+        <div class="col-3">
+            <label class="form-label small fw-bold mb-1">Base Qty</label>
+            <input type="number" step="any" name="p_unit_conversion[]" class="form-control form-control-sm font-monospace" placeholder="e.g. 12" required>
+        </div>
+        <div class="col-4">
+            <label class="form-label small fw-bold mb-1 text-success">Sale Price</label>
+            <input type="number" step="any" name="p_unit_sale_price[]" class="form-control form-control-sm font-monospace text-success fw-bold" required>
+        </div>
+        <div class="col-1 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.p-advanced-unit-row').remove()">x</button>
+        </div>
+    `;
+    container.appendChild(row);
+}
+
+function addPurchaseItem() {
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    let pId = document.getElementById('pProdSelectedId').value;
+    let pName = document.getElementById('pProdSelectedName').value || document.getElementById('pProdInput').value.trim();
+    let pUnit = document.getElementById('pProdUnit') ? document.getElementById('pProdUnit').value : 'Pcs';
+
+    if (!pName) {
+        alert(lang === 'en' ? 'Please enter product name.' : 'براہ کرم سامان کا نام درج یا منتخب کریں۔');
+        return;
+    }
+    
+    if (!pId) {
+        pId = 'new_' + Date.now();
+    }
+    
+    let buyPrice = parseFloat(document.getElementById('pBuyPrice').value) || 0;
+    let qty = parseFloat(document.getElementById('pQty').value) || 1;
+    let weight = parseFloat(document.getElementById('pWeight').value) || 0;
+
+    let sPrice = parseFloat(document.getElementById('pSalePrice') ? document.getElementById('pSalePrice').value : 0) || 0;
+    
+    // Capture advanced units
+    let advUnits = [];
+    let uNames = document.getElementsByName('p_unit_name[]');
+    let uConvs = document.getElementsByName('p_unit_conversion[]');
+    let uPrices = document.getElementsByName('p_unit_sale_price[]');
+    for(let i=0; i<uNames.length; i++) {
+        if(uNames[i].value.trim()) {
+            advUnits.push({
+                name: uNames[i].value.trim(),
+                conv: parseFloat(uConvs[i].value) || 1,
+                price: parseFloat(uPrices[i].value) || sPrice
+            });
+        }
+    }
+
+    let item = { 
+        id: pId, 
+        name: pName, 
+        buy_price: buyPrice, 
+        sale_price: sPrice,
+        qty: qty,
+        unit: pUnit,
+        weight: weight,
+        advanced_units: advUnits
+    };
+    
+    pItems.push(item);
+    renderPItems();
+    
+    document.getElementById('pProdInput').value = '';
+    document.getElementById('pProdSelectedId').value = '';
+    document.getElementById('pProdSelectedName').value = '';
+    document.getElementById('pBuyPrice').value = '';
+    document.getElementById('pQty').value = '10';
+    document.getElementById('pWeight').value = '';
+    document.getElementById('pProdUnitsContainer').innerHTML = '';
+}
+
+function renderPItems() {
+    let tbody = document.getElementById('pItemsBody');
+    if(pItems.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No items added</td></tr>'; updatePTotals(0); return; }
+    let html = ''; let tot = 0;
+    pItems.forEach((it, idx) => {
+        let itTot = it.qty * it.buy_price; tot += itTot;
+        let weightStr = it.weight > 0 ? ` <span class="badge bg-warning text-dark border ms-1">${it.weight} KG</span>` : '';
+        html += `<tr><td>${it.name}</td><td class="font-monospace fw-bold">${it.qty} <span class="badge bg-light text-dark border ms-1">${it.unit || 'Pcs'}</span>${weightStr}</td><td class="font-monospace">Rs. ${it.buy_price.toLocaleString()}</td><td class="font-monospace fw-bold text-primary">Rs. ${Math.round(itTot).toLocaleString()}</td><td><button class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="pItems.splice(${idx},1);renderPItems();">x</button></td></tr>`;
+    });
+    tbody.innerHTML = html;
+    updatePTotals(tot);
+}
+
+function updatePTotals(total) {
+    document.getElementById('pTotalLbl').innerText = total.toLocaleString();
+    calcPDue();
+}
+
+function calcPDue() {
+    let tot = parseFloat(document.getElementById('pTotalLbl').innerText.replace(/,/g,'')) || 0;
+    let paid = parseFloat(document.getElementById('pPaidInput').value) || 0;
+    document.getElementById('pDueLbl').innerText = Math.max(0, tot - paid).toLocaleString();
+}
+
+function submitPurchase() {
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    
+    let supId = document.getElementById('pSupplierSelectedId').value;
+    let supName = document.getElementById('pSupplierSelectedName').value || document.getElementById('pSupplierInput').value.trim();
+
+    if (!supName) {
+        return alert(lang === 'en' ? 'Please enter or select a supplier.' : 'براہ کرم سپلائر کا نام لکھیں یا منتخب کریں۔');
+    }
+    
+    let billNo = document.getElementById('pBillNo').value;
+    let pDate = document.getElementById('pDateInput') ? document.getElementById('pDateInput').value : '';
+    let paid = parseFloat(document.getElementById('pPaidInput').value) || 0;
+    let tot = parseFloat(document.getElementById('pTotalLbl').innerText.replace(/,/g,'')) || 0;
+
+    if(pItems.length === 0) return alert(lang === 'en' ? 'Please add at least one item.' : 'کم از کم ایک آئٹم شامل کریں');
+
+    fetch('/api/purchase/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            supplier_id: supId,
+            supplier_name: supName,
+            bill_no: billNo,
+            date: pDate,
+            items: pItems,
+            total_amount: tot,
+            paid_amount: paid
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            showToast(lang === 'en' ? 'Purchase saved and stock updated!' : 'خریداری اور اسٹاک کامیابی سے درج ہو گیا!');
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+    });
+}
+
+
+
+let currentActiveSuppId = null;
+
+function printSupplierLedgerStandalone() {
+    if (!currentActiveSuppId) return;
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    let iframe = document.getElementById('supplierLedgerPrintIframe');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'supplierLedgerPrintIframe';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+    }
+    iframe.src = '/api/supplier/print/' + currentActiveSuppId + '?lang=' + lang + '&t=' + Date.now();
+    iframe.onload = function() {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch(e) { console.error(e); }
+    };
+}
+
+function saveSupplierPDF() {
+    if (!currentActiveSuppId) return;
+    const a = document.createElement('a');
+    a.href = '/api/supplier/pdf/' + currentActiveSuppId + '?download=1';
+    let rawName = document.getElementById('suppLedgerName')?.innerText || `Supplier_${currentActiveSuppId}`;
+    let safeName = rawName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || `Supplier_${currentActiveSuppId}`;
+    a.download = `Supplier_Khata_${safeName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function sendSupplierWhatsApp() {
+    if (!currentActiveSuppId) return;
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    // Synchronously open blank window to bypass popup blockers
+    let waWindow = window.open('about:blank', '_blank');
+
+    fetch('/api/supplier/whatsapp_prepare/' + currentActiveSuppId, { method: 'POST' })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success && res.whatsapp_url) {
+            if (waWindow) {
+                waWindow.location.href = res.whatsapp_url;
+            } else {
+                window.open(res.whatsapp_url, '_blank');
+            }
+
+            if (res.download_url) {
+                const link = document.createElement('a');
+                link.href = res.download_url;
+                link.download = res.filename || 'Supplier_Ledger.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            let copiedMsg = lang === 'en' ? '✅ Supplier statement prepared & PDF downloaded!' : '✅ سپلائر لیجر اسٹیٹمنٹ تیار، پی ڈی ایف محفوظ اور کلپ بورڈ میں کاپی ہو گئی!';
+            showToast(copiedMsg);
+        } else {
+            if (waWindow) waWindow.close();
+            alert(res.message || 'Error preparing WhatsApp statement');
+        }
+    })
+    .catch(err => {
+        if (waWindow) waWindow.close();
+        alert('Error preparing WhatsApp statement');
+    });
+}
+
+function exportSupplierExcel() {
+    if (!currentActiveSuppId) return;
+    window.location.href = '/api/supplier/excel/' + currentActiveSuppId;
+}
+
+function viewSupplierLedger(id) {
+    currentActiveSuppId = id;
+    fetch('/api/supplier_ledger/' + id)
+    .then(r => r.json())
+    .then(data => {
+        let lang = localStorage.getItem('pos_lang') || 'ur';
+        let sup = data.supplier || {};
+        document.getElementById('sldSupName').innerText = sup.name || '-';
+        document.getElementById('sldSupCompany').innerText = sup.company || '-';
+        document.getElementById('sldSupPhone').innerText = sup.phone || '-';
+        document.getElementById('sldSupId').innerText = '#' + (sup.id || id);
+        document.getElementById('sldPrintDate').innerText = new Date().toLocaleString();
+
+        let tbody = document.getElementById('supLedgerTimelineBody');
+        tbody.innerHTML = '';
+        
+        if(data.timeline && data.timeline.length > 0) {
+            let prevBalance = null;
+            data.timeline.forEach(ev => {
+                let b = ev.bill_amount > 0 ? `Rs. ${Number(ev.bill_amount).toLocaleString()}` : '-';
+                let p = ev.paid_amount > 0 ? `Rs. ${Number(ev.paid_amount).toLocaleString()}` : '-';
+                let bal = Number(ev.balance);
+                let balColor = bal > 0 ? 'color:#dc2626' : 'color:#16a34a;font-weight:bold';
+                let balText = bal === 0 ? `<span style="color:#16a34a">✅ Rs. 0</span>` : `<span style="${balColor}">Rs. ${bal.toLocaleString()}</span>`;
+                let desc = lang === 'en' ? (ev.description_en || ev.description) : (ev.description_ur || ev.description);
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-monospace small">${ev.date}</td>
+                        <td class="font-monospace fw-bold">${ev.ref}</td>
+                        <td>${desc}</td>
+                        <td class="text-end font-monospace text-danger">${b}</td>
+                        <td class="text-end font-monospace text-success">${p}</td>
+                        <td class="text-end font-monospace">${balText}</td>
+                    </tr>
+                `;
+                
+                // If balance reached 0, add "Account Cleared" celebration row in table
+                if (ev.cleared_here || (bal === 0 && prevBalance !== null && prevBalance > 0)) {
+                    let clearedMsg = lang === 'en' ? '🎉 Account Cleared — Balance settled in full' : '🎉 کھاتہ صاف ہو گیا — تمام رقم ادا ہو گئی';
+                    tbody.innerHTML += `
+                        <tr style="background:#f0fdf4; border:1.5px dashed #16a34a;">
+                            <td colspan="6" class="text-center py-2 fw-bold" style="color:#16a34a; font-size:0.92rem;">
+                                ${clearedMsg}
+                            </td>
+                        </tr>
+                    `;
+                }
+                prevBalance = bal;
+            });
+        } else {
+            let noRec = lang === 'en' ? 'No transactions found.' : 'کوئی ریکارڈ نہیں ملا';
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-muted">${noRec}</td></tr>`;
+        }
+
+        // Summary
+        let finalBal = data.final_balance || 0;
+        document.getElementById('sldTotalBought').innerText = `Rs. ${Number(data.total_bought||0).toLocaleString()}`;
+        document.getElementById('sldTotalPaid').innerText = `Rs. ${Number(data.total_paid||0).toLocaleString()}`;
+        
+        let balEl = document.getElementById('sldFinalBalance');
+        let balRow = document.getElementById('sldBalanceRow');
+        if (finalBal <= 0) {
+            balEl.innerText = 'Rs. 0';
+            balEl.style.color = '#16a34a';
+            balRow.classList.remove('text-danger');
+            balRow.classList.add('text-success');
+        } else {
+            balEl.innerText = `Rs. ${Number(finalBal).toLocaleString()}`;
+            balEl.style.color = '#dc2626';
+            balRow.classList.remove('text-success');
+            balRow.classList.add('text-danger');
+        }
+
+        let modal = new bootstrap.Modal(document.getElementById('supplierLedgerModal'));
+        modal.show();
+        document.getElementById('supplierLedgerModal').addEventListener('shown.bs.modal', () => {
+            if (typeof applyLanguage === 'function') applyLanguage(lang);
+        }, {once: true});
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+    const pDate = document.getElementById('pDateInput');
+    if (pDate && !pDate.value) {
+        pDate.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    }
+});
+
+
+// --- SUPPLIERS & PURCHASES TAB SWITCHER ---
+function switchSupplierTab(tab) {
+    let supTabBtn = document.getElementById('tabBtnSuppliers');
+    let purchTabBtn = document.getElementById('tabBtnPurchases');
+    let supContent = document.getElementById('suppliersTabContent');
+    let purchContent = document.getElementById('purchasesTabContent');
+
+    let addSupBtn = document.getElementById('btnAddSupplierHeader');
+    if(tab === 'suppliers') {
+        supTabBtn.classList.add('active');
+        purchTabBtn.classList.remove('active');
+        supContent.style.display = 'block';
+        purchContent.style.display = 'none';
+        if (addSupBtn) addSupBtn.style.display = 'inline-block';
+    } else {
+        purchTabBtn.classList.add('active');
+        supTabBtn.classList.remove('active');
+        supContent.style.display = 'none';
+        purchContent.style.display = 'block';
+        if (addSupBtn) addSupBtn.style.display = 'none';
+        updatePurchasesSummary();
+    }
+}
+
+// --- PURCHASES DATE FILTERING ---
+let currentPurchasePeriod = 'all';
+
+function setPurchasePeriod(period) {
+    currentPurchasePeriod = period;
+    document.querySelectorAll('.purchase-tab-btn').forEach(b => b.classList.remove('active'));
+    
+    let activeBtn = document.getElementById('ptab-' + period.replace(':', '-'));
+    if(activeBtn) activeBtn.classList.add('active');
+
+    let today = new Date();
+    today.setHours(0,0,0,0);
+
+    let rows = document.querySelectorAll('#purchasesTableBody .purchase-row');
+    rows.forEach(r => {
+        let rowDateStr = r.getAttribute('data-date');
+        let rowDate = new Date(rowDateStr);
+        rowDate.setHours(0,0,0,0);
+
+        let show = false;
+        if(period === 'all') {
+            show = true;
+        } else if(period.startsWith('date:')) {
+            let targetDate = period.split('date:')[1];
+            show = (rowDateStr === targetDate);
+        } else if(period === '7days') {
+            let diffDays = Math.ceil((today - rowDate) / (1000 * 60 * 60 * 24));
+            show = (diffDays >= 0 && diffDays <= 7);
+        } else if(period === '15days') {
+            let diffDays = Math.ceil((today - rowDate) / (1000 * 60 * 60 * 24));
+            show = (diffDays >= 0 && diffDays <= 15);
+        } else if(period === '30days') {
+            let diffDays = Math.ceil((today - rowDate) / (1000 * 60 * 60 * 24));
+            show = (diffDays >= 0 && diffDays <= 30);
+        } else if(period === '6months') {
+            let diffDays = Math.ceil((today - rowDate) / (1000 * 60 * 60 * 24));
+            show = (diffDays >= 0 && diffDays <= 180);
+        } else if(period === 'year') {
+            let diffDays = Math.ceil((today - rowDate) / (1000 * 60 * 60 * 24));
+            show = (diffDays >= 0 && diffDays <= 365);
+        }
+        
+        r.style.display = show ? '' : 'none';
+    });
+
+    filterPurchasesTable();
+}
+
+function filterPurchasesTable() {
+    let q = (document.getElementById('purchaseSearchInput').value || '').toLowerCase().trim();
+    let rows = document.querySelectorAll('#purchasesTableBody .purchase-row');
+    let visibleCount = 0;
+
+    rows.forEach(r => {
+        if(r.style.display !== 'none' || q !== '') {
+            let sText = r.getAttribute('data-search') || '';
+            let matches = (q === '' || sText.includes(q));
+            if(r.style.display !== 'none' && !matches) {
+                r.style.display = 'none';
+            } else if(matches && r.style.display !== 'none') {
+                visibleCount++;
+            }
+        }
+    });
+
+    updatePurchasesSummary();
+}
+
+function updatePurchasesSummary() {
+    let rows = document.querySelectorAll('#purchasesTableBody .purchase-row');
+    let tot = 0, paid = 0, due = 0;
+    
+    rows.forEach(r => {
+        if(r.style.display !== 'none') {
+            tot += parseFloat(r.getAttribute('data-total')) || 0;
+            paid += parseFloat(r.getAttribute('data-paid')) || 0;
+            due += parseFloat(r.getAttribute('data-due')) || 0;
+        }
+    });
+
+    document.getElementById('pSumTotal').innerText = 'Rs. ' + Math.round(tot).toLocaleString();
+    document.getElementById('pSumPaid').innerText = 'Rs. ' + Math.round(paid).toLocaleString();
+}
+
+// --- VIEW PURCHASE DETAILS MODAL ---
+function viewPurchaseDetails(purchaseId) {
+    fetch('/api/purchase/' + purchaseId)
+    .then(r => r.json())
+    .then(res => {
+        if(!res.success) return alert(res.message || 'Error loading purchase');
+        let p = res.purchase;
+        let items = res.items || [];
+
+        document.getElementById('vpSupplierName').innerText = p.supplier_name;
+        document.getElementById('vpBillNo').innerText = p.bill_no || '-';
+        document.getElementById('vpDate').innerText = p.date;
+        document.getElementById('vpId').innerText = p.id;
+        document.getElementById('vpTotal').innerText = 'Rs. ' + Math.round(p.total).toLocaleString();
+        document.getElementById('vpPaid').innerText = 'Rs. ' + Math.round(p.paid).toLocaleString();
+        document.getElementById('vpDue').innerText = 'Rs. ' + Math.round(p.due).toLocaleString();
+
+        let tbody = document.getElementById('vpItemsBody');
+        tbody.innerHTML = '';
+        items.forEach((it, idx) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td class="font-monospace text-muted small">${idx + 1}</td>
+                    <td class="fw-bold">${it.product_name}</td>
+                    <td class="text-center font-monospace">${it.quantity} <span class="badge bg-light text-dark border">${it.unit || 'Pcs'}</span></td>
+                    <td class="text-end font-monospace">Rs. ${Number(it.buy_price).toLocaleString()}</td>
+                    <td class="text-end font-monospace fw-bold">Rs. ${Number(it.total).toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        let modal = new bootstrap.Modal(document.getElementById('viewPurchaseModal'));
+        modal.show();
+    });
+}
+
+// --- EDIT PURCHASE MODAL LOGIC ---
+let epItemsList = [];
+
+function openEditPurchaseModal(purchaseId) {
+    fetch('/api/purchase/' + purchaseId)
+    .then(r => r.json())
+    .then(res => {
+        if(!res.success) return alert(res.message || 'Error loading purchase');
+        let p = res.purchase;
+        let items = res.items || [];
+
+        document.getElementById('epPurchaseId').value = p.id;
+        document.getElementById('epSupplierSelect').value = p.supplier_id;
+        document.getElementById('epBillNo').value = p.bill_no || '';
+        document.getElementById('epDate').value = (p.date || '').substring(0, 10);
+        document.getElementById('epPaidInput').value = p.paid || 0;
+
+        epItemsList = items.map(it => ({
+            id: it.product_id,
+            name: it.product_name,
+            qty: parseFloat(it.quantity) || 1,
+            buy_price: parseFloat(it.buy_price) || 0,
+            unit: it.unit || 'Pcs'
+        }));
+
+        renderEpItems();
+        calculateEpTotal();
+
+        let modal = new bootstrap.Modal(document.getElementById('editPurchaseModal'));
+        modal.show();
+    });
+}
+
+function onEpProductChange() {
+    let sel = document.getElementById('epProdSelect');
+    let opt = sel.options[sel.selectedIndex];
+    if(opt) {
+        document.getElementById('epQtyInput').value = 1;
+        document.getElementById('epRateInput').value = opt.getAttribute('data-buy') || 0;
+    }
+}
+
+function addEpItem() {
+    let sel = document.getElementById('epProdSelect');
+    let opt = sel.options[sel.selectedIndex];
+    if(!opt || !opt.value) return alert('پروڈکٹ منتخب کریں');
+
+    let pId = parseInt(opt.value);
+    let pName = opt.getAttribute('data-name');
+    let pUnit = opt.getAttribute('data-unit') || 'Pcs';
+    let qty = parseFloat(document.getElementById('epQtyInput').value) || 1;
+    let rate = parseFloat(document.getElementById('epRateInput').value) || 0;
+
+    let existing = epItemsList.find(x => x.id === pId);
+    if(existing) {
+        existing.qty += qty;
+        existing.buy_price = rate;
+    } else {
+        epItemsList.push({
+            id: pId,
+            name: pName,
+            qty: qty,
+            buy_price: rate,
+            unit: pUnit
+        });
+    }
+
+    sel.value = '';
+    document.getElementById('epQtyInput').value = '';
+    document.getElementById('epRateInput').value = '';
+
+    renderEpItems();
+    calculateEpTotal();
+}
+
+function removeEpItem(idx) {
+    epItemsList.splice(idx, 1);
+    renderEpItems();
+    calculateEpTotal();
+}
+
+function renderEpItems() {
+    let tbody = document.getElementById('epItemsBody');
+    tbody.innerHTML = '';
+    if(epItemsList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">کوئی آئٹم نہیں</td></tr>';
+        return;
+    }
+
+    epItemsList.forEach((it, idx) => {
+        let lineTot = it.qty * it.buy_price;
+        tbody.innerHTML += `
+            <tr>
+                <td class="fw-bold">${it.name}</td>
+                <td>
+                    <input type="number" step="any" class="form-control form-control-sm font-monospace" value="${it.qty}" style="width:90px; display:inline-block;" onchange="epItemsList[${idx}].qty = parseFloat(this.value) || 0; renderEpItems(); calculateEpTotal();">
+                    <span class="badge bg-light text-dark border ms-1">${it.unit || 'Pcs'}</span>
+                </td>
+                <td>
+                    <input type="number" step="any" class="form-control form-control-sm font-monospace" value="${it.buy_price}" style="width:110px;" onchange="epItemsList[${idx}].buy_price = parseFloat(this.value) || 0; renderEpItems(); calculateEpTotal();">
+                </td>
+                <td class="font-monospace fw-bold text-end">Rs. ${Math.round(lineTot).toLocaleString()}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 fw-bold" onclick="removeEpItem(${idx})">×</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function calculateEpTotal() {
+    let tot = 0;
+    epItemsList.forEach(it => { tot += (it.qty * it.buy_price); });
+    let paid = parseFloat(document.getElementById('epPaidInput').value) || 0;
+    let due = Math.max(0, tot - paid);
+
+    document.getElementById('epTotalLbl').innerText = 'Rs. ' + Math.round(tot).toLocaleString();
+    document.getElementById('epDueLbl').innerText = 'Rs. ' + Math.round(due).toLocaleString();
+}
+
+function submitEditPurchase() {
+    let purchaseId = parseInt(document.getElementById('epPurchaseId').value);
+    let supId = parseInt(document.getElementById('epSupplierSelect').value);
+    let billNo = document.getElementById('epBillNo').value.trim();
+    let pDate = document.getElementById('epDate').value;
+    let paid = parseFloat(document.getElementById('epPaidInput').value) || 0;
+
+    let tot = 0;
+    epItemsList.forEach(it => { tot += (it.qty * it.buy_price); });
+
+    if(epItemsList.length === 0) return alert('کم از کم ایک آئٹم شامل کریں');
+
+    fetch('/api/purchase/edit', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            purchase_id: purchaseId,
+            supplier_id: supId,
+            bill_no: billNo,
+            date: pDate,
+            items: epItemsList,
+            total_amount: tot,
+            paid_amount: paid
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            showToast(res.message);
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+    });
+}
+
+function returnPurchase(purchaseId, billNo) {
+    if(!confirm(`کیا آپ واقعی یہ بل (${billNo}) واپس (Return) کرنا چاہتے ہیں؟\nاس سے سامان سٹاک میں واپس آ جائے گا اور کھاتہ برابر ہو جائے گا۔`)) return;
+
+    fetch('/api/purchase/return/' + purchaseId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            showToast(res.message);
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+    });
+}
+
+function deletePurchase(purchaseId, billNo) {
+    if(!confirm(`کیا آپ واقعی بل (${billNo}) ڈیلیٹ کرنا چاہتے ہیں؟
+اس سے خریدا گیا اسٹاک خود بخود مائنس ہو جائے گا۔`)) return;
+
+    fetch('/api/purchase/delete/' + purchaseId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            showToast(res.message);
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+    });
+}
+
+function printElement(elemId) {
+    window.print();
+}
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+
+function openSupPayModal(supId, supName, balance) {
+    document.getElementById('spSupId').value = supId;
+    document.getElementById('spSupName').value = supName;
+    let b = parseFloat(balance) || 0;
+    if (document.getElementById('spSupRawBal')) document.getElementById('spSupRawBal').value = b;
+    document.getElementById('spBalance').value = 'Rs. ' + b.toLocaleString('en-PK', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('spAmount').value = '';
+    document.getElementById('spNotes').value = '';
+    if (document.getElementById('spType')) document.getElementById('spType').value = 'payment';
+    // Set today's date
+    let today = new Date().toISOString().split('T')[0];
+    document.getElementById('spDate').value = today;
+    let modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('supPayModal'));
+    modal.show();
+    setTimeout(() => {
+        let amt = document.getElementById('spAmount');
+        if (amt) amt.focus();
+    }, 400);
+}
+
+function setFullSupplierPay() {
+    let raw = parseFloat(document.getElementById('spSupRawBal')?.value || 0);
+    if (raw > 0) {
+        document.getElementById('spAmount').value = raw;
+    }
+}
+
+function submitSupPayment() {
+    let supId = document.getElementById('spSupId').value;
+    let amount = parseFloat(document.getElementById('spAmount').value);
+    let payType = document.getElementById('spType')?.value || 'payment';
+    let method = document.getElementById('spMethod').value;
+    let date = document.getElementById('spDate').value;
+    let fullDate = date;
+    if (date) {
+        let now = new Date();
+        let hours = now.getHours();
+        let minutes = now.getMinutes().toString().padStart(2, '0');
+        let seconds = now.getSeconds().toString().padStart(2, '0');
+        let ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        let strTime = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+        fullDate = `${date} ${strTime}`;
+    }
+    let notes = (document.getElementById('spNotes').value || '').trim();
+    
+    if (!amount || isNaN(amount) || amount <= 0) {
+        alert('براہ کرم درست رقم درج کریں / Please enter a valid amount.');
+        return;
+    }
+    
+    fetch('/api/supplier/payment/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            supplier_id: supId, 
+            amount: amount, 
+            type: payType,
+            method: method, 
+            payment_date: fullDate, 
+            notes: notes
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            alert(res.message);
+            let modal = bootstrap.Modal.getInstance(document.getElementById('supPayModal'));
+            if (modal) modal.hide();
+            window.location.reload();
+        } else {
+            alert('خرابی: ' + (res.message || 'Payment failed'));
+        }
+    })
+    .catch(e => alert('Error: ' + e));
+}
+
+</script>
+
+<!-- ماڈل: خریداری بل دیکھیں (View Purchase Modal) -->
+<div class="modal fade" id="viewPurchaseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title fw-bold lang-text" data-en="Purchase Invoice Details" data-ur="خریداری بل کی تفصیل">Purchase Invoice Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="statement-box rounded p-4 bg-white border shadow-sm" id="printablePurchaseSlip">
+                    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+                        <div>
+                            <h4 class="fw-bold text-dark m-0" id="vpSupplierName">-</h4>
+                            <small class="text-muted font-monospace"><span class="lang-text" data-en="Bill #:" data-ur="بل نمبر:">Bill #:</span> <strong id="vpBillNo">-</strong></small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-secondary font-monospace" id="vpDate">-</span>
+                            <div class="small text-muted mt-1"><span class="lang-text" data-en="Invoice ID:" data-ur="انوائس شناختی نمبر:">Invoice ID:</span> #<span id="vpId"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-3">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th class="lang-text" data-en="Item / Product Name" data-ur="سامان / پروڈکٹ کا نام">Item / Product Name</th>
+                                    <th class="text-center lang-text" data-en="Quantity & Unit" data-ur="مقدار و یونٹ">Quantity & Unit</th>
+                                    <th class="text-end lang-text" data-en="Buy Rate (Rs.)" data-ur="خرید ریٹ">Buy Rate (Rs.)</th>
+                                    <th class="text-end lang-text" data-en="Total (Rs.)" data-ur="کل رقم">Total (Rs.)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vpItemsBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="p-3 bg-light rounded border">
+                                <div class="d-flex justify-content-between py-1">
+                                    <span class="fw-bold lang-text" data-en="Total Amount:" data-ur="کل بل رقم:">Total Amount:</span>
+                                    <span class="font-monospace fw-bold fs-6 text-dark" id="vpTotal">Rs. 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1 text-success">
+                                    <span class="fw-bold lang-text" data-en="Paid on Bill:" data-ur="موقع پر ادا شدہ:">Paid on Bill:</span>
+                                    <span class="font-monospace fw-bold fs-6" id="vpPaid">Rs. 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2 border-top border-dark text-danger fs-5">
+                                    <span class="fw-bold lang-text" data-en="Balance Due:" data-ur="بقایا ادھار:">Balance Due:</span>
+                                    <span class="font-monospace fw-bold" id="vpDue">Rs. 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white no-print">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">بند کریں (Close)</button>
+                <button type="button" class="btn btn-dark fw-bold px-4" onclick="printElement('printablePurchaseSlip')">🖨️ پرنٹ کریں (Print)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ماڈل: خریداری بل ایڈٹ کریں (Edit Purchase Modal) -->
+<div class="modal fade" id="editPurchaseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold lang-text" data-en="Edit Purchase & Add Missing Goods" data-ur="خریداری بل میں ترمیم و نیا سامان شامل کریں">Edit Purchase & Add Missing Goods</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="epPurchaseId">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold lang-text" data-en="Supplier" data-ur="سپلائر">Supplier</label>
+                        <select id="epSupplierSelect" class="form-select fw-bold">
+                            {% for sup in suppliers %}
+                            <option value="{{ sup.id }}">{{ sup.name }} ({{ sup.company or 'No Company' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold lang-text" data-en="Bill / Invoice #" data-ur="بل / انوائس نمبر">Bill / Invoice #</label>
+                        <input type="text" id="epBillNo" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold lang-text" data-en="Purchase Date" data-ur="خریداری کی تاریخ">Purchase Date</label>
+                        <input type="date" id="epDate" class="form-control font-monospace">
+                    </div>
+                </div>
+                <hr>
+
+                <!-- نیا آئٹم شامل کرنے کا حصہ -->
+                <div class="p-3 bg-light rounded border mb-3">
+                    <label class="form-label fw-bold small lang-text text-primary" data-en="➕ Add More / Missing Items to This Bill:" data-ur="➕ اس بل میں مزید / چھوٹا ہوا سامان شامل کریں:">➕ Add More / Missing Items to This Bill:</label>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold lang-text" data-en="Select Product" data-ur="پروڈکٹ منتخب کریں">Select Product</label>
+                            <select id="epProdSelect" class="form-select form-select-sm" onchange="onEpProductChange()">
+                                <option value="" selected disabled>-- Select Product --</option>
+                                {% for p in products %}
+                                <option value="{{ p.id }}" data-name="{{ p.name|escape }}" data-buy="{{ p.buy_price }}" data-unit="{{ p.unit or 'Pcs' }}">{{ p.name }} (Rs. {{ p.buy_price }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold lang-text" data-en="Quantity" data-ur="تعداد / مقدار">Quantity</label>
+                            <input type="number" step="any" id="epQtyInput" class="form-control form-control-sm font-monospace" placeholder="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold lang-text" data-en="Buy Rate (Rs.)" data-ur="خرید ریٹ">Buy Rate (Rs.)</label>
+                            <input type="number" step="any" id="epRateInput" class="form-control form-control-sm font-monospace" placeholder="0">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-sm btn-primary w-100 fw-bold" onclick="addEpItem()">
+                                <span class="lang-text" data-en="+ Add" data-ur="+ شامل کریں">+ Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- آئٹمز کی لسٹ ٹیبل -->
+                <div class="table-responsive mb-3">
+                    <table class="table table-bordered table-sm align-middle">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th class="lang-text" data-en="Item Name" data-ur="سامان کا نام">Item Name</th>
+                                <th style="width: 130px;" class="lang-text" data-en="Qty & Unit" data-ur="مقدار و یونٹ">Qty & Unit</th>
+                                <th style="width: 140px;" class="lang-text" data-en="Buy Rate (Rs.)" data-ur="خرید ریٹ">Buy Rate (Rs.)</th>
+                                <th style="width: 140px;" class="lang-text" data-en="Total (Rs.)" data-ur="کل رقم">Total (Rs.)</th>
+                                <th style="width: 50px;" class="text-center">×</th>
+                            </tr>
+                        </thead>
+                        <tbody id="epItemsBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ٹوٹل اور ادائیگی سمری -->
+                <div class="row align-items-center g-2 bg-light p-3 rounded border">
+                    <div class="col-md-4">
+                        <div class="small fw-bold text-muted lang-text" data-en="Total Bill Amount:" data-ur="کل بل رقم:">Total Bill Amount:</div>
+                        <h4 class="font-monospace fw-bold text-dark m-0" id="epTotalLbl">Rs. 0</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold lang-text m-0" data-en="Paid Amount (Rs.)" data-ur="موقع پر ادا شدہ رقم">Paid Amount (Rs.)</label>
+                        <input type="number" step="any" id="epPaidInput" class="form-control font-monospace fw-bold text-success" value="0" oninput="calculateEpTotal()">
+                    </div>
+                    <div class="col-md-4">
+                        <div class="small fw-bold text-muted lang-text" data-en="Remaining Balance:" data-ur="باقی بقایا ادھار:">Remaining Balance:</div>
+                        <h4 class="font-monospace fw-bold text-danger m-0" id="epDueLbl">Rs. 0</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">کینسل (Cancel)</button>
+                <button type="button" class="btn btn-warning fw-bold px-4 text-dark" onclick="submitEditPurchase()">
+                    💾 <span class="lang-text" data-en="Update Purchase & Stock" data-ur="بل اپ ڈیٹ کریں و اسٹاک درست کریں">Update Purchase & Stock</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Supplier Payment Modal -->
+<div class="modal fade" id="supPayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header py-3" style="background:linear-gradient(135deg,#059669,#10b981); color:white;">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm1 0v7h14V5H1z"/></svg>
+                    <span>Supplier Payment / سپلائر ادائیگی و واپسی</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="spSupId">
+                <input type="hidden" id="spSupRawBal" value="0">
+                <div class="mb-3">
+                    <label class="fw-bold text-muted small text-uppercase">Supplier / فروختکار</label>
+                    <input type="text" id="spSupName" class="form-control fw-bold" readonly style="background:#f8fafc; font-size:1.05rem;">
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="fw-bold text-muted small text-uppercase">Current Balance / موجودہ بقایا</label>
+                    </div>
+                    <input type="text" id="spBalance" class="form-control font-monospace" readonly style="background:#fef2f2; color:#dc2626; font-weight:700; font-size:1.15rem;">
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted small text-uppercase">Transaction Type / لین دین کی قسم</label>
+                    <select id="spType" class="form-select fw-bold border-2">
+                        <option value="payment" selected>📤 ادائیگی کی (Paid to Supplier)</option>
+                        <option value="refund">📥 رقم وصول ہوئی / واپسی (Received from Supplier)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="fw-bold text-muted small text-uppercase">Amount (Rs) / رقم (روپے)</label>
+                        <button type="button" class="btn btn-sm btn-outline-success py-0 px-2 fw-bold" style="font-size:0.75rem;" onclick="setFullSupplierPay()">پوری رقم (Full)</button>
+                    </div>
+                    <input type="number" step="any" id="spAmount" class="form-control fw-bold font-monospace fs-5 text-success" placeholder="0" autofocus>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted small text-uppercase">Payment Method / طریقہ</label>
+                    <select id="spMethod" class="form-select fw-bold">
+                        <option value="Cash">💵 Cash (نقد)</option>
+                        <option value="Online">📱 Online / Bank Transfer (آن لائن)</option>
+                        <option value="Cheque">🏦 Cheque (بینک چیک)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted small text-uppercase">Date / تاریخ</label>
+                    <input type="date" id="spDate" class="form-control font-monospace">
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold text-muted small text-uppercase">Notes / تفصیل (اختیاری)</label>
+                    <input type="text" id="spNotes" class="form-control" placeholder="Optional notes...">
+                </div>
+            </div>
+            <div class="modal-footer py-2 bg-light">
+                <button type="button" class="btn btn-secondary fw-bold rounded-pill px-3" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success fw-bold px-4 rounded-pill d-inline-flex align-items-center gap-2 shadow-sm" onclick="submitSupPayment()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/></svg>
+                    <span>Record / محفوظ کریں</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

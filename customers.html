@@ -1,0 +1,1341 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .search-box-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-box-wrapper svg {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 16px;
+        color: #94a3b8;
+    }
+
+    body.lang-ur .search-box-wrapper svg {
+        left: auto;
+        right: 16px;
+    }
+
+    .search-input-modern {
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--card-border, #cbd5e1);
+        border-radius: 12px;
+        padding: 12px 18px 12px 45px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-main);
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+    body.lang-ur .search-input-modern {
+        padding: 12px 45px 12px 18px;
+    }
+
+    .search-input-modern:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc !important;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 14px 18px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .table-modern thead th:last-child {
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .table-modern tbody tr {
+        background: #ffffff !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-3px) scale(1.002);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .table-modern td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a !important;
+    }
+
+    .table-modern td:first-child {
+        border-left: 1px solid #e2e8f0;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .table-modern td:last-child {
+        border-right: 1px solid #e2e8f0;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-pay-modern {
+        background-color: #ecfdf5;
+        color: #059669 !important;
+        border-color: #a7f3d0;
+    }
+    .btn-pay-modern:hover {
+        background-color: #059669;
+        color: #ffffff !important;
+    }
+
+    .btn-ledger-modern {
+        background-color: #f1f5f9;
+        color: #475569 !important;
+        border-color: #cbd5e1;
+    }
+    .btn-ledger-modern:hover {
+        background-color: #475569;
+        color: #ffffff !important;
+    }
+
+    .btn-items-modern {
+        background-color: #f0f9ff;
+        color: #0284c7 !important;
+        border-color: #bae6fd;
+    }
+    .btn-items-modern:hover {
+        background-color: #0284c7;
+        color: #ffffff !important;
+    }
+
+    .btn-edit-modern {
+        background-color: #f8fafc;
+        color: #64748b !important;
+        border-color: #e2e8f0;
+    }
+    .btn-edit-modern:hover {
+        background-color: #64748b;
+        color: #ffffff !important;
+    }
+
+    .btn-delete-modern {
+        background-color: #fef2f2;
+        color: #dc2626 !important;
+        border-color: #fecaca;
+    }
+    .btn-delete-modern:hover {
+        background-color: #dc2626;
+        color: #ffffff !important;
+    }
+
+    .badge-balance-due {
+        background-color: #fee2e2;
+        color: #dc2626 !important;
+        font-size: 0.95rem;
+        font-weight: 800;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        display: inline-block;
+    }
+
+    .badge-balance-clear {
+        background-color: #dcfce7;
+        color: #16a34a !important;
+        font-size: 0.9rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid #bbf7d0;
+        display: inline-block;
+    }
+
+    .cust-subtitle {
+        color: #64748b;
+    }
+
+    body.dark-mode .cust-subtitle {
+        color: #cbd5e1 !important;
+    }
+
+    body.dark-mode .search-input-modern {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #f8fafc !important;
+    }
+
+    body.dark-mode .search-input-modern::placeholder {
+        color: #94a3b8 !important;
+    }
+
+    /* 📜 جدید و خوبصورت پرنٹنگ و لیجر لے آؤٹ */
+    .standard-invoice {
+        background: #ffffff;
+        color: #0f172a;
+        padding: 28px 32px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .invoice-title {
+        font-size: 1.7rem;
+        font-weight: 900;
+        color: #0f172a;
+        letter-spacing: -0.5px;
+    }
+
+    .customer-info-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 18px;
+    }
+
+    .invoice-table {
+        width: 100%;
+        margin-top: 14px;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .invoice-table th {
+        background-color: #0f172a;
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 11px 10px;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .invoice-table td {
+        padding: 10px 10px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #1e293b;
+        vertical-align: middle;
+    }
+
+    .invoice-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .invoice-table tbody tr:nth-child(even) {
+        background-color: #fcfdfd;
+    }
+
+    .summary-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 18px;
+    }
+
+    .net-balance-box {
+        border-radius: 8px;
+        padding: 10px 14px;
+        transition: all 0.2s ease;
+    }
+
+    .net-balance-box.due {
+        background: #fef2f2;
+        border: 1.5px solid #fca5a5;
+        color: #dc2626;
+    }
+
+    .net-balance-box.clear {
+        background: #f0fdf4;
+        border: 1.5px solid #86efac;
+        color: #16a34a;
+        animation: clearPulse 2.5s infinite;
+    }
+
+    /* Customer Ledger Smooth Animations */
+    #ledgerModal.fade .modal-dialog {
+        transform: scale(0.94) translateY(-18px);
+        opacity: 0;
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+    }
+    #ledgerModal.show .modal-dialog {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+
+    #ledgerTabContent .tab-pane {
+        animation: ledgerFadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes ledgerFadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes popCelebrate {
+        0% {
+            transform: scale(0.92);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.03);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .cleared-khata-anim {
+        animation: popCelebrate 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes clearPulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.25);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
+        }
+    }
+
+    @keyframes badgePulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.06);
+        }
+    }
+
+    .badge-cleared-pulse {
+        animation: badgePulse 2s infinite ease-in-out;
+    }
+
+    #ledgerTimelineBody tr, #ledgerItemSummaryBody tr {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #ledgerTimelineBody tr:hover, #ledgerItemSummaryBody tr:hover {
+        background-color: #f1f5f9 !important;
+        transform: translateX(3px);
+    }
+
+    .ledger-btn-anim {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .ledger-btn-anim:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+    }
+
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">CUSTOMER RECEIVABLES &amp; CREDIT LEDGER</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Scope: Active Accounts</div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    {% set total_cust_cnt = customers|length %}
+    {% set total_cust_due = customers|map(attribute='balance')|map('float')|sum if customers else 0 %}
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Accounts:</strong> {{ total_cust_cnt }}</div>
+                <div><strong>Total Outstanding Due:</strong> <span style="color: #dc2626; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_cust_due) }}</span></div>
+            </div>
+            <div>
+                <div><strong>Account Type:</strong> Wholesale &amp; Retail Parties</div>
+                <div><strong>Ledger Status:</strong> Verified Receivables</div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Audit Summary:</strong> Active Ledger</div>
+                <div style="font-weight: 700; color: {% if total_cust_due > 0 %}#dc2626{% else %}#16a34a{% endif %};">
+                    {% if total_cust_due > 0 %}Outstanding Unpaid{% else %}All Accounts Cleared{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ٹاپ ہیڈر اور نیا گاہک بٹن -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 no-print">
+    <div>
+        <h4 class="fw-bold m-0 text-main">
+            <span class="lang-text" data-en="Customer Accounts & Credit Ledger" data-ur="گاہکوں کا کھاتہ و ادھار لیجر">Customer Accounts & Credit Ledger</span>
+            <span class="badge bg-primary rounded-pill font-monospace fs-6 align-middle ms-2" id="totalCustCountBadge">{{ customers|length }} Customers</span>
+        </h4>
+        <small class="cust-subtitle lang-text" data-en="Manage customer debts, payments, statements, and WhatsApp slips" data-ur="گاہکوں کا بقایا کھاتہ، سابقہ ادھار انٹری، ایکسل رپورٹ اور واٹس ایپ اسٹیٹمنٹ">Manage customer debts, payments, statements, and WhatsApp slips</small>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-dark shadow-sm px-3 fw-bold d-inline-flex align-items-center gap-2" style="height: 42px; border-radius: 10px;" onclick="window.print()">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            <span class="lang-text" data-en="Print List" data-ur="پرنٹ لسٹ">Print List</span>
+        </button>
+        <a href="/api/customers/pdf?download=1" class="btn btn-danger shadow-sm px-3 fw-bold d-inline-flex align-items-center gap-2" style="height: 42px; border-radius: 10px;" title="گاہکوں کی بقایا ادھار لسٹ پی ڈی ایف ڈاؤن لوڈ کریں">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف لسٹ">Save as PDF</span>
+        </a>
+        <button class="btn btn-primary shadow-sm px-4 fw-bold d-inline-flex align-items-center gap-2" style="height: 42px; border-radius: 10px;" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2z"/>
+            </svg>
+            <span class="lang-text" data-en="Add New Customer" data-ur="نیا کھاتہ درج کریں">Add New Customer</span>
+        </button>
+    </div>
+</div>
+
+<!-- 🔍 اینٹی آٹو فِل سرچ بار -->
+<div class="search-box-wrapper no-print">
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+    </svg>
+    <input type="text" id="customerSearchInput" class="search-input-modern lang-placeholder" data-en="Search by name, phone or ID..." data-ur="گاہک کا نام، فون یا ID تلاش کریں..." placeholder="Search by name, phone or ID..." autocomplete="off" readonly onfocus="this.removeAttribute('readonly');" onkeyup="filterCustomerTable()">
+</div>
+
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0" id="customersTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;" class="lang-text" data-en="#" data-ur="نمبر">#</th>
+                    <th style="width: 70px;">ID</th>
+                    <th class="lang-text" data-en="Customer Name" data-ur="کسٹمر کا نام">Customer Name</th>
+                    <th class="lang-text" data-en="Phone" data-ur="فون نمبر">Phone</th>
+                    <th class="lang-text" data-en="Shop / Address" data-ur="دکان / پتہ">Shop / Address</th>
+                    <th class="lang-text" data-en="Outstanding Balance" data-ur="بقایا ادھار">Outstanding Balance</th>
+                    <th class="text-center lang-text no-print" data-en="Actions" data-ur="کارروائی">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in customers %}
+                <tr class="customer-row">
+                    <td class="text-center font-monospace fw-bold text-muted row-sr-no">{{ loop.index }}</td>
+                    <td class="font-monospace fw-bold cust-id-col" style="color: #64748b !important;">#{{ c.id }}</td>
+                    <td class="cust-name-col">
+                        <div class="fw-bold fs-6" style="color: #0f172a !important;">{{ c.name }}</div>
+                    </td>
+                    <td class="font-monospace fw-semibold cust-phone-col" style="color: #334155 !important;">{{ c.phone or '-' }}</td>
+                    <td style="color: #475569;">{{ c.address or '-' }}</td>
+                    <td>
+                        {% if c.balance > 0 %}
+                            <span class="badge-balance-due font-monospace">Rs. {{ "{:,.0f}".format(c.balance) }} <span class="lang-text" data-en="(Due)" data-ur="(واجب الادا)">(Due)</span></span>
+                        {% else %}
+                            <span class="badge-balance-clear font-monospace">Rs. 0 <span class="lang-text" data-en="(Clear)" data-ur="(کلیئر)">(Clear)</span></span>
+                        {% endif %}
+                    </td>
+                    <td class="no-print">
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            <button class="action-btn btn-pay-modern lang-title" onclick="openPaymentModal('{{ c.id }}', '{{ c.name|escape }}', '{{ c.balance }}')" data-en="Receive Payment" data-ur="ادھار وصولی" title="ادھار وصولی">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span class="lang-text" data-en="Pay" data-ur="وصولی">Pay</span>
+                            </button>
+                            
+                            <button class="action-btn btn-ledger-modern lang-title" onclick="openLedger('{{ c.id }}')" data-en="Account Ledger" data-ur="کھاتہ اسٹیٹمنٹ" title="کھاتہ اسٹیٹمنٹ">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <span class="lang-text" data-en="Ledger" data-ur="کھاتہ">Ledger</span>
+                            </button>
+
+                            <a href="/api/ledger/pdf/{{ c.id }}?download=1" download="Khata_{{ c.name }}.pdf" class="action-btn btn-items-modern lang-title text-decoration-none" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5;" data-en="Download PDF" data-ur="کھاتہ پی ڈی ایف" title="کھاتہ پی ڈی ایف ڈاؤن لوڈ">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                <span class="lang-text" data-en="PDF" data-ur="پی ڈی ایف">PDF</span>
+                            </a>
+
+                            <a href="/party_sales?customer_id={{ c.id }}" class="action-btn btn-items-modern lang-title" data-en="Purchase History" data-ur="پروڈکٹ خریداری ہسٹری" title="پروڈکٹ خریداری ہسٹری">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                <span class="lang-text" data-en="Items" data-ur="سامان">Items</span>
+                            </a>
+
+                            <button class="action-btn btn-edit-modern lang-title" onclick="openEditCustomerModal('{{ c.id }}', '{{ (c.name or "")|replace("'", "\\'") }}', '{{ (c.phone or "")|replace("'", "\\'") }}', '{{ (c.address or "")|replace("'", "\\'") }}', '{{ c.opening_balance or 0 }}', '{{ c.credit_limit or 0 }}', '{{ (c.notes or "")|replace("'", "\\'")|replace('\n', '\\n') }}', '{{ c.balance or 0 }}')" data-en="Edit" data-ur="ترمیم" title="ترمیم">
+                                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+
+                            <form action="/api/customer/delete/{{ c.id }}" method="POST" style="display:inline;" onsubmit="return confirmSecureDelete(event, this)">
+                                <button type="submit" class="action-btn btn-delete-modern lang-title" data-en="Delete" data-ur="ڈیلیٹ" title="ڈیلیٹ">
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr id="noCustomersRow">
+                    <td colspan="7" class="text-center py-5 fw-bold lang-text" style="color: #64748b !important;" data-en="No customers found." data-ur="کوئی کسٹمر موجود نہیں ہے۔">No customers found.</td>
+                </tr>
+                {% endfor %}
+                <tr id="noSearchResultRow" style="display: none;">
+                    <td colspan="7" class="text-center py-4 fw-bold text-muted lang-text" data-en="No matching customer found." data-ur="کوئی مماثل گاہک نہیں ملا">No matching customer found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="print-footer">
+        Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+    </div>
+</div>
+
+<!-- نیا گاہک داخل کرنے کا ماڈل -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-themed-content border-0 shadow-lg" style="border-radius: 14px;">
+            <div class="modal-header border-bottom py-3 px-4 bg-dark text-white">
+                <h6 class="modal-title fw-bold lang-text" data-en="Add Customer & Opening Balance" data-ur="نیا گاہک اور سابقہ ادھار درج کریں">Add Customer & Opening Balance</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/api/customer/add" method="POST" autocomplete="off">
+                <div class="modal-body px-4 py-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Customer Name *" data-ur="گاہک کا نام *">Customer Name *</label>
+                        <input type="text" name="name" class="form-control lang-placeholder" data-en="e.g. Ch Akram" data-ur="مثلاً: چوہدری اکرم" placeholder="e.g. Ch Akram" autocomplete="off" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Phone Number" data-ur="فون نمبر">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" placeholder="0300-1234567" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Shop Name / Address" data-ur="دکان کا نام / پتہ">Shop Name / Address</label>
+                        <input type="text" name="address" class="form-control lang-placeholder" data-en="e.g. Lahore Market" data-ur="مثلاً: لاہور مارکیٹ" placeholder="e.g. Lahore Market" autocomplete="off">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Credit Limit (Rs) / ادھار حد</label>
+                        <input type="number" step="any" name="credit_limit" id="addCustCreditLimit" class="form-control" placeholder="0 = No Limit">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold">Notes / یادداشت</label>
+                        <textarea name="notes" id="addCustNotes" class="form-control" rows="2" placeholder="Extra info about this customer..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Opening Balance / Previous Credit (Rs.)" data-ur="سابقہ پرانا کھاتہ / پچھلا ادھار (روپے)">Opening Balance / Previous Credit (Rs.)</label>
+                        <input type="number" step="any" name="balance" class="form-control font-monospace" placeholder="0" autocomplete="off">
+                        <small class="text-muted lang-text" data-en="Enter if customer has previous pending balance, otherwise leave 0." data-ur="اگر گاہک کا پہلے سے کوئی پرانا ادھار ہے تو درج کریں ورنہ 0 رہنے دیں۔">اگر گاہک کا پہلے سے کوئی پرانا ادھار ہے تو درج کریں ورنہ 0 رہنے دیں۔</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-2 px-4">
+                    <button type="button" class="btn btn-secondary btn-sm px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold lang-text" data-en="Save Customer" data-ur="گاہک محفوظ کریں">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- کسٹمر ایڈٹ ماڈل -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-themed-content border-0 shadow-lg" style="border-radius: 14px;">
+            <div class="modal-header border-bottom py-3 px-4 bg-primary text-white">
+                <h6 class="modal-title fw-bold lang-text" data-en="Edit Customer Profile" data-ur="کسٹمر کی تفصیلات تبدیل کریں">Edit Customer Profile</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/api/customer/edit" method="POST" autocomplete="off">
+                <div class="modal-body px-4 py-3">
+                    <input type="hidden" id="editCustId" name="id">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Customer Name *" data-ur="گاہک کا نام *">Customer Name *</label>
+                        <input type="text" id="editCustName" name="name" class="form-control" autocomplete="off" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Phone Number" data-ur="فون نمبر">Phone Number</label>
+                        <input type="text" id="editCustPhone" name="phone" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Shop Name / Address" data-ur="دکان کا نام / پتہ">Shop Name / Address</label>
+                        <input type="text" id="editCustAddress" name="address" class="form-control" autocomplete="off">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Credit Limit (Rs) / ادھار حد</label>
+                        <input type="number" step="any" name="credit_limit" id="editCustCreditLimit" class="form-control" placeholder="0 = No Limit">
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold">Notes / یادداشت</label>
+                        <textarea name="notes" id="editCustNotes" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3 p-3 bg-light rounded-3 border border-primary border-opacity-25">
+                        <label class="form-label fw-bold text-dark d-flex justify-content-between align-items-center mb-1">
+                            <span><span class="lang-text" data-en="Total Debt / Balance (Rs.)" data-ur="کل واجب الادا ادھار / قرضہ (روپے)">کل واجب الادا ادھار / قرضہ (روپے)</span></span>
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 font-monospace" style="font-size:0.75rem;">فائنل ادھار</span>
+                        </label>
+                        <input type="number" step="any" id="editCustTargetBal" name="target_balance" class="form-control font-monospace fw-bold fs-5 text-danger bg-white" placeholder="0" autocomplete="off">
+                        <small class="text-muted d-block mt-1 lang-text" data-en="Directly change total debt here (e.g. 20000 to 10000). Software updates khata automatically." data-ur="گاہک کا فائنل ادھار تبدیل کرنے کے لیے یہاں نئی رقم لکھیں (مثلاً 20,000 کو 10,000 کرنا ہو)۔ کھاتہ خودکار درست ہو جائے گا۔">گاہک کا فائنل ادھار تبدیل کرنے کے لیے یہاں نئی رقم لکھیں (مثلاً 20,000 کو 10,000 کرنا ہو)۔ کھاتہ خودکار درست ہو جائے گا۔</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-2 px-4">
+                    <button type="button" class="btn btn-secondary btn-sm px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-4 fw-bold lang-text" data-en="Update Customer" data-ur="تبدیلی محفوظ کریں">Update Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 💵 ادائیگی وصول کرنے کا ماڈل -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0" style="border-radius: 16px;">
+            <div class="modal-header py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <span class="lang-text" data-en="Receive Payment (Credit Recovery)" data-ur="ادھار وصولی درج کریں">Receive Payment (Credit Recovery)</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="payCustId">
+                <input type="hidden" id="payCustBalRaw">
+                <h5 id="payCustName" class="fw-bold mb-1 text-dark">-</h5>
+                
+                <div class="alert alert-danger py-2 px-3 mb-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold lang-text" data-en="Total Balance Due:" data-ur="کل بقایا ادھار:">Total Balance Due:</span>
+                    <span class="fw-bold font-monospace fs-5">Rs. <span id="payCustBalance">0</span></span>
+                </div>
+                
+                <div class="alert alert-warning py-2 px-3 mb-3 small fw-bold lang-text" data-en="⚠️ Received amount cannot exceed the balance above. No advance accepted." data-ur="⚠️ وصولی کی رقم کل بقایا ادھار سے زیادہ نہیں ہو سکتی۔ پیشگی رقم قبول نہیں۔">⚠️ Received amount cannot exceed the balance above. No advance accepted.</div>
+                
+                <div class="mb-2 d-flex gap-2">
+                    <div class="flex-grow-1">
+                        <label class="form-label fw-bold lang-text" data-en="Amount Received (Rs)" data-ur="وصول شدہ رقم (روپے)">Amount Received (Rs)</label>
+                        <input type="number" step="any" id="payAmountInput" class="form-control form-control-lg font-monospace fw-bold" placeholder="0" min="1" autofocus>
+                    </div>
+                    <div class="d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-primary fw-bold lang-text" data-en="Pay Full" data-ur="پوری رقم" onclick="document.getElementById('payAmountInput').value = document.getElementById('payCustBalRaw').value">Pay Full</button>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-bold lang-text" data-en="Payment Date / تاریخ وصولی" data-ur="تاریخ وصولی">Payment Date / تاریخ وصولی</label>
+                    <input type="date" id="payDateInput" class="form-control fw-bold font-monospace">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold lang-text" data-en="Note / Description (Optional)" data-ur="تفصیل / نوٹ (اختیاری)">Note / Description (Optional)</label>
+                    <input type="text" id="payNoteInput" class="form-control lang-placeholder" data-en="Cash payment / Note" data-ur="نقد وصولی" placeholder="Cash payment / Note">
+                </div>
+            </div>
+            <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-secondary btn-sm px-3 fw-bold lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success btn-sm px-4 fw-bold lang-text" data-en="Save Payment" data-ur="وصولی محفوظ کریں" onclick="submitPayment()">Save Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🗎 تفصیلی کسٹمر کھاتہ لیجر ماڈل (مع PDF، ایکسل، اور واٹس ایپ کاپی) -->
+<div class="modal fade" id="ledgerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow border-0" style="border-radius: 16px;">
+            <div class="modal-header py-3 no-print" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <span class="lang-text" data-en="Customer Account Ledger & Statement" data-ur="کسٹمر کھاتہ لیجر اسٹیٹمنٹ">Customer Account Ledger & Statement</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                
+                <!-- لیجر ہیڈر و ایکشن بٹنز -->
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 no-print">
+                    <span class="badge bg-primary px-3 py-2 fs-6 fw-bold lang-text" data-en="📑 Customer Account Ledger" data-ur="📑 کسٹمر کھاتہ اسٹیٹمنٹ">📑 Customer Account Ledger</span>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-success fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="downloadLedgerExcel()">
+                            <span>📊</span> <span class="lang-text" data-en="Export Excel" data-ur="ایکسل ڈاؤن لوڈ">Export Excel</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1 shadow-sm" onclick="saveAsPDF()">
+                            <span>💾</span> <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف محفوظ کریں">Save as PDF</span>
+                        </button>
+                        <button class="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm" style="background-color: #25D366; color: #ffffff; border: none;" onclick="sendWhatsAppLedger()">
+                            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.655.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.099-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.861.114-.944-.05-.084-.182-.133-.38-.232z"/></svg>
+                            <span class="lang-text" data-en="Send WhatsApp" data-ur="واٹس ایپ بھیجیں">Send WhatsApp</span>
+                        </button>
+                        <button class="btn btn-sm btn-dark fw-bold px-3 d-inline-flex align-items-center gap-1 shadow-sm" onclick="printLedger()">
+                            <span>🖨️</span> <span class="lang-text" data-en="Print Statement" data-ur="پرنٹ اسٹیٹمنٹ">Print Statement</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- پرنٹ اور سیو پی ڈی ایف کے لیے A4 ایگزیکٹو اسٹیٹمنٹ باکس -->
+                <div class="standard-invoice" id="printArea">
+                    
+                    <!-- ایگزیکٹو ہیڈر بینر -->
+                    <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3 flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ url_for('static', filename='img/jbs_icon.png') }}" alt="JBS" style="width: 54px; height: 54px; object-fit: contain; border-radius: 12px; background: #0f172a; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                            <div>
+                                <h3 class="mb-0 fw-bold" style="letter-spacing: -0.5px; color: #0f172a;">SMART POS SYSTEM</h3>
+                                <div class="small fw-semibold text-muted lang-text" data-en="Point of Sale & Retail Management System" data-ur="مکمل ریٹیل سیلز، اسٹاک اور کھاتہ مینجمنٹ سسٹم">Point of Sale & Retail Management System</div>
+                                <div class="small text-secondary" style="font-size: 0.82rem;">
+                                    📍 <span class="lang-text" data-en="Main Market, Lahore" data-ur="مین مارکیٹ، لاہور">Main Market, Lahore</span> | 📞 0300-0000000
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="badge px-3 py-2 fs-6 fw-bold" style="background: #0f172a; color: #f8fafc; border-radius: 8px;">
+                                <span class="lang-text" data-en="STATEMENT OF ACCOUNT" data-ur="کھاتہ اسٹیٹمنٹ">STATEMENT OF ACCOUNT</span>
+                            </div>
+                            <div class="small text-muted mt-1">
+                                <span class="lang-text" data-en="Issue Date:" data-ur="تاریخ اجراء:">Issue Date:</span> <span id="ledgerPrintDate" class="font-monospace fw-bold text-dark"></span>
+                            </div>
+                            <div class="mt-1">
+                                <span id="ledgerCustStatusBadge" class="badge bg-danger text-white px-2 py-1 small">Balance Due</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- کسٹمر پروفائل کارڈ مع ڈائریکٹ واٹس ایپ نمبر فیلڈ -->
+                    <div class="customer-info-card mb-3">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-5">
+                                <div class="text-muted small lang-text" data-en="Customer Name & Account" data-ur="گاہک کا نام و کھاتہ">Customer Name & Account</div>
+                                <div class="fs-5 fw-bold text-dark d-flex align-items-center gap-2">
+                                    <span id="ledgerCustName" class="text-primary">-</span>
+                                    <span class="badge bg-secondary font-monospace" id="ledgerCustId" style="font-size: 0.75rem;">#0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 border-start-md ps-md-3">
+                                <div class="text-muted small lang-text" data-en="Contact Phone (WhatsApp)" data-ur="فون نمبر (واٹس ایپ)">Contact Phone (WhatsApp)</div>
+                                <div class="d-flex align-items-center gap-1 mt-1">
+                                    <input type="text" id="ledgerCustPhoneInput" class="form-control form-control-sm font-monospace fw-bold" placeholder="03001234567" style="max-width: 170px;" oninput="this.classList.remove('is-invalid'); document.getElementById('phoneSaveHint').style.display='none';">
+                                    <button type="button" class="btn btn-sm btn-outline-success py-1 px-2 fw-bold" onclick="saveCustomerPhoneFromLedger()" title="Save Phone Number / نمبر محفوظ کریں">💾</button>
+                                </div>
+                                <div id="phoneSaveHint" class="text-danger fw-bold" style="display: none; font-size: 0.75rem;"></div>
+                            </div>
+                            <div class="col-md-3 border-start-md ps-md-3">
+                                <div class="text-muted small lang-text" data-en="Billing Address" data-ur="پتہ دکان / رہائش">Billing Address</div>
+                                <div class="small fw-semibold text-truncate text-dark" id="ledgerCustAddress" title="-">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ٹرانزیکشن ٹیبل -->
+                    <div class="table-responsive">
+                        <table class="invoice-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 17%;" class="lang-text" data-en="DATE & TIME" data-ur="تاریخ و وقت">DATE & TIME</th>
+                                    <th style="width: 14%;" class="lang-text" data-en="REF / BILL #" data-ur="بل نمبر / حوالہ">REF / BILL #</th>
+                                    <th style="width: 39%;" class="lang-text" data-en="DESCRIPTION / ITEMS" data-ur="تفصیل و سامان">DESCRIPTION / ITEMS</th>
+                                    <th style="width: 10%; text-align: right;" class="lang-text" data-en="DEBIT (Rs)" data-ur="خریداری (روپے)">DEBIT (Rs)</th>
+                                    <th style="width: 10%; text-align: right;" class="lang-text" data-en="CREDIT (Rs)" data-ur="وصولی (روپے)">CREDIT (Rs)</th>
+                                    <th style="width: 10%; text-align: right;" class="lang-text" data-en="BALANCE (Rs)" data-ur="بقایا (روپے)">BALANCE (Rs)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledgerTimelineBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- کھاتہ صاف ہونے پر نمایاں بینر (مبارکباد) -->
+                    <div id="ledgerClearKhataBanner" class="alert alert-success align-items-center justify-content-center gap-2 fw-bold my-3 cleared-khata-anim" style="display: none; background:#f0fdf4; border:1.5px dashed #16a34a; color:#16a34a; font-size: 0.98rem; border-radius: 10px;">
+                        <span>🎉</span>
+                        <span class="lang-text" data-en="Account Cleared — Balance settled in full" data-ur="کھاتہ صاف ہو گیا — تمام رقم وصول ہو چکی ہے">Account Cleared — Balance settled in full</span>
+                    </div>
+
+                    <!-- سمری و اتھارائزڈ دستخط سیکشن -->
+                    <div class="row mt-4 g-3 align-items-end">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border h-100 d-flex flex-column justify-content-between" style="font-size: 0.82rem;">
+                                <div>
+                                    <div class="fw-bold text-dark mb-1 lang-text" data-en="Terms & Statement Verification:" data-ur="ضروری نوٹ و تصدیق:">Terms & Statement Verification:</div>
+                                    <div class="text-muted lang-text" data-en="This statement reflects all transactions and payments recorded up to the issue date. If any discrepancy or missing invoice is noticed, kindly inform Smart POS System within 3 days." data-ur="یہ اسٹیٹمنٹ آج کی تاریخ تک کے تمام بلوں اور وصولیوں پر مشتمل ہے۔ کسی بھی قسم کی غلطی یا تصدیق کی صورت میں 3 دن کے اندر اسمارٹ پی او ایس سے رابطہ فرمائیں۔">This statement reflects all transactions and payments recorded up to the issue date. If any discrepancy or missing invoice is noticed, kindly inform Smart POS System within 3 days.</div>
+                                </div>
+                                <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small lang-text" data-en="Authorized Signature / Stamp:" data-ur="دستخط و مہر دکان:">Authorized Signature / Stamp:</span>
+                                    <span class="font-monospace fw-bold text-dark" style="border-bottom: 1.5px dashed #64748b; width: 140px; display: inline-block;">&nbsp;</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-card">
+                                <div class="d-flex justify-content-between py-1 border-bottom">
+                                    <span class="fw-semibold text-secondary lang-text" data-en="Total Purchases:" data-ur="کل مال خریداری:">Total Purchases:</span>
+                                    <span class="font-monospace fw-bold text-dark" id="ledgerTotPurch">Rs. 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1 border-bottom">
+                                    <span class="fw-semibold text-success lang-text" data-en="Total Payments:" data-ur="کل وصول شدہ رقم:">Total Payments:</span>
+                                    <span class="font-monospace fw-bold text-success" id="ledgerTotPay">Rs. 0</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-1 border-bottom">
+                                    <span class="fw-semibold text-danger lang-text" data-en="Total Discount Given:" data-ur="کل دی گئی رعایت:">Total Discount Given:</span>
+                                    <span class="font-monospace fw-bold text-danger" id="ledgerTotDiscount">Rs. 0</span>
+                                </div>
+                                <div class="net-balance-box due mt-2 d-flex justify-content-between align-items-center" id="ledgerBalanceRow">
+                                    <span class="fw-bold fs-6 lang-text" data-en="NET BALANCE DUE:" data-ur="خالص کل بقایا ادھار:">NET BALANCE DUE:</span>
+                                    <span class="font-monospace fw-bold fs-5" id="ledgerFinalBal">Rs. 0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-3 mt-2 border-top">
+                        <small class="text-muted lang-text" data-en="Thank you for your business! Smart POS System — Quality Hardware & Industrial Fasteners." data-ur="آپ کے تعاون کا شکریہ! اسمارٹ پی او ایس — معیاری ہارڈویئر و نٹ بولٹ">Thank you for your business! Smart POS System — Quality Hardware & Industrial Fasteners.</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white no-print justify-content-end">
+                <button type="button" class="btn btn-secondary btn-sm fw-bold px-4 lang-text" data-en="Close" data-ur="بند کریں" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentLedgerData = null;
+let currentActiveCustId = null;
+
+function filterCustomerTable() {
+    const input = document.getElementById("customerSearchInput");
+    const filter = (input ? input.value : "").toLowerCase().trim();
+    const tokens = filter.split(/\s+/).filter(Boolean);
+    const rows = document.querySelectorAll(".customer-row");
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const text = (row.textContent || row.innerText || "").toLowerCase();
+        const matches = tokens.length === 0 || tokens.every(tok => text.includes(tok));
+        if (matches) {
+            row.style.display = "";
+            visibleCount++;
+            let srCell = row.querySelector('.row-sr-no');
+            if (srCell) srCell.innerText = visibleCount;
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    let badge = document.getElementById('totalCustCountBadge');
+    if (badge) {
+        if (tokens.length > 0) {
+            badge.innerText = `${visibleCount} / {{ customers|length }} Customers`;
+        } else {
+            badge.innerText = `{{ customers|length }} Customers`;
+        }
+    }
+
+    const noMatches = document.getElementById("noSearchResultRow");
+    if (noMatches) {
+        noMatches.style.display = (visibleCount === 0 && rows.length > 0) ? "" : "none";
+    }
+}
+
+function openPaymentModal(id, name, balance) {
+    let b = parseFloat(balance || 0);
+    document.getElementById('payCustId').value = id;
+    document.getElementById('payCustName').innerText = name;
+    document.getElementById('payCustBalance').innerText = b.toLocaleString('en-PK', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('payCustBalRaw').value = b.toFixed(2);
+    document.getElementById('payAmountInput').value = '';
+    document.getElementById('payNoteInput').value = '';
+    // Default payment date to today (local)
+    let today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    document.getElementById('payDateInput').value = today;
+    let modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    modal.show();
+    if (typeof applyLanguage === 'function') applyLanguage(localStorage.getItem('pos_lang') || 'ur');
+}
+
+function submitPayment() {
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    const custId = document.getElementById('payCustId').value;
+    const amount = parseFloat(document.getElementById('payAmountInput').value) || 0;
+    const note = document.getElementById('payNoteInput').value.trim() || (lang === 'en' ? 'Cash Recovery' : 'نقد وصولی');
+    const payDate = document.getElementById('payDateInput').value;
+
+    if (amount <= 0) {
+        alert(lang === 'en' ? 'Please enter a valid amount.' : 'براہ کرم درست وصول شدہ رقم درج کریں!');
+        return;
+    }
+
+    fetch('/api/customer/pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_id: custId, amount: amount, note: note, payment_date: payDate })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            showToast(res.message);
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+    })
+    .catch(() => alert(lang === 'en' ? 'Error saving payment' : 'ادائیگی محفوظ کرنے میں خرابی'));
+}
+
+function openEditCustomerModal(id, name, phone, address, opBal, credit_limit, notes, curBal) {
+    document.getElementById('editCustId').value = id;
+    document.getElementById('editCustName').value = name || '';
+    document.getElementById('editCustPhone').value = phone || '';
+    document.getElementById('editCustAddress').value = address || '';
+    let targetBalInput = document.getElementById('editCustTargetBal');
+    if (targetBalInput) targetBalInput.value = parseFloat(curBal || 0);
+    document.getElementById('editCustCreditLimit').value = credit_limit || 0;
+    document.getElementById('editCustNotes').value = notes || '';
+    let modal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
+    modal.show();
+    if (typeof applyLanguage === 'function') applyLanguage(localStorage.getItem('pos_lang') || 'ur');
+}
+
+function openLedger(custId) {
+    currentActiveCustId = custId;
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    fetch('/api/ledger/' + custId)
+    .then(r => r.json())
+    .then(data => {
+        currentLedgerData = data;
+        const cust = data.customer || {};
+        if (document.getElementById('ledgerCustName')) document.getElementById('ledgerCustName').innerText = cust.name || '-';
+        const phoneInput = document.getElementById('ledgerCustPhoneInput');
+        if (phoneInput) {
+            phoneInput.value = cust.phone || '';
+            phoneInput.classList.remove('is-invalid');
+        }
+        const phoneSaveHint = document.getElementById('phoneSaveHint');
+        if (phoneSaveHint) {
+            phoneSaveHint.style.display = 'none';
+            phoneSaveHint.innerText = '';
+        }
+        if (document.getElementById('ledgerCustPhone')) document.getElementById('ledgerCustPhone').innerText = cust.phone || '-';
+        if (document.getElementById('ledgerCustAddress')) document.getElementById('ledgerCustAddress').innerText = cust.address || '-';
+        if (document.getElementById('ledgerCustId')) document.getElementById('ledgerCustId').innerText = '#' + (cust.id || custId);
+        if (document.getElementById('ledgerPrintDate')) document.getElementById('ledgerPrintDate').innerText = new Date().toLocaleString();
+
+        // 1. Render Timeline
+        let tbody = document.getElementById('ledgerTimelineBody');
+        tbody.innerHTML = '';
+
+        if (data.timeline && data.timeline.length > 0) {
+            let prevBalance = null;
+            data.timeline.forEach(ev => {
+                let d = ev.debit > 0 ? `Rs. ${Number(ev.debit).toLocaleString()}` : '-';
+                let c = ev.credit > 0 ? `Rs. ${Number(ev.credit).toLocaleString()}` : '-';
+                let bal = Number(ev.balance);
+                let balColor = bal > 0 ? 'color:#dc2626' : 'color:#16a34a;font-weight:bold';
+                let balText = bal === 0 ? `<span style="color:#16a34a">✅ Rs. 0</span>` : `<span style="${balColor}">Rs. ${bal.toLocaleString()}</span>`;
+                let desc = lang === 'en' ? (ev.description_en || ev.description) : (ev.description_ur || ev.description);
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="font-monospace small">${ev.date}</td>
+                        <td class="font-monospace fw-bold">${ev.ref || '-'}</td>
+                        <td>${desc}</td>
+                        <td class="text-end font-monospace text-danger">${d}</td>
+                        <td class="text-end font-monospace text-success">${c}</td>
+                        <td class="text-end font-monospace">${balText}</td>
+                    </tr>
+                `;
+
+                // If balance reached 0 at this event, show celebration row in-table
+                if (ev.cleared_here || (bal === 0 && prevBalance !== null && prevBalance > 0)) {
+                    let clearedMsg = lang === 'en' ? '🎉 Account Cleared — Balance settled in full' : '🎉 کھاتہ صاف ہو گیا — تمام رقم وصول ہو چکی ہے';
+                    tbody.innerHTML += `
+                        <tr style="background:#f0fdf4; border:1.5px dashed #16a34a;">
+                            <td colspan="6" class="text-center py-2 fw-bold" style="color:#16a34a; font-size:0.92rem;">
+                                ${clearedMsg}
+                            </td>
+                        </tr>
+                    `;
+                }
+                prevBalance = bal;
+            });
+        } else {
+            let emptyMsg = lang === 'en' ? 'No transactions found.' : 'ابھی تک اس کسٹمر کا کوئی کھاتہ ٹرانزیکشن نہیں ہے۔';
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-muted">${emptyMsg}</td></tr>`;
+        }
+
+        // Summary
+        let finalBal = data.final_balance || 0;
+        document.getElementById('ledgerTotPurch').innerText = `Rs. ${Number(data.total_purchases || 0).toLocaleString()}`;
+        document.getElementById('ledgerTotPay').innerText = `Rs. ${Number(data.total_payments || 0).toLocaleString()}`;
+        if (document.getElementById('ledgerTotDiscount')) {
+            document.getElementById('ledgerTotDiscount').innerText = `Rs. ${Number(data.total_discount || 0).toLocaleString()}`;
+        }
+
+        let balEl = document.getElementById('ledgerFinalBal');
+        let balRow = document.getElementById('ledgerBalanceRow');
+        let statusBadge = document.getElementById('ledgerCustStatusBadge');
+        let clearBanner = document.getElementById('ledgerClearKhataBanner');
+
+        if (finalBal <= 0) {
+            balEl.innerHTML = '<span style="color:#16a34a; font-weight: bold;">✅ Rs. 0</span>';
+            balRow.classList.remove('due');
+            balRow.classList.add('clear');
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-success text-white px-3 py-1 small badge-cleared-pulse';
+                statusBadge.innerText = lang === 'en' ? 'Fully Settled ✅' : 'کھاتہ صاف ✅';
+            }
+            if (clearBanner) {
+                clearBanner.style.display = 'flex';
+            }
+        } else {
+            balEl.innerText = `Rs. ${Number(finalBal).toLocaleString()}`;
+            balRow.classList.remove('clear');
+            balRow.classList.add('due');
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-danger text-white px-2 py-1 small';
+                statusBadge.innerText = lang === 'en' ? 'Balance Due ⚠️' : 'بقایا ادھار ⚠️';
+            }
+            if (clearBanner) {
+                clearBanner.style.display = 'none';
+            }
+        }
+
+        let modal = new bootstrap.Modal(document.getElementById('ledgerModal'));
+        modal.show();
+        document.getElementById('ledgerModal').addEventListener('shown.bs.modal', () => {
+            if (typeof applyLanguage === 'function') applyLanguage(lang);
+        }, {once: true});
+    })
+    .catch(() => alert(lang === 'en' ? 'Error loading customer ledger' : 'کسٹمر کھاتہ لوڈ کرنے میں خرابی'));
+}
+
+function downloadLedgerExcel() {
+    if (currentActiveCustId) {
+        window.location.href = '/api/ledger/excel/' + currentActiveCustId;
+    }
+}
+
+function saveAsPDF() {
+    if (!currentActiveCustId) {
+        alert(localStorage.getItem('pos_lang') === 'en' ? 'Please load customer ledger first.' : 'پہلے کھاتہ لوڈ کریں۔');
+        return;
+    }
+    const a = document.createElement('a');
+    a.href = '/api/ledger/pdf/' + currentActiveCustId + '?download=1';
+    let rawName = document.getElementById('ledgerCustName')?.innerText || `Customer_${currentActiveCustId}`;
+    let safeName = rawName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || `Customer_${currentActiveCustId}`;
+    a.download = `Khata_${safeName}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function printLedger() {
+    if (!currentActiveCustId) {
+        alert(localStorage.getItem('pos_lang') === 'en' ? 'Please load customer ledger first.' : 'پہلے کھاتہ لوڈ کریں۔');
+        return;
+    }
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    let iframe = document.getElementById('customerLedgerPrintIframe');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'customerLedgerPrintIframe';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+    }
+    iframe.src = '/api/ledger/print/' + currentActiveCustId + '?lang=' + lang + '&t=' + Date.now();
+    iframe.onload = function() {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch(e) { console.error(e); }
+    };
+}
+
+function saveCustomerPhoneFromLedger() {
+    if (!currentLedgerData || !currentLedgerData.customer) return false;
+    const cust = currentLedgerData.customer;
+    const phoneInput = document.getElementById('ledgerCustPhoneInput');
+    const hint = document.getElementById('phoneSaveHint');
+    const newPhone = (phoneInput ? phoneInput.value : '').trim();
+    const digits = newPhone.replace(/[^0-9]/g, '');
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    if (digits.length < 10) {
+        if (phoneInput) {
+            phoneInput.classList.add('is-invalid');
+            phoneInput.focus();
+        }
+        if (hint) {
+            hint.className = 'text-danger fw-bold';
+            hint.innerText = lang === 'en' ? '⚠️ Enter valid 11-digit mobile number' : '⚠️ درست 11 ہندسوں کا موبائل نمبر درج کریں';
+            hint.style.display = 'block';
+        }
+        return false;
+    }
+
+    // Save to DB
+    fetch('/api/customer/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: cust.id,
+            name: cust.name,
+            phone: newPhone,
+            address: cust.address || ''
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        cust.phone = newPhone;
+        if (hint) {
+            hint.className = 'text-success fw-bold';
+            hint.innerText = lang === 'en' ? '✅ Phone saved successfully!' : '✅ فون نمبر محفوظ ہو گیا!';
+            hint.style.display = 'block';
+            setTimeout(() => {
+                if (hint) hint.style.display = 'none';
+            }, 3000);
+        }
+        if (typeof showToast === 'function') {
+            showToast(lang === 'en' ? 'Customer phone updated!' : 'کسٹمر کا فون نمبر اپڈیٹ ہو گیا!');
+        }
+    })
+    .catch(() => {
+        cust.phone = newPhone;
+    });
+    return true;
+}
+
+function sendWhatsAppLedger() {
+    if (!currentLedgerData || !currentLedgerData.customer) {
+        alert(localStorage.getItem('pos_lang') === 'en' ? 'Please load customer ledger first.' : 'پہلے کھاتہ لوڈ کریں۔');
+        return;
+    }
+    const c = currentLedgerData.customer;
+    const phoneInput = document.getElementById('ledgerCustPhoneInput');
+    const hint = document.getElementById('phoneSaveHint');
+    let phone = (phoneInput ? phoneInput.value : (c.phone || '')).trim();
+    let digits = phone.replace(/[^0-9]/g, '');
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    if (digits.length < 10) {
+        if (phoneInput) {
+            phoneInput.classList.add('is-invalid');
+            phoneInput.focus();
+        }
+        if (hint) {
+            hint.className = 'text-danger fw-bold';
+            hint.innerText = lang === 'en' ? '⚠️ Please enter WhatsApp mobile number above!' : '⚠️ براہ کرم اوپر واٹس ایپ نمبر درج کریں!';
+            hint.style.display = 'block';
+        }
+        return;
+    }
+
+    // If phone was changed/entered, save it to DB
+    if (phone !== c.phone) {
+        saveCustomerPhoneFromLedger();
+    }
+
+    // Format phone number
+    let formattedDigits = digits;
+    if (formattedDigits.startsWith('0092')) {
+        formattedDigits = formattedDigits.slice(2);
+    } else if (formattedDigits.startsWith('0')) {
+        formattedDigits = '92' + formattedDigits.slice(1);
+    } else if (formattedDigits.length === 10 && formattedDigits.startsWith('3')) {
+        formattedDigits = '92' + formattedDigits;
+    }
+
+    const finBal = (currentLedgerData.final_balance || 0).toLocaleString();
+    const totBuy = (currentLedgerData.total_purchases || 0).toLocaleString();
+    const totPay = (currentLedgerData.total_payments || 0).toLocaleString();
+    const today = new Date().toLocaleDateString('en-GB');
+
+    let msg = `*SMART POS SYSTEM*\n` +
+              `Main Market, Lahore\n` +
+              `Contact: 0300-0000000\n` +
+              `------------------------------------\n` +
+              `*STATEMENT OF ACCOUNT / کھاتہ اسٹیٹمنٹ*\n` +
+              `Customer: *${c.name}* (ID: #${c.id})\n` +
+              `Date: ${today}\n\n` +
+              `• Total Purchases (Debit): Rs. ${totBuy}\n` +
+              `• Total Payments (Credit): Rs. ${totPay}\n` +
+              `------------------------------------\n` +
+              `*NET BALANCE DUE: Rs. ${finBal}*\n` +
+              `------------------------------------\n` +
+              `📎 Khata PDF Statement file sath bhej di gayi hai.`;
+
+    const targetUrl = `https://api.whatsapp.com/send?phone=${formattedDigits}&text=${encodeURIComponent(msg)}`;
+
+    // 1. SYNCHRONOUSLY open WhatsApp Web NOW so no popup blocker can stop it!
+    window.open(targetUrl, '_blank');
+
+    // 2. IMMEDIATELY download the PDF statement file so the user has it ready to send
+    const pdfLink = document.createElement('a');
+    pdfLink.href = '/api/ledger/pdf/' + currentActiveCustId + '?download=1';
+    let safeCustName = custName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || `Customer_${currentActiveCustId}`;
+    pdfLink.download = `Khata_${safeCustName}.pdf`;
+    document.body.appendChild(pdfLink);
+    pdfLink.click();
+    document.body.removeChild(pdfLink);
+
+    // 3. In background: copy PDF file to Windows clipboard (Ctrl+V ready)
+    fetch('/api/ledger/whatsapp_prepare/' + currentActiveCustId, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone })
+    }).catch(() => {});
+
+    // 4. Quick non-blocking toast
+    if (typeof showToast === 'function') {
+        showToast(lang === 'en' ? 'WhatsApp opened & PDF downloaded! Attach or Ctrl+V to send.' : 'واٹس ایپ کھل گیا اور پی ڈی ایف ڈاؤن لوڈ ہو گئی ہے!');
+    }
+}
+
+function copyWhatsAppLedger() {
+    sendWhatsAppLedger();
+}
+
+function dispatchWhatsApp(rawPhone) {
+    if (!currentLedgerData || !currentLedgerData.customer) return;
+    const c = currentLedgerData.customer;
+    let digits = rawPhone.replace(/[^0-9]/g, '');
+    if (digits.startsWith('0092')) {
+        digits = digits.slice(2);
+    } else if (digits.startsWith('0')) {
+        digits = '92' + digits.slice(1);
+    } else if (digits.length === 10 && digits.startsWith('3')) {
+        digits = '92' + digits;
+    }
+
+    const finBal = (currentLedgerData.final_balance || 0).toLocaleString();
+    const totBuy = (currentLedgerData.total_purchases || 0).toLocaleString();
+    const totPay = (currentLedgerData.total_payments || 0).toLocaleString();
+    const totDisc = (currentLedgerData.total_discount || 0);
+    const today = new Date().toLocaleDateString('en-GB');
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    // Recent 5 entries summary
+    let recentRows = [];
+    if (currentLedgerData.timeline && currentLedgerData.timeline.length > 0) {
+        const slice = currentLedgerData.timeline.slice(-4);
+        slice.forEach(e => {
+            let desc = (e.description || '').replace(/<[^>]*>/g, '').trim();
+            if (e.debit > 0) {
+                recentRows.push(`• ${e.date}: ${desc} (+Rs. ${Number(e.debit).toLocaleString()})`);
+            } else if (e.credit > 0) {
+                recentRows.push(`• ${e.date}: ${desc} (-Rs. ${Number(e.credit).toLocaleString()})`);
+            }
+        });
+    }
+    const recentText = recentRows.join('\n');
+
+    let msg = '';
+    if (lang === 'en') {
+        msg = `*SMART POS SYSTEM*\n` +
+              `Hardware & Fasteners Specialist\n` +
+              `Main Market, Lahore\n` +
+              `Contact: 0300-0000000\n` +
+              `------------------------------------\n` +
+              `*STATEMENT OF ACCOUNT*\n` +
+              `Customer: *${c.name}* (ID: #${c.id})\n` +
+              `Date: ${today}\n\n` +
+              `*SUMMARY:*\n` +
+              `• Total Purchases (Debit): Rs. ${totBuy}\n` +
+              `• Total Payments (Credit): Rs. ${totPay}\n` +
+              (totDisc > 0 ? `• Total Discount Given: Rs. ${totDisc.toLocaleString()}\n` : '') +
+              `------------------------------------\n` +
+              `*NET BALANCE DUE: Rs. ${finBal}*\n` +
+              `------------------------------------\n` +
+              (recentText ? `*Recent Transactions:*\n${recentText}\n------------------------------------\n` : '') +
+              `Thank you for doing business with us!`;
+    } else {
+        msg = `*اسمارٹ پی او ایس (Smart POS System)*\n` +
+              `مین مارکیٹ، لاہور\n` +
+              `رابطہ / واٹس ایپ: 0300-0000000\n` +
+              `------------------------------------\n` +
+              `*کھاتہ و بقایا اسٹیٹمنٹ (Account Statement)*\n` +
+              `محترم جناب *${c.name}* صاحب (کھاتہ #${c.id})\n` +
+              `تاریخ: ${today}\n\n` +
+              `*کھاتے کا خلاصہ:*\n` +
+              `• کل خریداری (Total Debit): Rs. ${totBuy}\n` +
+              `• کل رقم وصول شدہ (Total Credit): Rs. ${totPay}\n` +
+              (totDisc > 0 ? `• کل رعایت / ڈسکاؤنٹ: Rs. ${totDisc.toLocaleString()}\n` : '') +
+              `------------------------------------\n` +
+              `*خالص کل بقایا رقم (Net Due): Rs. ${finBal}*\n` +
+              `------------------------------------\n` +
+              (recentText ? `*حالیہ لین دین کا ریکارڈ:*\n${recentText}\n------------------------------------\n` : '') +
+              `براہ کرم بقایا رقم کی جلد ادائیگی فرما کر تعاون کریں۔ شکریہ!`;
+    }
+
+    navigator.clipboard.writeText(msg).catch(() => {});
+    const targetUrl = `https://api.whatsapp.com/send?phone=${digits}&text=${encodeURIComponent(msg)}`;
+    window.open(targetUrl, '_blank');
+    showToast(lang === 'en' ? 'Opening WhatsApp & copied slip to clipboard!' : 'واٹس ایپ کھولا جا رہا ہے اور میسج کاپی ہو گیا!');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+</script>
+{% endblock %}

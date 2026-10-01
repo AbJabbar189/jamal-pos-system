@@ -1,0 +1,506 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+@media print {
+    .sidebar, .navbar, .btn, .no-print { display: none !important; }
+    .main-content { margin: 0 !important; padding: 0 !important; }
+    body { font-size: 12px; }
+}
+    /* 🌟 اسٹیٹ کارڈز اور لفٹ اینیمیشن */
+    .stat-card-closing {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-closing:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .card-cash-hand { border-left: 5px solid #10b981; }
+    .card-total-sales { border-left: 5px solid #0284c7; }
+    .card-credit-given { border-left: 5px solid #ef4444; }
+    .card-debt-recovered { border-left: 5px solid #06b6d4; }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .card-cash-hand .stat-icon-wrapper { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .card-total-sales .stat-icon-wrapper { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
+    .card-credit-given .stat-icon-wrapper { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .card-debt-recovered .stat-icon-wrapper { background: rgba(6, 182, 212, 0.15); color: #0891b2; }
+
+    /* 💡 واضح اور نمایاں لیبلز */
+    .stat-label {
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .stat-sub {
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+    .custom-card-title {
+        color: var(--text-main, #0f172a);
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    body.dark-mode .stat-label {
+        color: #e2e8f0 !important;
+    }
+    body.dark-mode .stat-sub {
+        color: #cbd5e1 !important;
+    }
+    body.dark-mode .custom-card-title {
+        color: #f8fafc !important;
+    }
+    body.dark-mode .text-muted-custom {
+        color: #cbd5e1 !important;
+    }
+
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 24px;
+    }
+
+    /* ✨ جدید ٹیبل اسٹائل */
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-modern thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    .table-modern tbody tr {
+        background: #ffffff;
+        color: #0f172a;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    }
+
+    .table-modern td {
+        padding: 14px 16px;
+        vertical-align: middle;
+        border-top: 1px solid var(--card-border, #e2e8f0);
+        border-bottom: 1px solid var(--card-border, #e2e8f0);
+    }
+
+    .table-modern td:first-child {
+        border-left: 1px solid var(--card-border, #e2e8f0);
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .table-modern td:last-child {
+        border-right: 1px solid var(--card-border, #e2e8f0);
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">DAILY SALES &amp; CLOSING REPORT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Audit Day: {{ selected_date }}</div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Sales:</strong> Rs. {{ "{:,.2f}".format(total_sales_amount) }}</div>
+                <div><strong>Cash in Hand:</strong> <span style="color: #16a34a; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_cash_in_hand) }}</span></div>
+            </div>
+            <div>
+                <div><strong>Total Purchases:</strong> Rs. {{ "{:,.2f}".format(total_purchases_amount) }}</div>
+                <div><strong>Credit / Udhar Given:</strong> <span style="color: #dc2626; font-weight: 700;">Rs. {{ "{:,.2f}".format(credit_given_today) }}</span></div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Total Expenses:</strong> Rs. {{ "{:,.2f}".format(total_discount_today|default(0.0)|float) }}</div>
+                <div style="font-size: 10px; color: #16a34a; font-weight: 700;">Daily Closing Reconciled</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Title & Filter Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 no-print">
+    <div>
+        <h4 class="fw-bold m-0 text-main">
+            <svg width="22" height="22" fill="#0284c7" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+            </svg>
+            <span class="lang-text" data-en="Daily Sales & Closing Report" data-ur="روزانہ سیل و کلوزنگ رپورٹ">Daily Sales & Closing Report</span>
+        </h4>
+        <small class="text-muted-custom lang-text" data-en="Daily sales, cash in hand, and credit summary" data-ur="آج کی کل سیل، کیش ان ہینڈ اور ادھار کی مکمل تفصیل">Daily sales, cash in hand, and credit summary</small>
+    </div>
+
+    <!-- تاریخ فلٹر فارم اور پرنٹ بٹن -->
+    <div class="d-flex align-items-center gap-2">
+        <form method="GET" action="/daily-report" class="d-flex align-items-center gap-2 m-0">
+            <input type="date" name="date" class="form-control form-control-sm font-monospace fw-bold" value="{{ selected_date }}" style="width: 150px;">
+            <button type="submit" class="btn btn-sm btn-dark fw-bold px-3">
+                <span class="lang-text" data-en="View Report" data-ur="رپورٹ دیکھیں">View Report</span>
+            </button>
+        </form>
+        <button class="btn btn-dark fw-bold px-3 d-inline-flex align-items-center gap-2 shadow-sm" onclick="window.print()">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+            <span>Print Report</span>
+        </button>
+        <a href="/api/daily_report/pdf?date={{ selected_date }}&download=1" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" title="روزانہ کلوزنگ پی ڈی ایف ڈاؤن لوڈ کریں">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف رپورٹ">Save as PDF</span>
+        </a>
+    </div>
+</div>
+
+<!-- 6 خلاصہ اسٹیٹ کارڈز (Summary KPI Cards) -->
+<div class="row g-3 mb-4">
+    <!-- 1. کل نقد کیش ان ہینڈ -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-closing card-cash-hand">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Total Cash in Hand" data-ur="کل نقد رقم (کیش)">Total Cash in Hand</span>
+                    <h3 class="fw-bold font-monospace text-success mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_cash_in_hand) }}</h3>
+                    <small class="stat-sub">Sales + Recoveries</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                        <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. کل سیل -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-closing card-total-sales">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Total Sales" data-ur="آج کی کل سیل">Total Sales</span>
+                    <h3 class="fw-bold font-monospace text-primary mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_sales_amount) }}</h3>
+                    <small class="stat-sub">Goods Sold Today</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5zM3.14 5l1.25 5h8.22l1.25-5H3.14zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm6 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. آج خریدا گیا مال (Purchases / Stock In) -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-closing" style="border-left: 5px solid #8b5cf6;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Today's Purchases" data-ur="آج کی کل خریداری (مال لیا)">Today's Purchases</span>
+                    <h3 class="fw-bold font-monospace mt-2 mb-0" style="color: #7c3aed;">Rs. {{ "{:,.0f}".format(total_purchases_amount) }}</h3>
+                    <small class="stat-sub">Paid: Rs. {{ "{:,.0f}".format(cash_paid_for_purchases) }} | Due: Rs. {{ "{:,.0f}".format(credit_purchases_due) }}</small>
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(139, 92, 246, 0.15); color: #7c3aed;">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .026.156zM2 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm10 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. کل رعایت / ڈسکاؤنٹ -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-closing" style="border-left: 5px solid #ec4899;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Total Discount" data-ur="کل رعایت / ڈسکاؤنٹ">Total Discount</span>
+                    <h3 class="fw-bold font-monospace text-danger mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_discount_today) }}</h3>
+                    <small class="stat-sub">Discounts Given Today</small>
+                </div>
+                <div class="stat-icon-wrapper" style="background: rgba(236, 72, 153, 0.15); color: #ec4899;">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2.5 1A1.5 1.5 0 0 0 1 2.5v11A1.5 1.5 0 0 0 2.5 15h6.086a1.5 1.5 0 0 0 1.06-.44l4.915-4.914A1.5 1.5 0 0 0 15 8.586V2.5A1.5 1.5 0 0 0 13.5 1h-11zM2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 .5.5v6.086a.5.5 0 0 1-.146.353l-4.915 4.915a.5.5 0 0 1-.353.146H2.5a.5.5 0 0 1-.5-.5v-11z"/>
+                        <path d="M5.5 5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm4.354 4.354a.5.5 0 1 1-.708-.708l3-3a.5.5 0 0 1 .708.708l-3 3z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. آج دیا گیا نیا ادھار -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-closing card-credit-given">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Credit Given Today" data-ur="آج کا نیا ادھار">Credit Given Today</span>
+                    <h3 class="fw-bold font-monospace text-danger mt-2 mb-1">Rs. {{ "{:,.0f}".format(credit_given_today) }}</h3>
+                    {% if credit_given_today > 0 and net_credit_today <= 0 %}
+                    <span class="badge bg-success bg-opacity-75 text-white" style="font-size: 0.75rem;">
+                        صاف بقایا: Rs. 0 (مکمل وصول)
+                    </span>
+                    {% elif net_credit_today > 0 and cash_from_recoveries > 0 %}
+                    <small class="stat-sub text-muted" style="font-size: 0.78rem;">
+                        وصول: Rs. {{ "{:,.0f}".format(cash_from_recoveries) }} | خالص باقی: <b class="text-danger">Rs. {{ "{:,.0f}".format(net_credit_today) }}</b>
+                    </small>
+                    {% else %}
+                    <small class="stat-sub">خالص باقی ادھار: Rs. {{ "{:,.0f}".format(net_credit_today) }}</small>
+                    {% endif %}
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. پرانے ادھار کی وصولی -->
+    <div class="col-lg-4 col-md-6">
+        <div class="stat-card-closing card-debt-recovered">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Debt Recovered" data-ur="پرانا ادھار وصول">Debt Recovered</span>
+                    <h3 class="fw-bold font-monospace text-info mt-2 mb-0">Rs. {{ "{:,.0f}".format(cash_from_recoveries) }}</h3>
+                    <small class="stat-sub">Old Recovery</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- سیکشن 1: آج کے بلز و سیلز -->
+<div class="custom-card">
+    <h6 class="custom-card-title mb-3">
+        <svg width="18" height="18" fill="#0284c7" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+            <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 14.5 0h-13zM1 1.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-13z"/>
+        </svg>
+        <span class="lang-text" data-en="Today's Invoices & Sales" data-ur="آج کے سیلز بلز">Today's Invoices & Sales</span>
+    </h6>
+    
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">#</th>
+                    <th style="width: 80px;">Bill #</th>
+                    <th>Invoice #</th>
+                    <th class="lang-text" data-en="Customer Name" data-ur="گاہک کا نام">Customer Name</th>
+                    <th class="lang-text" data-en="Time" data-ur="وقت">Time</th>
+                    <th class="lang-text" data-en="Total Bill" data-ur="کل بل">Total Bill</th>
+                    <th class="lang-text" data-en="Cash Paid" data-ur="نقد وصول">Cash Paid</th>
+                    <th class="lang-text" data-en="Credit (Balance)" data-ur="بقایا ادھار">Credit (Balance)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sales %}
+                <tr>
+                    <td class="text-center font-monospace fw-bold text-muted-custom">{{ loop.index }}</td>
+                    <td class="font-monospace fw-bold text-muted-custom">#{{ s.id }}</td>
+                    <td class="font-monospace fw-bold text-dark">{{ s.invoice_number or ('INV-' ~ s.id) }}</td>
+                    <td class="fw-bold text-dark">{{ s.customer_name or 'Cash Customer' }}</td>
+                    <td class="font-monospace text-muted-custom small">{{ s.date.split(' ')[1] if ' ' in s.date else s.date }}</td>
+                    <td class="font-monospace fw-bold text-dark">
+                        Rs. {{ "{:,.1f}".format(s.total | float) }}
+                        {% if s.discount and s.discount > 0 %}
+                        <div class="small text-danger fw-bold font-monospace" style="font-size: 0.76rem;">(رعایت: Rs. {{ "{:,.0f}".format(s.discount) }})</div>
+                        {% endif %}
+                    </td>
+                    <td class="font-monospace fw-bold text-success">Rs. {{ "{:,.1f}".format(s.paid | float) }}</td>
+                    <td class="font-monospace">
+                        {% if s.balance > 0 %}
+                            <span class="text-danger fw-bold">Rs. {{ "{:,.1f}".format(s.balance | float) }}</span>
+                        {% else %}
+                            <span class="text-muted-custom">Rs. 0</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-dark fw-bold lang-text" data-en="No sales recorded for this date." data-ur="اس تاریخ کا کوئی بل ریکارڈ موجود نہیں ہے۔">No sales recorded for this date.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- سیکشن 2: آج کی ادھار وصولیاں -->
+<div class="custom-card">
+    <h6 class="custom-card-title mb-3">
+        <svg width="18" height="18" fill="#10b981" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+            <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/>
+        </svg>
+        <span class="lang-text" data-en="Today's Received Payments (Credit Recovery)" data-ur="پرانے ادھار کی وصولیاں">Today's Received Payments (Credit Recovery)</span>
+    </h6>
+
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">#</th>
+                    <th style="width: 100px;">Receipt #</th>
+                    <th class="lang-text" data-en="Customer Name" data-ur="گاہک کا نام">Customer Name</th>
+                    <th class="lang-text" data-en="Time" data-ur="وقت">Time</th>
+                    <th class="lang-text" data-en="Description / Note" data-ur="تفصیل / نوٹ">Description / Note</th>
+                    <th class="text-end lang-text" data-en="Amount Received" data-ur="وصول شدہ رقم">Amount Received</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in direct_payments %}
+                <tr>
+                    <td class="text-center font-monospace fw-bold text-muted-custom">{{ loop.index }}</td>
+                    <td class="font-monospace fw-bold text-muted-custom">REC-{{ p.id }}</td>
+                    <td class="fw-bold text-dark">{{ p.customer_name or 'Customer' }}</td>
+                    <td class="font-monospace text-muted-custom small">{{ p.payment_date.split(' ')[1] if ' ' in p.payment_date else p.payment_date }}</td>
+                    <td class="text-dark">{{ p.note or 'نقد وصولی' }}</td>
+                    <td class="text-end font-monospace fw-bold text-success fs-6">Rs. {{ "{:,.0f}".format(p.amount | float) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-dark fw-bold lang-text" data-en="No debt recoveries recorded for this date." data-ur="اس تاریخ کی کوئی ادھار وصولی موجود نہیں ہے۔">No debt recoveries recorded for this date.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- سیکشن 3: آج کا خریدا گیا مال اور نیا اسٹاک -->
+<div class="custom-card">
+    <h6 class="custom-card-title mb-3">
+        <svg width="18" height="18" fill="#8b5cf6" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .026.156zM2 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm10 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+        </svg>
+        <span class="lang-text" data-en="Today's Stock Purchases & Incoming Goods" data-ur="آج کا خریدا گیا مال (نیا اسٹاک)">Today's Stock Purchases & Incoming Goods</span>
+    </h6>
+
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;">#</th>
+                    <th style="width: 100px;">Bill #</th>
+                    <th class="lang-text" data-en="Supplier / Source" data-ur="سپلائر / ذریعہ">Supplier / Source</th>
+                    <th class="lang-text" data-en="Time" data-ur="وقت">Time</th>
+                    <th class="lang-text" data-en="Total Purchased" data-ur="کل قیمت">Total Purchased</th>
+                    <th class="lang-text" data-en="Paid Amount" data-ur="ادائیگی (نقد)">Paid Amount</th>
+                    <th class="lang-text" data-en="Payable (Due)" data-ur="بقایا ادھار">Payable (Due)</th>
+                    <th class="lang-text" data-en="Details / Items" data-ur="تفصیل">Details / Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in purchases %}
+                <tr>
+                    <td class="text-center font-monospace fw-bold text-muted-custom">{{ loop.index }}</td>
+                    <td class="font-monospace fw-bold text-muted-custom">{{ p.bill_no or ('PUR-' ~ p.id) }}</td>
+                    <td class="fw-bold text-dark">{{ p.supplier_display_name }}</td>
+                    <td class="font-monospace text-muted-custom small">{{ p.date.split(' ')[1] ~ ' ' ~ (p.date.split(' ')[2] if p.date.split(' ')|length > 2 else '') if ' ' in p.date else p.date }}</td>
+                    <td class="font-monospace fw-bold text-dark fs-6">Rs. {{ "{:,.1f}".format(p.total | float) }}</td>
+                    <td class="font-monospace fw-bold text-success">Rs. {{ "{:,.1f}".format(p.paid | float) }}</td>
+                    <td class="font-monospace">
+                        {% if p.due > 0 %}
+                            <span class="text-danger fw-bold">Rs. {{ "{:,.1f}".format(p.due | float) }}</span>
+                        {% else %}
+                            <span class="text-muted-custom">Rs. 0</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-dark small">{{ p.notes or 'Stock In' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-dark fw-bold lang-text" data-en="No purchases recorded for this date." data-ur="اس تاریخ کی کوئی خریداری درج نہیں ہے۔">No purchases recorded for this date.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="print-footer">
+    Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+</div>
+
+<script>
+function getDailyReportPdfUrl() {
+    let dt = "{{ selected_date }}";
+    let inputDt = document.querySelector('input[name="date"]');
+    if (inputDt && inputDt.value) dt = inputDt.value;
+    return '/api/daily_report/pdf' + (dt ? '?date=' + encodeURIComponent(dt) : '');
+}
+
+function printDailyReportPDF() {
+    window.print();
+}
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+</script>
+{% endblock %}

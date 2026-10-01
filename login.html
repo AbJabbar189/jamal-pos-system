@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart POS - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <style>
+        /* 100% Offline Jameel Noori Nastaleeq Font */
+        @font-face {
+            font-family: 'Jameel Noori Nastaleeq';
+            src: local('Jameel Noori Nastaleeq'),
+                 local('JameelNooriNastaleeq'),
+                 url('/static/fonts/JameelNooriNastaleeq.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            background-color: #0b132b;
+            background-image: radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.3) 0, transparent 50%), radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.6) 0, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            color: #f8fafc;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .login-urdu-title {
+            font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', Tahoma, sans-serif;
+            line-height: 1.9;
+        }
+
+        .login-card {
+            background: #1c2541;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 420px;
+            padding: 36px 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+        }
+
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .role-btn {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 14px;
+            padding: 16px 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.25s ease;
+            user-select: none;
+        }
+
+        .role-btn:hover {
+            border-color: #38bdf8;
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .role-btn.active {
+            background: rgba(14, 165, 233, 0.12);
+            border-color: #0ea5e9;
+            color: #38bdf8;
+            box-shadow: 0 0 16px rgba(14, 165, 233, 0.25);
+        }
+
+        .role-btn svg {
+            display: block;
+            margin: 0 auto 8px auto;
+            transition: transform 0.2s;
+        }
+
+        .role-btn.active svg {
+            transform: scale(1.1);
+        }
+
+        .form-control-custom {
+            background-color: #0f172a !important;
+            border: 1.5px solid #334155 !important;
+            color: #ffffff !important;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-control-custom:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2) !important;
+            outline: none;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 12px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-login:hover {
+            background: linear-gradient(135deg, #0369a1, #075985);
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .role-badge-text {
+            font-size: 0.8rem;
+            border-radius: 6px;
+            padding: 4px 12px;
+            display: inline-block;
+            background: rgba(14, 165, 233, 0.15);
+            color: #7dd3fc;
+            font-weight: 600;
+        }
+
+        .dashboard-style-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            background: #0284c7;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='img/jbs_badge.png') }}" alt="JBS Logo" style="max-width: 180px; height: auto; object-fit: contain; border-radius: 14px; box-shadow: 0 8px 24px rgba(2, 132, 199, 0.35); background: #ffffff; padding: 6px; margin-bottom: 14px; border: 2px solid #0284c7;">
+        <h2 class="fw-bold text-white mb-1 login-urdu-title">اسمارٹ پی او ایس</h2>
+        <div class="text-info fw-bold small mb-1">SMART POS SYSTEM</div>
+        <div class="text-light text-opacity-75 small" style="font-size: 0.82rem;">مین مارکیٹ، لاہور</div>
+        <div class="text-warning small font-monospace mt-1" style="font-size: 0.8rem; letter-spacing: 0.5px;">
+            📞 0300-0000000
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger py-2 px-3 mb-3 small fw-bold text-center border-0 shadow-sm" style="border-radius: 8px;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="role-selector">
+        <div class="role-btn active" id="btnAdmin" onclick="selectRole('admin')">
+            <svg width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+            </svg>
+            <div class="fw-bold fs-6">Admin</div>
+            <small style="font-size: 0.72rem;">Full Access</small>
+        </div>
+
+        <div class="role-btn" id="btnCashier" onclick="selectRole('cashier')">
+            <svg width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm1 2h11a.5.5 0 0 1 .5.5v1.5H1V4.5a.5.5 0 0 1 .5-.5zm12 8.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V8h12v4.5z"/>
+            </svg>
+            <div class="fw-bold fs-6">Cashier</div>
+            <small style="font-size: 0.72rem;">Sales Counter Only</small>
+        </div>
+    </div>
+
+    <form action="/login" method="POST" autocomplete="off">
+        <input type="hidden" name="username" id="roleUsername" value="admin">
+
+        <div class="mb-3 text-center">
+            <span class="role-badge-text" id="roleBadge">Signing in as Admin</span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label text-light small fw-bold">Password</label>
+            <input type="password" name="password" id="passwordInput" class="form-control form-control-custom text-center fs-5" placeholder="••••••••" required autofocus autocomplete="new-password">
+        </div>
+
+        <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-login py-2">Sign In</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function selectRole(role) {
+    const btnAdmin = document.getElementById('btnAdmin');
+    const btnCashier = document.getElementById('btnCashier');
+    const roleUsername = document.getElementById('roleUsername');
+    const roleBadge = document.getElementById('roleBadge');
+    const passwordInput = document.getElementById('passwordInput');
+
+    if (role === 'admin') {
+        btnAdmin.classList.add('active');
+        btnCashier.classList.remove('active');
+        roleUsername.value = 'admin';
+        roleBadge.innerText = 'Signing in as Admin';
+    } else {
+        btnCashier.classList.add('active');
+        btnAdmin.classList.remove('active');
+        roleUsername.value = 'cashier';
+        roleBadge.innerText = 'Signing in as Cashier';
+    }
+
+    passwordInput.value = '';
+    passwordInput.focus();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const passwordInput = document.getElementById('passwordInput');
+    passwordInput.value = '';
+    passwordInput.focus();
+});
+
+window.addEventListener('beforeunload', function () {
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/system/closing_ping');
+    }
+});
+</script>
+
+</body>
+</html>

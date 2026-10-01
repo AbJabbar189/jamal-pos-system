@@ -1,0 +1,680 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .stat-card-closing {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-closing:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .card-given { border-left: 5px solid #059669; }
+    .card-receivable { border-left: 5px solid #10b981; }
+    .card-taken { border-left: 5px solid #f59e0b; }
+    .card-payable { border-left: 5px solid #ef4444; }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .card-given .stat-icon-wrapper { background: rgba(5, 150, 105, 0.15); color: #059669; }
+    .card-receivable .stat-icon-wrapper { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+    .card-taken .stat-icon-wrapper { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .card-payable .stat-icon-wrapper { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+    .stat-label {
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .stat-sub {
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+
+    body.dark-mode .stat-label { color: #e2e8f0 !important; }
+    body.dark-mode .stat-sub { color: #cbd5e1 !important; }
+
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 24px;
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-modern thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    .table-modern tbody tr {
+        background: #ffffff;
+        color: #0f172a;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .table-modern tbody tr:hover {
+        background-color: #f1f5f9;
+        transform: scale(1.002);
+    }
+
+    .table-modern tbody td {
+        padding: 14px 16px;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+        color: #0f172a;
+    }
+
+    .table-modern tbody td:first-child { border-left: 1px solid #e2e8f0; border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-modern tbody td:last-child { border-right: 1px solid #e2e8f0; border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    body.dark-mode .table-modern tbody tr {
+        background: #1e293b;
+        color: #f8fafc;
+    }
+    body.dark-mode .table-modern tbody tr:hover {
+        background: #334155;
+    }
+    body.dark-mode .table-modern tbody td {
+        border-color: #334155;
+        color: #f8fafc;
+    }
+
+    @media print {
+        .pos-sidebar, .sidebar, .btn, .no-print, nav, .search-box-wrapper, select { display: none !important; }
+        .pos-wrapper, .pos-content { margin: 0 !important; padding: 0 !important; }
+        body { font-size: 12px; background: #fff !important; }
+        .stat-card-closing { box-shadow: none !important; border: 1px solid #ccc !important; }
+    }
+</style>
+
+<div class="container-fluid p-4" style="width: 100%; max-width: 100%;">
+    
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 no-print">
+        <div>
+            <h3 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                <svg width="24" height="24" fill="#0284c7" viewBox="0 0 16 16" class="flex-shrink-0"><path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/><path d="M11 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                <span class="lang-text" data-en="Personal Loans & Cash Advances" data-ur="ذاتی قرضہ جات و ادھار لین دین">Personal Loans & Cash Advances</span>
+            </h3>
+            <p class="text-muted mb-0 small lang-text" data-en="Manage informal cash loans given or taken (Friends, relatives, partners - outside inventory)" data-ur="دوستوں، رشتہ داروں یا پارٹنرز کے ساتھ نقد ادھار کا باقاعدہ حساب کتاب (بغیر مال)">
+                Manage informal cash loans given or taken (Friends, relatives, partners - outside inventory)
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-dark fw-bold px-3 d-inline-flex align-items-center gap-2 shadow-sm" onclick="window.print()">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                <span class="lang-text" data-en="Print Summary" data-ur="پرنٹ کریں">Print Summary</span>
+            </button>
+            <button class="btn btn-success fw-bold px-3 d-inline-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addLoanModal">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                <span class="lang-text" data-en="New Loan Entry" data-ur="نیا قرضہ درج کریں">New Loan Entry</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 📊 KPI اسمارٹ کارڈز -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card-closing card-given">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label lang-text" data-en="Total Loan Given" data-ur="کل قرض دیا ہوا">Total Loan Given</div>
+                        <div class="h3 fw-bold mb-0 mt-1 font-monospace text-success">Rs. {{ "{:,.0f}".format(total_given) }}</div>
+                        <div class="stat-sub mt-1">
+                            <span class="lang-text" data-en="Recovered:" data-ur="وصول شدہ:">Recovered:</span>
+                            <strong class="font-monospace">Rs. {{ "{:,.0f}".format(given_recovered) }}</strong>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper">
+                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0v-6z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card-closing card-receivable">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label lang-text" data-en="To Receive Back" data-ur="واپس لینا باقی (آمدن)">To Receive Back</div>
+                        <div class="h3 fw-bold mb-0 mt-1 font-monospace" style="color: #059669;">Rs. {{ "{:,.0f}".format(remaining_given) }}</div>
+                        <div class="stat-sub mt-1">
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold lang-text" data-en="Receivable Asset" data-ur="واجب الوصول اثاثہ">Receivable Asset</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper">
+                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V4zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V6a2 2 0 0 1-2-2H3z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card-closing card-taken">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label lang-text" data-en="Total Loan Taken" data-ur="کل قرض لیا ہوا">Total Loan Taken</div>
+                        <div class="h3 fw-bold mb-0 mt-1 font-monospace text-warning">Rs. {{ "{:,.0f}".format(total_taken) }}</div>
+                        <div class="stat-sub mt-1">
+                            <span class="lang-text" data-en="Repaid:" data-ur="واپس کیا:">Repaid:</span>
+                            <strong class="font-monospace">Rs. {{ "{:,.0f}".format(taken_returned) }}</strong>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper">
+                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 13.5a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 0-1H3.707L13.854 2.854a.5.5 0 1 0-.708-.708L3 12.293V7.5a.5.5 0 0 0-1 0v6z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="stat-card-closing card-payable">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="stat-label lang-text" data-en="To Pay Back" data-ur="واپس دینا باقی (ذمہ)">To Pay Back</div>
+                        <div class="h3 fw-bold mb-0 mt-1 font-monospace text-danger">Rs. {{ "{:,.0f}".format(remaining_taken) }}</div>
+                        <div class="stat-sub mt-1">
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-bold lang-text" data-en="Payable Liability" data-ur="واجب الادا ذمہ داری">Payable Liability</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon-wrapper">
+                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/><path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-1z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔍 سرچ و فلٹر بار -->
+    <div class="custom-card mb-4 no-print">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg></span>
+                    <input type="text" id="loanSearch" class="form-control border-0 bg-light lang-placeholder" data-en="Search by person name, phone, notes..." data-ur="نام، فون یا نوٹ سے تلاش کریں..." placeholder="Search by person name, phone, notes..." onkeyup="filterLoanTable()">
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <select id="loanTypeFilter" class="form-select bg-light border-0" onchange="filterLoanTable()">
+                    <option value="" class="lang-text" data-en="All Loan Types" data-ur="تمام اقسام">All Loan Types</option>
+                    <option value="given" class="lang-text" data-en="Loan Given" data-ur="قرض دیا">Loan Given</option>
+                    <option value="taken" class="lang-text" data-en="Loan Taken" data-ur="قرض لیا">Loan Taken</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <select id="loanStatusFilter" class="form-select bg-light border-0" onchange="filterLoanTable()">
+                    <option value="" class="lang-text" data-en="All Status" data-ur="تمام کیفیت">All Status</option>
+                    <option value="pending" class="lang-text" data-en="Pending" data-ur="باقی">Pending</option>
+                    <option value="settled" class="lang-text" data-en="Settled" data-ur="بے باق">Settled</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📋 جدول -->
+    <div class="custom-card">
+        <div class="table-responsive">
+            <table class="table table-modern align-middle mb-0" id="loansTable">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">#</th>
+                        <th class="lang-text" data-en="Person Name & Contact" data-ur="شخص کا نام و رابطہ">Person Name & Contact</th>
+                        <th class="text-center lang-text" data-en="Loan Type" data-ur="قرض کی نوعیت">Loan Type</th>
+                        <th class="text-end lang-text" data-en="Total Loan" data-ur="کل رقم">Total Loan</th>
+                        <th class="text-end lang-text" data-en="Paid / Received" data-ur="وصول / واپس شدہ">Paid / Received</th>
+                        <th class="text-end lang-text" data-en="Remaining Balance" data-ur="باقی رقم">Remaining Balance</th>
+                        <th class="text-center lang-text" data-en="Dates" data-ur="تاریخ / واپسی">Dates</th>
+                        <th class="text-center lang-text" data-en="Status" data-ur="اسٹیٹس">Status</th>
+                        <th class="text-center no-print lang-text" data-en="Actions" data-ur="کارروائی">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in loans %}
+                    <tr class="loan-row" data-type="{{ l.type }}" data-status="{{ l.status }}" data-search="{{ (l.person_name ~ ' ' ~ (l.phone or '') ~ ' ' ~ (l.notes or ''))|lower }}">
+                        <td class="font-monospace text-muted">{{ loop.index }}</td>
+                        <td>
+                            <div class="fw-bold text-main">{{ l.person_name }}</div>
+                            {% if l.phone %}
+                            <small class="text-muted font-monospace"><svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"/></svg> {{ l.phone }}</small>
+                            {% endif %}
+                            {% if l.notes %}
+                            <div class="small text-muted fst-italic">{{ l.notes }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if l.type == 'given' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold px-2 py-1 d-inline-flex align-items-center gap-1">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0v-6z"/></svg>
+                                <span class="lang-text" data-en="Loan Given" data-ur="قرض دیا">Loan Given</span>
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle fw-bold px-2 py-1 d-inline-flex align-items-center gap-1">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2 13.5a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 0-1H3.707L13.854 2.854a.5.5 0 1 0-.708-.708L3 12.293V7.5a.5.5 0 0 0-1 0v6z"/></svg>
+                                <span class="lang-text" data-en="Loan Taken" data-ur="قرض لیا">Loan Taken</span>
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold font-monospace">Rs. {{ "{:,.0f}".format(l.amount) }}</td>
+                        <td class="text-end font-monospace text-success">Rs. {{ "{:,.0f}".format(l.paid_back or 0) }}</td>
+                        <td class="text-end fw-bold font-monospace {% if l.remaining > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            Rs. {{ "{:,.0f}".format(l.remaining) }}
+                        </td>
+                        <td class="text-center small">
+                            <div><strong class="lang-text" data-en="Date:" data-ur="تاریخ:">Date:</strong> {{ l.date }}</div>
+                            {% if l.due_date %}
+                            <div class="text-muted"><strong class="lang-text" data-en="Due:" data-ur="واپسی:">Due:</strong> {{ l.due_date }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if l.status == 'settled' or l.remaining <= 0 %}
+                            <span class="badge bg-success px-2 py-1 fw-bold lang-text" data-en="Settled" data-ur="بے باق">Settled</span>
+                            {% else %}
+                            <span class="badge bg-danger px-2 py-1 fw-bold lang-text" data-en="Pending" data-ur="باقی">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center no-print">
+                            <div class="d-flex justify-content-center align-items-center gap-1">
+                                {% if l.remaining > 0 %}
+                                <button class="btn btn-sm btn-success fw-bold px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 6px;" onclick="openPaymentModal({{ l.id }}, '{{ l.person_name|escape }}', '{{ l.type }}', {{ l.remaining }})" title="ادائیگی یا وصولی درج کریں">
+                                    <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/></svg>
+                                    <span class="lang-text" data-en="Pay" data-ur="ادائیگی">Pay</span>
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-sm btn-primary fw-bold px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 6px;" onclick="openHistoryModal({{ l.id }}, '{{ l.person_name|escape }}')" title="ادائیگیوں کی تفصیل">
+                                    <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.376.772a7.034 7.034 0 0 0-.738-.557l.51-.86a8.038 8.038 0 0 1 .847.639l-.619.778zm.866.745c.257.232.496.488.712.764l.774-.633a8.04 8.04 0 0 0-.814-.874l-.672.743zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                                    <span class="lang-text" data-en="History" data-ur="ہسٹری">History</span>
+                                </button>
+                                <button class="btn btn-sm btn-danger fw-bold px-2 py-1 shadow-sm" style="border-radius: 6px;" onclick="deleteLoan({{ l.id }}, '{{ l.person_name|escape }}')" title="ڈیلیٹ کریں">
+                                    <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5">
+                            <div class="text-muted mb-2">
+                                <svg width="40" height="40" fill="#94a3b8" viewBox="0 0 16 16"><path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/><path d="M11 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                            </div>
+                            <h5 class="fw-bold text-muted lang-text" data-en="No Personal Loans Found" data-ur="کوئی ذاتی قرضہ ریکارڈ موجود نہیں ہے">No Personal Loans Found</h5>
+                            <p class="small text-muted lang-text" data-en="Click '+ New Loan Entry' above to add your first loan record." data-ur="نیا قرضہ درج کرنے کے لیے اوپر '+ نیا قرضہ درج کریں' پر کلک کریں۔">
+                                Click '+ New Loan Entry' above to add your first loan record.
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ➕ نیا قرضہ ماڈل -->
+<div class="modal fade" id="addLoanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header py-3" style="background: linear-gradient(135deg, #059669, #10b981); color: white; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6 d-flex align-items-center gap-2">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M12.136.326A1.5 1.5 0 0 1 14 1.78V3h.5A1.5 1.5 0 0 1 16 4.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 13.5v-9a1.5 1.5 0 0 1 1.432-1.499L12.136.326zM5.562 3H13V1.78a.5.5 0 0 0-.621-.484L5.562 3zM1.5 4a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/><path d="M11 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                    <span class="lang-text" data-en="New Personal Loan Entry" data-ur="نیا ذاتی قرضہ یا ادھار درج کریں">New Personal Loan Entry</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addLoanForm" onsubmit="submitAddLoan(event)">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Loan Type *" data-ur="قرض کی نوعیت *">Loan Type *</label>
+                        <select name="type" id="loanTypeSelect" class="form-select fw-bold" required>
+                            <option value="given" class="lang-text" data-en="Loan Given (We lent money - Receivable)" data-ur="قرض دیا (ہم نے ادھار دیا - وصول کرنا ہے)">Loan Given (We lent money - Receivable)</option>
+                            <option value="taken" class="lang-text" data-en="Loan Taken (We borrowed money - Payable)" data-ur="قرض لیا (ہم نے ادھار لیا - واپس کرنا ہے)">Loan Taken (We borrowed money - Payable)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Person / Partner Name *" data-ur="شخص یا پارٹنر کا نام *">Person / Partner Name *</label>
+                        <input type="text" name="person_name" class="form-control fw-bold lang-placeholder" data-en="e.g., Aslam Bhai, Zahid Ali" data-ur="مثلاً: اسلم بھائی، زاہد علی" placeholder="e.g., Aslam Bhai, Zahid Ali" required>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Amount (Rs) *" data-ur="رقم (روپے) *">Amount (Rs) *</label>
+                            <input type="number" step="any" name="amount" class="form-control font-monospace fw-bold text-success" placeholder="0" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Phone (Optional)" data-ur="فون نمبر (اختیاری)">Phone (Optional)</label>
+                            <input type="text" name="phone" class="form-control font-monospace" placeholder="0300-0000000">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Date Given / Taken" data-ur="تاریخ لین دین">Date Given / Taken</label>
+                            <input type="date" name="date" id="loanAddDate" class="form-control" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Expected Due Date" data-ur="متوقع واپسی تاریخ">Expected Due Date</label>
+                            <input type="date" name="due_date" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Notes / Description" data-ur="نوٹ / تفصیل یا وجہ">Notes / Description</label>
+                        <textarea name="notes" class="form-control lang-placeholder" data-en="Reason or additional info..." data-ur="قرض کی تفصیل یا وجہ..." rows="2" placeholder="Reason or additional info..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary fw-bold px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 lang-text" data-en="Save Loan Record" data-ur="محفوظ کریں">Save Loan Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 💰 ادائیگی یا واپسی درج کرنے کا ماڈل -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header py-3 bg-dark text-white" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6 d-flex align-items-center gap-2">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/></svg>
+                    <span id="payModalTitle" class="lang-text" data-en="Record Loan Payment" data-ur="قرضہ ادائیگی یا وصولی درج کریں">Record Loan Payment</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="loanPaymentForm" onsubmit="submitLoanPayment(event)">
+                <input type="hidden" id="payLoanId" name="loan_id">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase lang-text" data-en="Person" data-ur="شخص">Person</label>
+                        <input type="text" id="payPersonName" class="form-control fw-bold" readonly style="background: #f8fafc;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted text-uppercase lang-text" data-en="Remaining Balance" data-ur="باقی واجب الادا رقم">Remaining Balance</label>
+                        <input type="text" id="payRemaining" class="form-control font-monospace fw-bold text-danger" readonly style="background: #fef2f2;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Payment Amount (Rs) *" data-ur="رقم (روپے) *">Payment Amount (Rs) *</label>
+                        <input type="number" step="any" id="payAmount" name="amount" class="form-control font-monospace fw-bold fs-5 text-success" required placeholder="Enter amount">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Payment Method" data-ur="طریقہ ادائیگی">Payment Method</label>
+                            <select name="method" id="payMethod" class="form-select">
+                                <option value="Cash" class="lang-text" data-en="Cash" data-ur="نقد">Cash</option>
+                                <option value="Online" class="lang-text" data-en="Online / Transfer" data-ur="آن لائن / ٹرانسفر">Online / Transfer</option>
+                                <option value="Cheque" class="lang-text" data-en="Cheque" data-ur="بینک چیک">Cheque</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Payment Date" data-ur="ادائیگی تاریخ">Payment Date</label>
+                            <input type="date" id="payDate" name="payment_date" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Notes (Optional)" data-ur="نوٹ (اختیاری)">Notes (Optional)</label>
+                        <input type="text" name="notes" class="form-control" placeholder="Slip no, bank name, etc.">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary fw-bold px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 lang-text" data-en="Record Payment" data-ur="ادائیگی محفوظ کریں">Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 📜 تاریخچہ ماڈل -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header py-3 bg-light" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6 d-flex align-items-center gap-2">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.376.772a7.034 7.034 0 0 0-.738-.557l.51-.86a8.038 8.038 0 0 1 .847.639l-.619.778zm.866.745c.257.232.496.488.712.764l.774-.633a8.04 8.04 0 0 0-.814-.874l-.672.743zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                    <span id="historyPersonName"></span> — <span class="lang-text" data-en="Payment History" data-ur="ادائیگیوں کی تفصیل">Payment History</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="historyLoading" class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm" role="status"></div> Loading history...
+                </div>
+                <div id="historyContent" class="d-none">
+                    <div class="row g-3 mb-3">
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-light border text-center">
+                                <small class="text-muted d-block lang-text" data-en="Total Loan" data-ur="کل قرض">Total Loan</small>
+                                <strong class="font-monospace text-primary" id="histTotal"></strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-light border text-center">
+                                <small class="text-muted d-block lang-text" data-en="Paid / Recovered" data-ur="وصول / ادا شدہ">Paid / Recovered</small>
+                                <strong class="font-monospace text-success" id="histPaid"></strong>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-light border text-center">
+                                <small class="text-muted d-block lang-text" data-en="Remaining Balance" data-ur="باقی رقم">Remaining Balance</small>
+                                <strong class="font-monospace text-danger" id="histRemaining"></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th class="lang-text" data-en="Payment Date" data-ur="ادائیگی تاریخ">Payment Date</th>
+                                    <th class="text-end lang-text" data-en="Amount" data-ur="رقم">Amount</th>
+                                    <th class="lang-text" data-en="Method" data-ur="طریقہ">Method</th>
+                                    <th class="lang-text" data-en="Notes" data-ur="نوٹ">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-secondary fw-bold px-3 lang-text" data-en="Close" data-ur="بند کریں" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    let today = new Date().toISOString().split('T')[0];
+    let addDateEl = document.getElementById('loanAddDate');
+    if (addDateEl) addDateEl.value = today;
+    let payDateEl = document.getElementById('payDate');
+    if (payDateEl) payDateEl.value = today;
+    
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+
+function filterLoanTable() {
+    let search = document.getElementById('loanSearch').value.toLowerCase().trim();
+    let type = document.getElementById('loanTypeFilter').value;
+    let status = document.getElementById('loanStatusFilter').value;
+    
+    let rows = document.querySelectorAll('.loan-row');
+    rows.forEach(r => {
+        let rSearch = r.getAttribute('data-search') || '';
+        let rType = r.getAttribute('data-type') || '';
+        let rStatus = r.getAttribute('data-status') || '';
+        
+        let matchSearch = !search || rSearch.includes(search);
+        let matchType = !type || rType === type;
+        let matchStatus = !status || rStatus === status;
+        
+        if (matchSearch && matchType && matchStatus) {
+            r.style.display = '';
+        } else {
+            r.style.display = 'none';
+        }
+    });
+}
+
+function submitAddLoan(e) {
+    e.preventDefault();
+    let form = document.getElementById('addLoanForm');
+    let formData = new FormData(form);
+    let payload = Object.fromEntries(formData.entries());
+    
+    fetch('/api/loan/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            window.location.reload();
+        } else {
+            alert('Error: ' + res.message);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+function openPaymentModal(loanId, personName, type, remaining) {
+    document.getElementById('payLoanId').value = loanId;
+    document.getElementById('payPersonName').value = personName;
+    document.getElementById('payRemaining').value = 'Rs. ' + parseFloat(remaining).toLocaleString();
+    document.getElementById('payAmount').value = remaining > 0 ? remaining : '';
+    document.getElementById('payAmount').max = remaining;
+    
+    let titleEl = document.getElementById('payModalTitle');
+    const currentLang = localStorage.getItem('pos_lang') || 'ur';
+    if (type === 'given') {
+        titleEl.innerText = currentLang === 'en' ? 'Record Received Payment' : 'وصولی درج کریں';
+    } else {
+        titleEl.innerText = currentLang === 'en' ? 'Record Loan Repayment' : 'قرض واپسی درج کریں';
+    }
+    
+    new bootstrap.Modal(document.getElementById('paymentModal')).show();
+}
+
+function submitLoanPayment(e) {
+    e.preventDefault();
+    let form = document.getElementById('loanPaymentForm');
+    let formData = new FormData(form);
+    let payload = Object.fromEntries(formData.entries());
+    
+    fetch('/api/loan/payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            window.location.reload();
+        } else {
+            alert('Error: ' + res.message);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+function openHistoryModal(loanId, personName) {
+    document.getElementById('historyPersonName').innerText = personName;
+    document.getElementById('historyLoading').classList.remove('d-none');
+    document.getElementById('historyContent').classList.add('d-none');
+    
+    let modal = new bootstrap.Modal(document.getElementById('historyModal'));
+    modal.show();
+    
+    fetch('/api/loan/payments/' + loanId)
+    .then(r => r.json())
+    .then(res => {
+        document.getElementById('historyLoading').classList.add('d-none');
+        if (res.success) {
+            document.getElementById('historyContent').classList.remove('d-none');
+            let loan = res.loan;
+            let rem = loan.amount - (loan.paid_back || 0);
+            document.getElementById('histTotal').innerText = 'Rs. ' + parseFloat(loan.amount).toLocaleString();
+            document.getElementById('histPaid').innerText = 'Rs. ' + parseFloat(loan.paid_back || 0).toLocaleString();
+            document.getElementById('histRemaining').innerText = 'Rs. ' + parseFloat(rem).toLocaleString();
+            
+            let tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            if (res.payments && res.payments.length > 0) {
+                res.payments.forEach((p, idx) => {
+                    let tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="font-monospace text-muted">${idx + 1}</td>
+                        <td>${p.payment_date}</td>
+                        <td class="text-end font-monospace fw-bold text-success">Rs. ${parseFloat(p.amount).toLocaleString()}</td>
+                        <td><span class="badge bg-light text-dark border">${p.method || 'Cash'}</span></td>
+                        <td>${p.notes || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">ابھی تک کوئی ادائیگی درج نہیں ہوئی / No payments recorded yet</td></tr>`;
+            }
+        } else {
+            alert('Error: ' + res.message);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+
+function deleteLoan(loanId, personName) {
+    if (!confirm('کیا آپ واقعی ' + personName + ' کا قرضہ ریکارڈ ڈیلیٹ کرنا چاہتے ہیں؟')) return;
+    fetch('/api/loan/delete/' + loanId, { method: 'POST' })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            window.location.reload();
+        } else {
+            alert('Error: ' + res.message);
+        }
+    })
+    .catch(err => alert('Error: ' + err));
+}
+</script>
+{% endblock %}

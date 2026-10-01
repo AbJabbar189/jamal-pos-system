@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="ur" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart POS - Point of Sale System</title>
+    
+    <!-- Instant Zero-FOUC state initialization before DOM renders -->
+    <script>
+        (function() {
+            var isPinned = localStorage.getItem('pos_sidebar_pinned') === 'true';
+            var savedLang = localStorage.getItem('pos_lang') || 'ur';
+            var savedTheme = localStorage.getItem('pos_theme') || 'light';
+            var docEl = document.documentElement;
+            
+            if (savedLang === 'en') {
+                docEl.setAttribute('dir', 'ltr');
+                docEl.setAttribute('lang', 'en');
+            } else {
+                docEl.setAttribute('dir', 'rtl');
+                docEl.setAttribute('lang', 'ur');
+            }
+            
+            var classes = [];
+            if (isPinned) classes.push('sidebar-pinned');
+            else classes.push('sidebar-unpinned');
+            if (savedLang === 'ur') classes.push('lang-ur');
+            if (savedTheme === 'dark') classes.push('dark-mode');
+            
+            docEl.className = classes.join(' ');
+
+            // Instant Real-Time Translation Stream: translate elements BEFORE browser paints them
+            if (savedLang === 'en') {
+                var observer = new MutationObserver(function(mutations) {
+                    for (var i = 0; i < mutations.length; i++) {
+                        var added = mutations[i].addedNodes;
+                        for (var j = 0; j < added.length; j++) {
+                            var node = added[j];
+                            if (node.nodeType === 1) {
+                                if (node.classList && node.classList.contains('lang-text')) {
+                                    var t = node.getAttribute('data-en');
+                                    if (t) node.textContent = t;
+                                }
+                                if (node.querySelectorAll) {
+                                    var texts = node.querySelectorAll('.lang-text');
+                                    for (var k = 0; k < texts.length; k++) {
+                                        var t = texts[k].getAttribute('data-en');
+                                        if (t) texts[k].textContent = t;
+                                    }
+                                    var phs = node.querySelectorAll('.lang-placeholder');
+                                    for (var k = 0; k < phs.length; k++) {
+                                        var t = phs[k].getAttribute('data-en');
+                                        if (t) phs[k].setAttribute('placeholder', t);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                observer.observe(docEl, { childList: true, subtree: true });
+                window.addEventListener('DOMContentLoaded', function() {
+                    observer.disconnect();
+                });
+            }
+        })();
+    </script>
+
+    <!-- 100% Offline Bootstrap 5 CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" id="bootstrap-css">
+    
+    <style>
+        /* 100% Offline Jameel Noori Nastaleeq Font */
+        @font-face {
+            font-family: 'Jameel Noori Nastaleeq';
+            src: local('Jameel Noori Nastaleeq'),
+                 local('JameelNooriNastaleeq'),
+                 url('/static/fonts/JameelNooriNastaleeq.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        :root {
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #0284c7;
+            --sidebar-text: #94a3b8;
+            --modal-bg: #ffffff;
+            --modal-border: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --input-text: #0f172a;
+        }
+
+        body.dark-mode, html.dark-mode {
+            --bg-main: #090d16;
+            --card-bg: #111827;
+            --card-border: #1f2937;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --sidebar-bg: #030712;
+            --sidebar-hover: #111827;
+            --sidebar-active: #0284c7;
+            --sidebar-text: #9ca3af;
+            --modal-bg: #1e293b;
+            --modal-border: #334155;
+            --input-bg: #0f172a;
+            --input-border: #334155;
+            --input-text: #f8fafc;
+        }
+
+        /* Default English Mode (LTR) */
+        html[lang="en"],
+        body:not(.lang-ur) {
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+        }
+
+        /* 🌟 Authentic Urdu Mode with Jameel Noori Nastaleeq & Anti-Clipping / Anti-Overlap */
+        html[lang="ur"],
+        body.lang-ur {
+            font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', 'Urdu Typesetting', Tahoma, 'Segoe UI', sans-serif;
+            line-height: 1.85;
+            letter-spacing: 0.1px;
+        }
+
+        body.lang-ur h1, body.lang-ur h2, body.lang-ur h3, body.lang-ur h4, body.lang-ur h5, body.lang-ur h6 {
+            line-height: 1.8;
+            margin-bottom: 0.3rem;
+        }
+
+        body.lang-ur .sidebar-link {
+            line-height: 2.0;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            font-size: 1.05rem;
+        }
+
+        body.lang-ur .btn {
+            line-height: 1.8;
+            padding-top: 4px;
+            padding-bottom: 5px;
+        }
+
+        body.lang-ur .form-control,
+        body.lang-ur .form-select {
+            line-height: 1.8;
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
+
+        /* Ensure Table, Rows and Cells NEVER collapse or become inline-block */
+        body.lang-ur table,
+        body.lang-ur .table {
+            display: table !important;
+            width: 100% !important;
+            border-collapse: collapse !important;
+        }
+
+        body.lang-ur table tr,
+        body.lang-ur .table tr {
+            display: table-row !important;
+        }
+
+        body.lang-ur table th,
+        body.lang-ur .table th,
+        body.lang-ur table td,
+        body.lang-ur .table td {
+            display: table-cell !important;
+            vertical-align: middle !important;
+            line-height: 1.7 !important;
+        }
+
+        body.lang-ur .badge {
+            line-height: 1.5;
+            padding: 3px 8px;
+            font-size: 0.85rem;
+        }
+
+        body.lang-ur .modal-title {
+            line-height: 1.8;
+        }
+
+        /* English digits, barcodes, prices, dates, and phone numbers remain crisp monospace */
+        body.lang-ur .font-monospace,
+        body.lang-ur .pos-number,
+        body.lang-ur input[type="number"] {
+            font-family: 'Segoe UI', system-ui, -apple-system, monospace !important;
+            direction: ltr !important;
+            unicode-bidi: embed;
+        }
+
+        body.lang-ur span.font-monospace,
+        body.lang-ur .badge.font-monospace {
+            display: inline-block;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.2s, color 0.2s;
+        }
+
+
+
+        .pos-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ==========================================================================
+           🌟 GMAIL-STYLE MODERN NAVIGATION SIDEBAR (HOVER-TO-EXPAND & ACTIVE PILL)
+           ========================================================================== */
+        .pos-sidebar {
+            background-color: var(--sidebar-bg);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            z-index: 2000;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            box-sizing: border-box;
+            transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-brand {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            flex-shrink: 0;
+            box-sizing: border-box;
+            transition: padding 0.24s ease;
+        }
+
+        .brand-left-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .brand-title-text {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: opacity 0.2s ease 0.04s;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 12px 10px;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+        }
+        .sidebar-menu::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .sidebar-item {
+            margin-bottom: 4px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* 🌟 Gmail-style Rounded Pill Link */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--sidebar-text, #94a3b8);
+            font-size: 0.92rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            height: 44px;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
+            transition: background 0.18s ease, color 0.18s ease, width 0.24s cubic-bezier(0.4, 0, 0.2, 1), padding 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-icon-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            min-width: 28px;
+            height: 28px;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-icon-wrap svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .sidebar-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: opacity 0.2s ease 0.04s, transform 0.2s ease;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .sidebar-link:hover .sidebar-icon-wrap {
+            transform: scale(1.08);
+        }
+
+        /* 🌟 GMAIL ACTIVE TAB HIGHLIGHT PILL */
+        .sidebar-link.active {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 3px 12px rgba(2, 132, 199, 0.4) !important;
+        }
+        .sidebar-link.active .sidebar-icon-wrap svg {
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        /* User Profile Footer Section */
+        .sidebar-user-section {
+            padding: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        .user-profile-box {
+            display: flex;
+            align-items: center;
+            border-radius: 9999px;
+            transition: all 0.24s ease;
+        }
+
+        .user-avatar-mini {
+            width: 32px;
+            height: 32px;
+            border-radius: 9999px;
+            background: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-info-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: opacity 0.2s ease 0.04s;
+        }
+
+        /* Pin Button */
+        .pin-sidebar-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #94a3b8;
+            border-radius: 8px;
+            padding: 4px 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .pin-sidebar-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .pin-sidebar-btn.active {
+            background: #0284c7;
+            border-color: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(2, 132, 199, 0.5);
+        }
+
+        /* Navbar Hamburger */
+        .sidebar-toggle-btn {
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 6px 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .sidebar-toggle-btn:hover {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #0284c7;
+            transform: scale(1.04);
+        }
+
+        /* -------------------------------------------------------------
+           1. DEFAULT STATE: COLLAPSED (Mini Navigation Rail ~70px)
+           ------------------------------------------------------------- */
+        html.sidebar-unpinned .pos-sidebar,
+        body.sidebar-unpinned .pos-sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 70px;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+        }
+
+        html[dir="rtl"].sidebar-unpinned .pos-sidebar,
+        html[dir="rtl"] body.sidebar-unpinned .pos-sidebar {
+            right: 0;
+            left: auto;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        html[dir="ltr"].sidebar-unpinned .pos-sidebar,
+        html[dir="ltr"] body.sidebar-unpinned .pos-sidebar {
+            left: 0;
+            right: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Content width with 70px offset: Zero layout shifts! */
+        html.sidebar-unpinned .pos-main,
+        body.sidebar-unpinned .pos-main {
+            flex-grow: 1;
+            width: calc(100vw - 70px);
+        }
+        html[dir="rtl"].sidebar-unpinned .pos-main,
+        html[dir="rtl"] body.sidebar-unpinned .pos-main {
+            margin-right: 70px;
+            margin-left: 0;
+        }
+        html[dir="ltr"].sidebar-unpinned .pos-main,
+        html[dir="ltr"] body.sidebar-unpinned .pos-main {
+            margin-left: 70px;
+            margin-right: 0;
+        }
+
+        /* Collapsed items look centered and compact */
+        html.sidebar-unpinned .pos-sidebar .sidebar-brand {
+            justify-content: center;
+            padding: 12px 0;
+        }
+        html.sidebar-unpinned .pos-sidebar .sidebar-link {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            justify-content: center;
+            border-radius: 9999px;
+        }
+        html.sidebar-unpinned .pos-sidebar .sidebar-label,
+        html.sidebar-unpinned .pos-sidebar .brand-title-text,
+        html.sidebar-unpinned .pos-sidebar .sidebar-brand-actions,
+        html.sidebar-unpinned .pos-sidebar .user-info-text,
+        html.sidebar-unpinned .pos-sidebar .user-dropdown-wrap {
+            opacity: 0;
+            width: 0;
+            display: none !important;
+            pointer-events: none;
+        }
+        html.sidebar-unpinned .pos-sidebar .user-profile-box {
+            justify-content: center;
+            padding: 4px 0;
+            background: transparent;
+            border: none;
+        }
+
+        /* -------------------------------------------------------------
+           2. 🌟 HOVER-TO-EXPAND STATE (:hover reveals full labels smoothly)
+           ------------------------------------------------------------- */
+        html.sidebar-unpinned .pos-sidebar:hover {
+            width: 254px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65);
+        }
+        html.sidebar-unpinned .pos-sidebar:hover .sidebar-brand {
+            justify-content: space-between;
+            padding: 12px 16px;
+        }
+        html.sidebar-unpinned .pos-sidebar:hover .sidebar-link {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            justify-content: flex-start;
+            border-radius: 9999px;
+            gap: 12px;
+        }
+        html.sidebar-unpinned .pos-sidebar:hover .sidebar-label,
+        html.sidebar-unpinned .pos-sidebar:hover .brand-title-text,
+        html.sidebar-unpinned .pos-sidebar:hover .sidebar-brand-actions,
+        html.sidebar-unpinned .pos-sidebar:hover .user-info-text,
+        html.sidebar-unpinned .pos-sidebar:hover .user-dropdown-wrap {
+            opacity: 1;
+            width: auto;
+            display: inline-flex !important;
+            pointer-events: auto;
+        }
+        html.sidebar-unpinned .pos-sidebar:hover .user-profile-box {
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* -------------------------------------------------------------
+           3. 🌟 PINNED STATE (Always Fixed at 254px Full Width)
+           ------------------------------------------------------------- */
+        html.sidebar-pinned .pos-sidebar,
+        body.sidebar-pinned .pos-sidebar {
+            position: sticky;
+            top: 0;
+            width: 254px;
+            box-shadow: none;
+        }
+        html[dir="rtl"].sidebar-pinned .pos-sidebar,
+        html[dir="rtl"] body.sidebar-pinned .pos-sidebar {
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        html[dir="ltr"].sidebar-pinned .pos-sidebar,
+        html[dir="ltr"] body.sidebar-pinned .pos-sidebar {
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        html.sidebar-pinned .pos-main,
+        body.sidebar-pinned .pos-main {
+            width: calc(100vw - 254px);
+            margin: 0 !important;
+        }
+
+        html.sidebar-pinned .pos-sidebar .sidebar-brand {
+            justify-content: space-between;
+            padding: 12px 16px;
+        }
+        html.sidebar-pinned .pos-sidebar .sidebar-link {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            justify-content: flex-start;
+            border-radius: 9999px;
+            gap: 12px;
+        }
+        html.sidebar-pinned .pos-sidebar .sidebar-label,
+        html.sidebar-pinned .pos-sidebar .brand-title-text,
+        html.sidebar-pinned .pos-sidebar .sidebar-brand-actions,
+        html.sidebar-pinned .pos-sidebar .user-info-text,
+        html.sidebar-pinned .pos-sidebar .user-dropdown-wrap {
+            opacity: 1;
+            width: auto;
+            display: inline-flex !important;
+            pointer-events: auto;
+        }
+        html.sidebar-pinned .pos-sidebar .user-profile-box {
+            justify-content: space-between;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pos-main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .pos-navbar {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--card-border);
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            flex-shrink: 0;
+        }
+
+        .mode-toggle-btn {
+            background: var(--bg-main);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pos-content {
+            padding: 24px;
+            flex-grow: 1;
+        }
+
+        .modal-themed-content {
+            background-color: var(--modal-bg) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--modal-border) !important;
+            border-radius: 12px;
+        }
+
+        .form-themed-control {
+            background-color: var(--input-bg) !important;
+            border: 1px solid var(--input-border) !important;
+            color: var(--input-text) !important;
+        }
+
+        /* Toast notification */
+        .pos-toast {
+            position: fixed;
+            bottom: 25px;
+            left: 25px;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #334155;
+        }
+    
+        /* 🌟 Universal Consistent SaaS Modal Design */
+        .modal-content {
+            border-radius: 16px !important;
+            border: none !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+            overflow: hidden;
+            background: var(--card-bg, #ffffff) !important;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+            color: #ffffff !important;
+            padding: 16px 24px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        .modal-header .modal-title, .modal-header h4, .modal-header h5, .modal-header h6 {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-header .btn-close, .modal-header .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%) !important;
+            opacity: 0.85 !important;
+            margin: 0 !important;
+        }
+        .modal-header .btn-close:hover {
+            opacity: 1 !important;
+        }
+        .modal-body {
+            padding: 24px !important;
+            background: var(--card-bg, #ffffff) !important;
+            color: var(--text-main, #0f172a) !important;
+        }
+        .modal-footer {
+            padding: 14px 24px !important;
+            border-top: 1px solid var(--card-border, #e2e8f0) !important;
+            background: #f8fafc !important;
+        }
+        body.dark-mode .modal-footer {
+            background: #0f172a !important;
+            border-top-color: #334155 !important;
+        }
+        body.dark-mode .modal-body {
+            background: #111827 !important;
+            color: #f8fafc !important;
+        }
+        .swal2-popup {
+            border-radius: 16px !important;
+            font-family: inherit !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+        }
+        body.dark-mode .swal2-popup {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+        }
+        body.dark-mode .swal2-title, body.dark-mode .swal2-html-container {
+            color: #f8fafc !important;
+        }
+        .swal2-styled.swal2-confirm {
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            padding: 10px 24px !important;
+            background-color: #0284c7 !important;
+        }
+        .swal2-styled.swal2-cancel {
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            padding: 10px 24px !important;
+            background-color: #64748b !important;
+        }
+
+        /* Secure Delete Custom Animations & Styles */
+        @keyframes secureDeleteDrop {
+            0% { opacity: 0; transform: translateY(-60px) scale(0.9); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes secureDeleteOut {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(0.95); }
+        }
+        .secure-delete-popup {
+            border-radius: 20px !important;
+            box-shadow: 0 25px 60px rgba(220, 38, 38, 0.15) !important;
+            border: 2px solid #fee2e2 !important;
+            padding: 30px 20px !important;
+        }
+        body.dark-mode .secure-delete-popup {
+            border: 2px solid #7f1d1d !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4) !important;
+        }
+        .secure-delete-title {
+            color: #dc2626 !important;
+            font-size: 1.5rem !important;
+            font-weight: 800 !important;
+        }
+        /* ==================== Ultra Clean SaaS Backup & Safety Modal ==================== */
+        .backup-status-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 95, 70, 0.03) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        body.dark-mode .backup-status-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 78, 59, 0.2) 100%);
+            border-color: rgba(16, 185, 129, 0.35);
+        }
+        .backup-status-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #10b981;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+            position: relative;
+        }
+        .backup-pulse-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 11px;
+            height: 11px;
+            background-color: #22c55e;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: backupPulse 2s infinite;
+        }
+        @keyframes backupPulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .backup-section-card {
+            background: var(--bg-main, #f8fafc);
+            border: 1px solid var(--card-border, #e2e8f0);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+        body.dark-mode .backup-section-card {
+            background: #0f172a;
+            border-color: #1e293b;
+        }
+        .backup-timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 0;
+            font-size: 0.86rem;
+            color: var(--text-main, #334155);
+        }
+        .backup-item-bullet {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: rgba(2, 132, 199, 0.12);
+            color: #0284c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .backup-folder-badge {
+            background: var(--card-bg, #ffffff);
+            border: 1px solid var(--card-border, #cbd5e1);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-family: monospace;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            color: var(--text-main, #0f172a);
+        }
+        body.dark-mode .backup-folder-badge {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        .backup-action-btn {
+            border-radius: 10px;
+            padding: 9px 14px;
+            font-weight: 600;
+            font-size: 0.86rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        .backup-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+        .backup-restore-card {
+            border: 1px dashed #ef4444;
+            background: rgba(239, 68, 68, 0.03);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-top: 14px;
+        }
+        body.dark-mode .backup-restore-card {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        .backup-tabs-nav {
+            background: var(--bg-main, #f1f5f9);
+            padding: 4px;
+            border-radius: 12px;
+            display: flex;
+            gap: 6px;
+            border: 1px solid var(--card-border, #e2e8f0);
+            margin-bottom: 16px;
+        }
+        body.dark-mode .backup-tabs-nav {
+            background: #0f172a;
+            border-color: #334155;
+        }
+        .backup-tabs-nav .nav-link {
+            flex: 1;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-main, #64748b);
+            border: none;
+            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .backup-tabs-nav .nav-link.active {
+            background: var(--card-bg, #ffffff);
+            color: #0284c7;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        body.dark-mode .backup-tabs-nav .nav-link.active {
+            background: #1e293b;
+            color: #38bdf8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .restore-step-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: var(--card-bg, #ffffff);
+            border: 1px solid var(--card-border, #e2e8f0);
+            margin-bottom: 8px;
+        }
+        body.dark-mode .restore-step-card {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .restore-step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #0284c7;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+        }
+
+    /* =======================================================
+       🖨️ MASTER HIGH-DEFINITION PRINT ENGINE (SMART POS)
+       Ensures exact PDF visual quality via browser window.print()
+       ======================================================= */
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 8mm 8mm 8mm 8mm;
+        }
+        
+        *, *::before, *::after {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        /* Hide all UI clutter: sidebars, navbars, buttons, search, inputs, modals, pagination */
+        .pos-sidebar, .pos-navbar, .sidebar, .navbar, nav, footer,
+        .btn, button, input, select, textarea, .input-group, form,
+        .no-print, .th-actions, .td-actions, .action-col, .actions-column,
+        .modal-backdrop, .modal.fade:not(.show),
+        .search-box-wrapper, .date-filter-pills, .pagination,
+        .dataTables_filter, .dataTables_length, .dataTables_info, .dataTables_paginate {
+            display: none !important;
+        }
+
+        /* Expand layout to 100% width, allow page breaks */
+        html, body, .pos-wrapper, .pos-main, .pos-main-container, .pos-content, 
+        .main-content, .container, .container-fluid, .custom-card, .card, .card-body {
+            height: auto !important;
+            min-height: auto !important;
+            overflow: visible !important;
+            position: static !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .table-responsive {
+            overflow: visible !important;
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* 🌟 Master PDF-Style Table Formatting matching saved PDF */
+        table, .table, .table-modern, .table-hover {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            border-spacing: 0 !important;
+            margin-bottom: 12px !important;
+            background-color: #ffffff !important;
+        }
+
+        thead {
+            display: table-header-group !important;
+        }
+
+        /* Dark Navy Header matching saved PDF */
+        thead th, table thead th, .table thead th, .table-modern thead th {
+            background-color: #0F172A !important;
+            color: #ffffff !important;
+            font-size: 10px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.3px !important;
+            border: 1px solid #0F172A !important;
+            padding: 6px 8px !important;
+            vertical-align: middle !important;
+        }
+
+        /* Table Rows & Subtle Borders */
+        tbody tr {
+            page-break-inside: avoid !important;
+        }
+
+        tbody td, table tbody td, .table tbody td, .table-modern tbody td {
+            font-size: 10px !important;
+            color: #0f172a !important;
+            border: 1px solid #CBD5E1 !important;
+            padding: 5px 8px !important;
+            vertical-align: middle !important;
+        }
+
+        /* Zebra striping matching saved PDF */
+        tbody tr:nth-child(even) td, tbody tr:nth-child(even) {
+            background-color: #F8FAFC !important;
+        }
+
+        tbody tr:nth-child(odd) td, tbody tr:nth-child(odd) {
+            background-color: #FFFFFF !important;
+        }
+
+        /* Highlight classes */
+        .text-success { color: #16a34a !important; }
+        .text-danger { color: #dc2626 !important; }
+        .text-primary { color: #0284c7 !important; }
+        .text-muted { color: #64748b !important; }
+
+        /* Badges in print */
+        .badge, .badge-type-cash, .badge-type-credit, .badge-type-returned {
+            border: 1px solid #CBD5E1 !important;
+            padding: 2px 6px !important;
+            font-size: 9px !important;
+            border-radius: 3px !important;
+            background-color: transparent !important;
+            color: #0f172a !important;
+        }
+
+        /* Print visibility helpers */
+        .d-print-none { display: none !important; }
+        .d-print-block { display: block !important; }
+        .d-print-flex { display: flex !important; }
+        .d-print-table { display: table !important; }
+        .d-print-table-row { display: table-row !important; }
+        .d-print-table-cell { display: table-cell !important; }
+
+        .print-header-container {
+            display: block !important;
+            margin-bottom: 12px !important;
+        }
+        .print-footer {
+            display: block !important;
+            text-align: center !important;
+            font-size: 9.5px !important;
+            color: #64748b !important;
+            border-top: 1px solid #E2E8F0 !important;
+            padding-top: 8px !important;
+            margin-top: 15px !important;
+        }
+        .print-kpi-box {
+            display: block !important;
+            border: 1px solid #CBD5E1 !important;
+            background-color: #F8FAFC !important;
+            border-radius: 4px !important;
+            padding: 6px 12px !important;
+            margin-bottom: 12px !important;
+            font-size: 10.5px !important;
+            line-height: 1.5 !important;
+        }
+    }
+
+    /* By default on screen, print header and footer are hidden */
+    .print-header-container, .print-footer, .d-print-only {
+        display: none;
+    }
+    
+        /* 🌟 Universal Consistent SaaS Modal Design */
+        .modal-content {
+            border-radius: 16px !important;
+            border: none !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+            overflow: hidden;
+            background: var(--card-bg, #ffffff) !important;
+        }
+        .modal-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+            color: #ffffff !important;
+            padding: 16px 24px !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        .modal-header .modal-title, .modal-header h4, .modal-header h5, .modal-header h6 {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 1.1rem !important;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-header .btn-close, .modal-header .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%) !important;
+            opacity: 0.85 !important;
+            margin: 0 !important;
+        }
+        .modal-header .btn-close:hover {
+            opacity: 1 !important;
+        }
+        .modal-body {
+            padding: 24px !important;
+            background: var(--card-bg, #ffffff) !important;
+            color: var(--text-main, #0f172a) !important;
+        }
+        .modal-footer {
+            padding: 14px 24px !important;
+            border-top: 1px solid var(--card-border, #e2e8f0) !important;
+            background: #f8fafc !important;
+        }
+        body.dark-mode .modal-footer {
+            background: #0f172a !important;
+            border-top-color: #334155 !important;
+        }
+        body.dark-mode .modal-body {
+            background: #111827 !important;
+            color: #f8fafc !important;
+        }
+        .swal2-popup {
+            border-radius: 16px !important;
+            font-family: inherit !important;
+            padding: 24px !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+        }
+        body.dark-mode .swal2-popup {
+            background: #1e293b !important;
+            color: #f8fafc !important;
+        }
+        body.dark-mode .swal2-title, body.dark-mode .swal2-html-container {
+            color: #f8fafc !important;
+        }
+        .swal2-styled.swal2-confirm {
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            padding: 10px 24px !important;
+            background-color: #0284c7 !important;
+        }
+        .swal2-styled.swal2-cancel {
+            border-radius: 8px !important;
+            font-weight: 700 !important;
+            padding: 10px 24px !important;
+            background-color: #64748b !important;
+        }
+
+    </style>
+
+</head>
+<body class="lang-ur sidebar-unpinned">
+    <div class="pos-wrapper">
+        <aside class="pos-sidebar no-print">
+            <div class="sidebar-brand">
+                <div class="brand-left-wrap">
+                    <img src="{{ url_for('static', filename='img/jbs_icon.png') }}" alt="JBS" style="width: 34px; height: 34px; object-fit: contain; border-radius: 8px; flex-shrink: 0; background: #ffffff; padding: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+                    <span class="brand-title-text lang-text text-truncate fw-bold" data-en="Smart POS System" data-ur="اسمارٹ پی او ایس">اسمارٹ پی او ایس</span>
+                </div>
+                <div class="sidebar-brand-actions d-flex align-items-center gap-1">
+                    <!-- Pin / Unpin Button -->
+                    <button class="pin-sidebar-btn lang-title" id="pinSidebarBtn" onclick="toggleSidebarPin()" data-en="Pin Sidebar (Always visible)" data-ur="سائیڈ بار پن کریں (ہمیشہ کھلا رکھیں)" title="سائیڈ بار پن کریں">
+                        <svg class="pin-icon-unpinned" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.283.284-.53.53-.53.867v3.111l1.29 1.29a.5.5 0 0 1 .146.353V8.5a.5.5 0 0 1-.5.5H8.5v5.5a.5.5 0 0 1-.854.354L5.146 12.354A.5.5 0 0 1 5 12V9H1.732a.5.5 0 0 1-.5-.5V7.646a.5.5 0 0 1 .146-.353l1.29-1.29V2.846c0-.337-.247-.583-.53-.867C1.842 1.674 1.5 1.18 1.5.5a.5.5 0 0 1 .5-.5h2.146zM2.846 1c.14.15.34.34.542.542.446.446.612.98.612 1.304v3.5a.5.5 0 0 1-.146.354L2.5 8h11l-1.354-1.3A.5.5 0 0 1 12 6.346V2.846c0-.324.166-.858.612-1.304.202-.202.402-.392.542-.542H2.846z"/>
+                        </svg>
+                        <svg class="pin-icon-pinned" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" style="display: none;">
+                            <path d="M4.146.146A.5.5 0 0 1 4.5 0h7a.5.5 0 0 1 .5.5c0 .68-.342 1.174-.646 1.479-.283.284-.53.53-.53.867v3.111l1.29 1.29a.5.5 0 0 1 .146.353V8.5a.5.5 0 0 1-.5.5H8.5v5.5a.5.5 0 0 1-.854.354L5.146 12.354A.5.5 0 0 1 5 12V9H1.732a.5.5 0 0 1-.5-.5V7.646a.5.5 0 0 1 .146-.353l1.29-1.29V2.846c0-.337-.247-.583-.53-.867C1.842 1.674 1.5 1.18 1.5.5a.5.5 0 0 1 .5-.5h2.146z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <!-- صرف ایڈمن کے لیے -->
+                {% if session.get('role') == 'admin' %}
+                <li class="sidebar-item">
+                    <a href="/dashboard" class="sidebar-link {% if request.path == '/dashboard' or request.path == '/' %}active{% endif %}" title="کاروباری خلاصہ">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M1 4a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4zm10 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V4zM1 10a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-4zm7 0a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-4z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Dashboard" data-ur="کاروباری خلاصہ">کاروباری خلاصہ</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- تمام یوزرز (ایڈمن اور کیشئر) کے لیے -->
+                <li class="sidebar-item">
+                    <a href="/pos" class="sidebar-link {% if request.path == '/pos' %}active{% endif %}" title="سیل کاؤنٹر / بلنگ">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm2 .5v2a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5h-7a.5.5 0 0 0-.5.5zm0 4v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zm3 0v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5zm3 0v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Sales Counter" data-ur="سیل کاؤنٹر / بلنگ">سیل کاؤنٹر / بلنگ</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/sales" class="sidebar-link {% if request.path == '/sales' %}active{% endif %}" title="سیل ہسٹری (بلز)">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .974.607l-.604.79-.424-.257zM8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Sales History" data-ur="سیل ہسٹری (بلز)">سیل ہسٹری (بلز)</span>
+                    </a>
+                </li>
+
+                <!-- حساس ماڈیولز: صرف ایڈمن کے لیے -->
+                {% if session.get('role') == 'admin' %}
+                <li class="sidebar-item">
+                    <a href="/inventory" class="sidebar-link {% if request.path == '/inventory' %}active{% endif %}" title="اسٹاک / گودام">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Stock & Warehouse" data-ur="اسٹاک / گودام">اسٹاک / گودام</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/customers" class="sidebar-link {% if request.path == '/customers' %}active{% endif %}" title="گاہکوں کا کھاتہ">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Customer Ledgers" data-ur="گاہکوں کا کھاتہ">گاہکوں کا کھاتہ</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/party_sales" class="sidebar-link {% if request.path == '/party_sales' %}active{% endif %}" title="پارٹی وائز پروڈکٹ ہسٹری">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Party Item Sales" data-ur="پارٹی وائز پروڈکٹ ہسٹری">پارٹی وائز پروڈکٹ ہسٹری</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/suppliers" class="sidebar-link {% if request.path == '/suppliers' or request.path == '/payables' %}active{% endif %}" title="سپلائرز کھاتہ (Payables)">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Suppliers & Payables" data-ur="سپلائرز کھاتہ (Payables)">سپلائرز کھاتہ (Payables)</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/quotations" class="sidebar-link {% if request.path == '/quotations' %}active{% endif %}" title="کوٹیشنز (تخمینہ ریٹ)">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/><path d="M4.5 9a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Quotations (Estimate)" data-ur="کوٹیشنز (تخمینہ ریٹ)">کوٹیشنز (تخمینہ ریٹ)</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/daily-report" class="sidebar-link {% if request.path == '/daily-report' %}active{% endif %}" title="ڈیلی رپورٹ (کلوزنگ)">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Daily Closing" data-ur="ڈیلی رپورٹ (کلوزنگ)">ڈیلی رپورٹ (کلوزنگ)</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/monthly-report" class="sidebar-link {% if request.path == '/monthly-report' %}active{% endif %}" title="ماہانہ مکمل رپورٹ">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Monthly Summary" data-ur="ماہانہ مکمل رپورٹ">ماہانہ مکمل رپورٹ</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/expenses" class="sidebar-link {% if request.path == '/expenses' %}active{% endif %}" title="دکان کے اخراجات">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Expenses" data-ur="دکان کے اخراجات">دکان کے اخراجات</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/loans" class="sidebar-link {% if request.path == '/loans' %}active{% endif %}" title="ذاتی قرضہ جات (لین دین)">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Personal Loans" data-ur="ذاتی قرضہ جات (لین دین)">ذاتی قرضہ جات (لین دین)</span>
+                    </a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="/profit-loss" class="sidebar-link {% if request.path == '/profit-loss' %}active{% endif %}" title="نفع و نقصان (P&L)">
+                        <span class="sidebar-icon-wrap"><svg width="17" height="17" fill="currentColor" viewBox="0 0 16 16"><path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3zm2 .5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/><path d="M10 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM4 5.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5z"/></svg></span>
+                        <span class="sidebar-label lang-text" data-en="Profit & Loss" data-ur="نفع و نقصان (P&L)">نفع و نقصان (P&L)</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <!-- ==================== یوزر بار ==================== -->
+            <div class="sidebar-user-section">
+                <div class="user-profile-box">
+                    <div class="d-flex align-items-center gap-2 overflow-hidden user-info-wrap">
+                        <div class="user-avatar-mini">
+                            {{ session.get('username', 'U')[0]|upper }}
+                        </div>
+                        <div class="text-truncate user-info-text">
+                            <div class="fw-bold text-white small" style="font-size: 0.82rem; line-height: 1.1;">
+                                {{ session.get('display_name', 'User') }}
+                            </div>
+                            <span class="badge {% if session.get('role') == 'admin' %}bg-primary{% else %}bg-success{% endif %}" style="font-size: 9px; padding: 1px 5px;">
+                                {{ session.get('role', 'staff')|upper }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown user-dropdown-wrap">
+                        <button class="btn btn-sm text-white-50 p-1" data-bs-toggle="dropdown" style="border: none; background: transparent;">
+                            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" style="font-size: 0.85rem;">
+                            <li>
+                                <button class="dropdown-item lang-text" data-en="Change Password" data-ur="پاس ورڈ تبدیل کریں" data-bs-toggle="modal" data-bs-target="#changePassModal">
+                                    Change Password
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider border-secondary my-1"></li>
+                            <li>
+                                <a class="dropdown-item text-warning fw-bold lang-text" data-en="Logout" data-ur="لاگ آؤٹ کریں" href="/logout">
+                                    Logout
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-danger fw-bold lang-text" data-en="Exit Software" data-ur="سافٹ ویئر بند کریں (Exit)" href="/api/system/shutdown" onclick="return confirm('کیا آپ واقعی سافٹ ویئر بند کرنا چاہتے ہیں؟ آخری بیک اپ خودکار محفوظ ہو جائے گا۔');">
+                                    Exit Software
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Body Area -->
+        <main class="pos-main">
+            <header class="pos-navbar no-print">
+                <div class="store-header-title d-flex align-items-center gap-2">
+                    <button class="sidebar-toggle-btn lang-title" id="sidebarToggleBtn" onclick="toggleSidebarDrawer()" data-en="Menu (Open Sidebar)" data-ur="مینو (سائیڈ بار کھولیں)" title="مینو">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                    </button>
+                    <span class="lang-text fw-bold text-primary" data-en="Smart POS System (Main Market, Lahore)" data-ur="اسمارٹ پی او ایس (مین مارکیٹ، لاہور)">Smart POS System (Main Market, Lahore)</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if session.get('role') == 'admin' %}
+                    <!-- سنگل اسٹائلش بیک اپ و ڈیٹا بحالی بٹن -->
+                    <button class="mode-toggle-btn text-primary border-primary" onclick="openBackupModal('backup')" title="بیک اپ و ڈیٹا بحالی">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.579.481-.96 1.15-.992 1.93l-.048.653-.637.152C2.06 7.15 1 8.143 1 9.318 1 10.79 2.235 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+                            <path d="M7.646 10.854a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 9.293V5.5a.5.5 0 0 0-1 0v3.793L6.354 8.146a.5.5 0 1 0-.708.708l2 2z"/>
+                        </svg>
+                        <span class="lang-text" data-en="Backup & Restore" data-ur="بیک اپ و بحالی">بیک اپ و بحالی</span>
+                    </button>
+                    {% endif %}
+
+                    <button class="mode-toggle-btn" id="themeToggleBtn" onclick="toggleAppTheme()">
+                        <span id="themeIconContainer">
+                            <svg width="14" height="14" fill="#f59e0b" viewBox="0 0 16 16"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>
+                        </span>
+                        <span id="themeText">Dark</span>
+                    </button>
+
+                    <button class="mode-toggle-btn" id="langToggleBtn" onclick="toggleAppLanguage()">
+                        <span id="langText">English</span>
+                    </button>
+
+                    <!-- سافٹ ویئر بند کریں (Exit & Backup Button) -->
+                    <a href="/api/system/shutdown" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 px-2 py-1 fw-bold text-decoration-none shadow-sm" style="border-radius: 9px; font-size: 0.8rem;" onclick="return confirm('کیا آپ واقعی سافٹ ویئر بند کرنا چاہتے ہیں؟ آخری بیک اپ خودکار محفوظ ہو جائے گا۔');" title="سافٹ ویئر بند کریں اور بیک اپ محفوظ کریں">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M7.5 1v7h1V1h-1z"/><path d="M3 8.812a4.999 4.999 0 0 1 2.578-4.375l-.485-.874A6 6 0 1 0 11 3.616l-.501.865A5 5 0 1 1 3 8.812z"/></svg>
+                        <span class="lang-text" data-en="Exit" data-ur="بند کریں (Exit)">Exit</span>
+                    </a>
+                </div>
+            </header>
+
+            <section class="pos-content">
+                {% block content %}{% endblock %}
+            </section>
+        </main>
+    </div>
+
+    <!-- ==================== تھیم رسپانسیو پاس ورڈ ماڈل ==================== -->
+    <div class="modal fade" id="changePassModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content modal-themed-content">
+                <div class="modal-header border-bottom py-2">
+                    <h6 class="modal-title fw-bold lang-text" data-en="Change Password / PIN" data-ur="پاس ورڈ یا پن تبدیل کریں">Change Password / PIN</h6>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    {% if session.get('role') == 'admin' %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold lang-text" data-en="Select User" data-ur="یوزر منتخب کریں">Select User</label>
+                        <select id="cpTargetUser" class="form-select form-select-sm form-themed-control">
+                            <option value="admin">Admin</option>
+                            <option value="cashier">Cashier</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold lang-text" data-en="Current Password" data-ur="موجودہ پرانا پاس ورڈ">Current Password</label>
+                        <input type="password" id="cpOldPass" class="form-control form-control-sm form-themed-control font-monospace" placeholder="••••" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold lang-text" data-en="New Password / PIN" data-ur="نیا پاس ورڈ یا پن کوڈ">New Password / PIN</label>
+                        <input type="password" id="cpNewPass" class="form-control form-control-sm form-themed-control font-monospace" placeholder="Min 4 digits" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-top py-2">
+                    <button type="button" class="btn btn-secondary btn-sm lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-sm fw-bold px-3 lang-text" data-en="Save" data-ur="محفوظ کریں" onclick="submitPasswordChange()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== خودکار بیک اپ و ڈیٹا بحالی ماڈل ==================== -->
+    <div class="modal fade" id="backupInfoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-themed-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header">
+                    <div class="d-flex align-items-center gap-2">
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 7.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5z"/>
+                        </svg>
+                        <h6 class="modal-title fw-bold lang-text" data-en="Backup & Data Recovery System" data-ur="بیک اپ و ڈیٹا بحالی سسٹم">بیک اپ و ڈیٹا بحالی سسٹم</h6>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Tab Navigation Header -->
+                    <div class="backup-tabs-nav nav" role="tablist">
+                        <button class="nav-link active" id="tab-backup-btn" data-bs-toggle="tab" data-bs-target="#backupTabPane" type="button" role="tab">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
+                            <span class="lang-text" data-en="Backup & Security" data-ur="بیک اپ و حفاظت">بیک اپ و حفاظت</span>
+                        </button>
+                        <button class="nav-link" id="tab-restore-btn" data-bs-toggle="tab" data-bs-target="#restoreTabPane" type="button" role="tab">
+                            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                            <span class="lang-text" data-en="Restore Data (Recovery)" data-ur="ڈیٹا بحالی و طریقہ کار">ڈیٹا بحالی و طریقہ کار</span>
+                        </button>
+                        <button class="nav-link text-danger" id="tab-reset-btn" data-bs-toggle="tab" data-bs-target="#resetTabPane" type="button" role="tab">
+                            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                            <span class="lang-text" data-en="Reset / Clean Data" data-ur="ڈیٹا صاف کریں (تازہ آغاز)">ڈیٹا صاف کریں (تازہ آغاز)</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab Content Panes -->
+                    <div class="tab-content">
+                        <!-- ================= TAB 1: BACKUP & SCHEDULE ================= -->
+                        <div class="tab-pane fade show active" id="backupTabPane" role="tabpanel">
+                            <!-- Live Status Card -->
+                            <div class="backup-status-card mb-3">
+                                <div class="backup-status-icon-wrap">
+                                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                                        <path d="M5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.775 11.775 0 0 1-2.517 2.453 7.159 7.159 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7.158 7.158 0 0 1-1.048-.625 11.777 11.777 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 62.77 62.77 0 0 1 5.072.56zM8 1.5c-.655 0-1.745.244-2.774.52-1.01.272-2.02.593-2.558.77-.384 3.985.65 6.942 2.115 8.86a10.27 10.27 0 0 0 2.235 2.185c.34.222.67.38.982.47.312-.09.642-.248.982-.47a10.27 10.27 0 0 0 2.235-2.185c1.465-1.918 2.5-4.875 2.115-8.86-.538-.177-1.548-.498-2.558-.77C9.745 1.744 8.655 1.5 8 1.5z"/>
+                                        <path d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                    </svg>
+                                    <span class="backup-pulse-dot"></span>
+                                </div>
+                                <div>
+                                    <div class="fw-bold fs-6 lang-text" data-en="Your Business Data is 100% Secure" data-ur="آپ کا کاروباری ڈیٹا 100% محفوظ ہے">آپ کا کاروباری ڈیٹا 100% محفوظ ہے</div>
+                                    <small class="text-muted lang-text" data-en="Multi-layer auto snapshots continuously protect sales, khata, and inventory." data-ur="خودکار بیک اپ سسٹم آپ کے بلز، گاہکوں کے کھاتے اور اسٹاک کی مسلسل حفاظت کرتا ہے۔">خودکار بیک اپ سسٹم آپ کے بلز، گاہکوں کے کھاتے اور اسٹاک کی مسلسل حفاظت کرتا ہے۔</small>
+                                </div>
+                            </div>
+
+                            <!-- Schedule Card -->
+                            <div class="backup-section-card">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="text-primary fw-bold small text-uppercase lang-text" data-en="Automatic Backup Schedule" data-ur="خودکار بیک اپ شیڈول">خودکار بیک اپ شیڈول</span>
+                                </div>
+                                <div class="backup-timeline-item">
+                                    <span class="backup-item-bullet">
+                                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                                    </span>
+                                    <span class="lang-text" data-en="Daily 2:00 PM: Midday snapshot auto-saved" data-ur="روزانہ دوپہر 2:00 بجے: خودکار فولڈر میں بیک اپ محفوظ ہوتا ہے">روزانہ دوپہر 2:00 بجے: خودکار فولڈر میں بیک اپ محفوظ ہوتا ہے</span>
+                                </div>
+                                <div class="backup-timeline-item">
+                                    <span class="backup-item-bullet">
+                                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>
+                                    </span>
+                                    <span class="lang-text" data-en="Daily 9:00 PM: End-of-day shop closing snapshot" data-ur="روزانہ رات 9:00 بجے: دکان کلوزنگ کا مکمل بیک اپ بنتا ہے">روزانہ رات 9:00 بجے: دکان کلوزنگ کا مکمل بیک اپ بنتا ہے</span>
+                                </div>
+                                <div class="backup-timeline-item">
+                                    <span class="backup-item-bullet">
+                                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+                                    </span>
+                                    <span class="lang-text" data-en="App Exit & Day-End: Live real-time safety snapshots" data-ur="سافٹ ویئر بند کرتے وقت: آخری بل تک کا سیفٹی بیک اپ بنتا ہے">سافٹ ویئر بند کرتے وقت: آخری بل تک کا سیفٹی بیک اپ بنتا ہے</span>
+                                </div>
+                            </div>
+
+                            <!-- Storage Directories Card -->
+                            <div class="backup-section-card">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="text-primary fw-bold small text-uppercase lang-text" data-en="Backup Storage Folders" data-ur="بیک اپ محفوظ ہونے کے فولڈرز">بیک اپ محفوظ ہونے کے فولڈرز</span>
+                                </div>
+                                <div class="backup-folder-badge">
+                                    <svg width="14" height="14" fill="#0284c7" viewBox="0 0 16 16"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h4.69z"/></svg>
+                                    <span>daily_backups / <strong>database_backups</strong> (.db)</span>
+                                </div>
+                                <div class="backup-folder-badge">
+                                    <svg width="14" height="14" fill="#10b981" viewBox="0 0 16 16"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h4.69z"/></svg>
+                                    <span>daily_backups / <strong>excel_backups</strong> (.xlsx)</span>
+                                </div>
+                                <div class="backup-folder-badge mb-0">
+                                    <svg width="14" height="14" fill="#f59e0b" viewBox="0 0 16 16"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h4.69z"/></svg>
+                                    <span>daily_backups / <strong>manual_downloads</strong> (Manual)</span>
+                                </div>
+                            </div>
+
+                            <!-- Manual Download Action Buttons -->
+                            <div class="row g-2 mt-1">
+                                <div class="col-4">
+                                    <a href="/backup_db" class="btn btn-outline-success backup-action-btn w-100 shadow-sm">
+                                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/><path d="M4.5 9a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/></svg>
+                                        <span class="lang-text" data-en="Export Excel" data-ur="ایکسل ڈاؤن لوڈ">ایکسل ڈاؤن لوڈ</span>
+                                    </a>
+                                </div>
+                                <div class="col-4">
+                                    <a href="/api/backup/download_db" class="btn btn-primary backup-action-btn w-100 shadow-sm">
+                                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/><path d="M4.5 5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7zM4 8.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5z"/></svg>
+                                        <span class="lang-text" data-en="Download DB" data-ur="ڈیٹا بیس بیک اپ">ڈیٹا بیس بیک اپ</span>
+                                    </a>
+                                </div>
+                                <div class="col-4">
+                                    <button type="button" onclick="openBackupFolder()" class="btn btn-outline-dark backup-action-btn w-100 shadow-sm">
+                                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h4.69z"/></svg>
+                                        <span class="lang-text" data-en="Open Folder" data-ur="فولڈر کھولیں">فولڈر کھولیں</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= TAB 2: RESTORE & GUIDE ================= -->
+                        <div class="tab-pane fade" id="restoreTabPane" role="tabpanel">
+                            <!-- Restoration Step-by-Step Guide -->
+                            <div class="backup-section-card mb-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="text-danger fw-bold small text-uppercase lang-text" data-en="How to Restore (3 Easy Steps)" data-ur="ڈیٹا بحال کرنے کا آسان طریقہ (۳ مراحل)">ڈیٹا بحال کرنے کا آسان طریقہ (۳ مراحل)</span>
+                                </div>
+                                
+                                <div class="restore-step-card">
+                                    <div class="restore-step-num">1</div>
+                                    <div>
+                                        <div class="fw-bold small lang-text" data-en="Connect Backup Drive / USB" data-ur="بیک اپ والی USB یا فائل لگائیں">بیک اپ والی USB یا فائل لگائیں</div>
+                                        <div class="text-muted small lang-text" data-en="Attach the USB containing your backup (.db) file to the PC." data-ur="جس USB میں آپ نے بیک اپ (.db) فائل رکھی تھی وہ کمپیوٹر میں لگائیں۔">جس USB میں آپ نے بیک اپ (.db) فائل رکھی تھی وہ کمپیوٹر میں لگائیں۔</div>
+                                    </div>
+                                </div>
+
+                                <div class="restore-step-card">
+                                    <div class="restore-step-num">2</div>
+                                    <div>
+                                        <div class="fw-bold small lang-text" data-en="Choose .db File Below" data-ur="نیچے سے .db فائل منتخب کریں">نیچے سے .db فائل منتخب کریں</div>
+                                        <div class="text-muted small lang-text" data-en="Click 'Choose File' and select the database backup from your USB." data-ur="نیچے 'Choose File' پر کلک کر کے اپنی .db بیک اپ فائل سلیکٹ کریں۔">نیچے 'Choose File' پر کلک کر کے اپنی .db بیک اپ فائل سلیکٹ کریں۔</div>
+                                    </div>
+                                </div>
+
+                                <div class="restore-step-card mb-0">
+                                    <div class="restore-step-num">3</div>
+                                    <div>
+                                        <div class="fw-bold small lang-text" data-en="Click 'Restore' & Done!" data-ur="لال بٹن 'بحال کریں' دبائیں">لال بٹن 'بحال کریں' دبائیں</div>
+                                        <div class="text-muted small lang-text" data-en="In 2 seconds, all your stock, customer khata, and bills reload!" data-ur="صرف 2 سیکنڈ میں سارا کھاتہ، گاہکوں کا ادھار اور اسٹاک واپس آ جائے گا!">صرف 2 سیکنڈ میں سارا کھاتہ، گاہکوں کا ادھار اور اسٹاک واپس آ جائے گا!</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- File Restore Form -->
+                            <div class="backup-restore-card mt-0">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <svg width="16" height="16" fill="#dc2626" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                                    <span class="fw-bold small text-danger text-uppercase lang-text" data-en="Upload .db Backup File" data-ur="پرانی .db فائل اپ لوڈ کر کے بحال کریں">پرانی .db فائل اپ لوڈ کر کے بحال کریں</span>
+                                </div>
+                                <form id="restoreDbForm" onsubmit="handleDbRestore(event)" class="d-flex gap-2 align-items-center">
+                                    <input type="file" id="restoreFileInp" name="backup_file" accept=".db" class="form-control form-control-sm form-themed-control" required>
+                                    <button type="submit" class="btn btn-danger btn-sm fw-bold px-3 flex-shrink-0 d-inline-flex align-items-center gap-1">
+                                        <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                                        <span class="lang-text" data-en="Restore" data-ur="بحال کریں">بحال کریں</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- ================= TAB 3: RESET / CLEAN DATA ================= -->
+                        <div class="tab-pane fade" id="resetTabPane" role="tabpanel">
+                            <div class="backup-section-card border-danger border-opacity-25 mb-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <svg width="18" height="18" fill="#dc2626" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+                                    <span class="text-danger fw-bold small text-uppercase lang-text" data-en="Reset Data & Start Fresh" data-ur="ڈیٹا صاف کریں (دکان کے اصلی حساب کا آغاز)">ڈیٹا صاف کریں (دکان کے اصلی حساب کا آغاز)</span>
+                                </div>
+                                <p class="text-muted small mb-3 lang-text" data-en="Clear test sales, bills, customer debts, and purchase records to start fresh for your real shop business. A safety backup is saved automatically." data-ur="تمام ٹیسٹ بلز، گاہکوں کا ادھار اور پرانی انٹریز صاف کر کے دکان کا اصلی کام شروع کریں۔ صفائی سے پہلے موجودہ ڈیٹا کا سیفٹی بیک اپ خود بخود بن جائے گا۔">تمام ٹیسٹ بلز، گاہکوں کا ادھار اور پرانی انٹریز صاف کر کے دکان کا اصلی کام شروع کریں۔ صفائی سے پہلے موجودہ ڈیٹا کا سیفٹی بیک اپ خود بخود بن جائے گا۔</p>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="resetMode" id="resetAll" value="all" checked>
+                                        <label class="form-check-label fw-bold small lang-text" for="resetAll" data-en="Wipe Everything (Complete Fresh Start - 100% Empty)" data-ur="سب کچھ صاف کریں (بلکل نیا زیرو میٹر سسٹم - 100% خالی)">
+                                            سب کچھ صاف کریں (بلکل نیا زیرو میٹر سسٹم - 100% خالی)
+                                        </label>
+                                    </div>
+                                    <div class="form-check mt-1">
+                                        <input class="form-check-input" type="radio" name="resetMode" id="resetKeepProducts" value="keep_products">
+                                        <label class="form-check-label fw-bold small lang-text" for="resetKeepProducts" data-en="Keep Products & Barcodes (Only clear sales, bills & debts)" data-ur="سامان کے نام رہنے دیں (صرف بلز، سیلز اور گاہکوں کے کھاتے صاف کریں)">
+                                            سامان کے نام رہنے دیں (صرف بلز، سیلز اور گاہکوں کے کھاتے صاف کریں)
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small lang-text" data-en="Enter Admin Password to Confirm:" data-ur="تصدیق کے لیے ایڈمن پاس ورڈ درج کریں:">تصدیق کے لیے ایڈمن پاس ورڈ درج کریں:</label>
+                                    <input type="password" id="resetAdminPassword" class="form-control form-control-sm font-monospace" placeholder="••••••••" value="" autocomplete="new-password" style="max-width: 250px;">
+                                </div>
+
+                                <button type="button" class="btn btn-danger fw-bold btn-sm px-4 shadow-sm" onclick="executeDatabaseReset()">
+                                    <span class="lang-text" data-en="Reset & Clean Data Now" data-ur="ابھی ڈیٹا صاف کریں">ابھی ڈیٹا صاف کریں</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- گلوبل ٹوسٹ نوٹیفکیشن -->
+    <div id="posGlobalToast" class="pos-toast">
+        <span id="toastIcon">✔</span>
+        <span id="toastMsg">پیغام کاپی ہو گیا</span>
+    </div>
+
+    <!-- 100% Offline Bootstrap 5 JS & Chart.js -->
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sweetalert2.all.min.js') }}"></script>
+
+    <script>
+        const sunIconSvg = `<svg width="14" height="14" fill="#f59e0b" viewBox="0 0 16 16"><path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8z"/></svg>`;
+        const moonIconSvg = `<svg width="14" height="14" fill="#f59e0b" viewBox="0 0 16 16"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>`;
+
+        
+        // 🌟 خوبصورت ان-ایپ میسج پاپ اپ (SweetAlert2 Global Override)
+        window.alert = function(msg) {
+            if (!msg) return;
+            let icon = 'info';
+            let str = String(msg);
+            if (str.includes('Error') || str.includes('خرابی') || str.includes('ناکافی') || str.includes('نہیں') || str.includes('غلط')) {
+                icon = 'error';
+            } else if (str.includes('کامیابی') || str.includes('محفوظ') || str.includes('Success') || str.includes('اپڈیٹ')) {
+                icon = 'success';
+            } else if (str.includes('انتباہ') || str.includes('Warning') || str.includes('زیادہ')) {
+                icon = 'warning';
+            }
+            Swal.fire({
+                text: str,
+                icon: icon,
+                confirmButtonColor: '#0284c7',
+                confirmButtonText: 'ٹھیک ہے (OK)',
+                customClass: {
+                    popup: 'rounded-4 shadow-lg border-0'
+                }
+            });
+        };
+
+        function applyTheme(theme) {
+            const isDark = (theme === 'dark');
+            const docEl = document.documentElement;
+            const bodyEl = document.body;
+
+            if (isDark) {
+                docEl.classList.add('dark-mode');
+                bodyEl.classList.add('dark-mode');
+            } else {
+                docEl.classList.remove('dark-mode');
+                bodyEl.classList.remove('dark-mode');
+            }
+
+            const iconContainer = document.getElementById('themeIconContainer');
+            const textEl = document.getElementById('themeText');
+            if (iconContainer) iconContainer.innerHTML = isDark ? sunIconSvg : moonIconSvg;
+            if (textEl) textEl.innerText = isDark ? 'Light' : 'Dark';
+        }
+
+        function applySavedPreferences() {
+            const savedTheme = localStorage.getItem('pos_theme') || 'light';
+            const savedLang = localStorage.getItem('pos_lang') || 'ur';
+            applyTheme(savedTheme);
+            applyLanguage(savedLang);
+        }
+
+        function toggleAppTheme() {
+            const isCurrentlyDark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
+            const newTheme = isCurrentlyDark ? 'light' : 'dark';
+            localStorage.setItem('pos_theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        function toggleAppLanguage() {
+            const currentLang = localStorage.getItem('pos_lang') || 'ur';
+            const newLang = currentLang === 'ur' ? 'en' : 'ur';
+            localStorage.setItem('pos_lang', newLang);
+            applyLanguage(newLang);
+        }
+
+        function applyLanguage(lang) {
+            const langText = document.getElementById('langText');
+
+            if (lang === 'en') {
+                document.documentElement.setAttribute('dir', 'ltr');
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.classList.remove('lang-ur');
+                document.body.classList.remove('lang-ur');
+                if (langText) langText.innerText = 'اردو';
+            } else {
+                document.documentElement.setAttribute('dir', 'rtl');
+                document.documentElement.setAttribute('lang', 'ur');
+                document.documentElement.classList.add('lang-ur');
+                document.body.classList.add('lang-ur');
+                if (langText) langText.innerText = 'English';
+            }
+
+            document.querySelectorAll('.lang-text').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) {
+                    if (el.tagName === 'OPTION') {
+                        el.textContent = text;
+                    } else {
+                        el.innerText = text;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.lang-placeholder').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) el.setAttribute('placeholder', text);
+            });
+
+            document.querySelectorAll('.lang-title').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (text) el.setAttribute('title', text);
+            });
+        }
+
+        function confirmSecureDelete(event, formElement) {
+            event.preventDefault();
+            const currentLang = localStorage.getItem('pos_lang') || 'ur';
+            const msg = currentLang === 'en' ? 'Are you sure you want to delete this?' : 'کیا آپ واقعی اسے ڈیلیٹ کرنا چاہتے ہیں؟';
+            const codeMsg = currentLang === 'en' ? 'Enter Admin Password to confirm:' : 'ڈیلیٹ کرنے کے لیے ایڈمن پاسورڈ درج کریں:';
+            
+            Swal.fire({
+                title: msg,
+                text: codeMsg,
+                input: 'password',
+                inputAttributes: {
+                    autocapitalize: 'off',
+                    autocorrect: 'off',
+                    placeholder: '*****',
+                    class: 'form-control font-monospace text-center mt-3'
+                },
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: currentLang === 'en' ? 'Yes, Delete!' : 'ہاں، ڈیلیٹ کریں!',
+                cancelButtonText: currentLang === 'en' ? 'Cancel' : 'کینسل',
+                customClass: {
+                    popup: 'secure-delete-popup',
+                    title: 'secure-delete-title',
+                    confirmButton: 'btn btn-danger fw-bold px-4 rounded-3',
+                    cancelButton: 'btn btn-secondary fw-bold px-4 rounded-3'
+                },
+                buttonsStyling: false,
+                showClass: {
+                    popup: 'secure-delete-anim-in'
+                },
+                hideClass: {
+                    popup: 'secure-delete-anim-out'
+                },
+                preConfirm: (code) => {
+                    if (!code) {
+                        Swal.showValidationMessage(currentLang === 'en' ? 'Please enter a password!' : 'براہ کرم پاسورڈ درج کریں!');
+                        return false;
+                    }
+                    return fetch('/api/verify_admin_password', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({password: code})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            Swal.showValidationMessage(currentLang === 'en' ? 'Incorrect Password!' : 'پاسورڈ غلط ہے!');
+                            return false;
+                        }
+                        return true;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(currentLang === 'en' ? 'Verification failed' : 'تصدیق ناکام ہو گئی');
+                        return false;
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    formElement.submit();
+                }
+            });
+            return false;
+        }
+
+        function submitPasswordChange() {
+            const oldPass = document.getElementById('cpOldPass').value;
+            const newPass = document.getElementById('cpNewPass').value;
+            const targetUserSelect = document.getElementById('cpTargetUser');
+            const currentLang = localStorage.getItem('pos_lang') || 'ur';
+
+            if (!oldPass) {
+                return alert(currentLang === 'en' ? 'Please enter current password.' : 'براہ کرم پرانا پاس ورڈ درج کریں۔');
+            }
+            if (!newPass || newPass.length < 4) {
+                return alert(currentLang === 'en' ? 'New password must be at least 4 digits.' : 'نیا پاس ورڈ کم از کم 4 ہندسوں پر مشتمل ہونا چاہیے۔');
+            }
+
+            const payload = {
+                old_password: oldPass,
+                new_password: newPass,
+                target_user: targetUserSelect ? targetUserSelect.value : ''
+            };
+
+            fetch('/api/user/change_password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(res => {
+                alert(currentLang === 'en' ? res.message_en : res.message_ur);
+                if (res.success) {
+                    location.reload();
+                }
+            })
+            .catch(err => alert('Error changing password.'));
+        }
+
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('posGlobalToast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+            if (toast) {
+                toastMsg.innerText = msg;
+                toastIcon.innerText = isSuccess ? '✔' : 'ℹ';
+                toast.style.display = 'flex';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 3500);
+            }
+        }
+
+        // 🌟 یونیورسل آٹو کلیئر اور سلیکٹ: کسی بھی ان پٹ ڈبے میں پرانے صفر (0) کو فوری صاف کرنا
+        document.addEventListener('focusin', function (e) {
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                if (e.target.type === 'number' || e.target.type === 'text') {
+                    if (e.target.value === '0' || e.target.value === '0.0' || e.target.value === '0.00') {
+                        e.target.value = '';
+                    }
+                    if (typeof e.target.select === 'function') {
+                        e.target.select();
+                    }
+                }
+            }
+        });
+
+        
+        // 🛑 ونڈو بند کرتے وقت خودکار اختتامی بیک اپ بھیجنا
+// Page navigation active
+        // 🔄 ڈیٹا بیس ری سٹور ہینڈلر
+        
+        function executeDatabaseReset() {
+            const currentLang = localStorage.getItem('pos_lang') || 'ur';
+            const pwd = document.getElementById('resetAdminPassword').value.trim();
+            if (!pwd) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: currentLang === 'en' ? 'Password Required' : 'پاس ورڈ درکار ہے',
+                    text: currentLang === 'en' ? 'Please enter admin password.' : 'براہ کرم ایڈمن پاس ورڈ (admin123) درج کریں۔'
+                });
+            }
+
+            const clearProducts = document.getElementById('resetAll').checked;
+
+            Swal.fire({
+                title: currentLang === 'en' ? 'Are you absolutely sure?' : 'کیا آپ واقعی ڈیٹا صاف کرنا چاہتے ہیں؟',
+                text: currentLang === 'en' ? 'This will clear transactions. A safety backup will be created first.' : 'اس سے ٹیسٹ ڈیٹا صاف ہو جائے گا۔ پہلے سیفٹی بیک اپ محفوظ کر لیا جائے گا۔',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: currentLang === 'en' ? 'Yes, Clean Data' : 'ہاں، ڈیٹا صاف کریں',
+                cancelButtonText: currentLang === 'en' ? 'Cancel' : 'کینسل'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: currentLang === 'en' ? 'Cleaning Database...' : 'ڈیٹا صاف ہو رہا ہے...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    fetch('/api/system/reset_database', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            password: pwd,
+                            clear_products: clearProducts
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            const backupFile = res.backup_db || 'backup_pre_reset_safety.db';
+                            Swal.fire({
+                                icon: 'success',
+                                title: currentLang === 'en' ? 'Cleaned Successfully!' : 'ڈیٹا کامیابی سے صاف ہو گیا!',
+                                html: `
+                                    <div style="text-align: right; font-size: 0.92rem; line-height: 1.6;">
+                                        <p class="mb-2"><b>${currentLang === 'en' ? 'Safety backup saved before cleaning:' : 'ڈیٹا صاف کرنے سے پہلے مکمل سیفٹی بیک اپ لے لیا گیا ہے:'}</b></p>
+                                        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 0.83rem; direction: ltr; text-align: left;" class="mb-3">
+                                            📁 <b>Folder:</b> Desktop / daily_backups / database_backups<br>
+                                            💾 <b>File:</b> ${backupFile}
+                                        </div>
+                                        <div class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="openBackupFolder()">
+                                                📁 ${currentLang === 'en' ? 'Open Backups Folder' : 'بیک اپ فولڈر کھولیں'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                `,
+                                confirmButtonText: currentLang === 'en' ? 'OK (Reload)' : 'ٹھیک ہے (سافٹ ویئر ریفریش کریں)',
+                                allowOutsideClick: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: currentLang === 'en' ? 'Failed' : 'ناکام',
+                                text: res.message
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: String(err)
+                        });
+                    });
+                }
+            });
+        }
+
+        function handleDbRestore(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('restoreFileInp');
+            const currentLang = localStorage.getItem('pos_lang') || 'ur';
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: currentLang === 'en' ? 'Select File' : 'فائل منتخب کریں',
+                    text: currentLang === 'en' ? 'Please choose a valid .db backup file first.' : 'براہ کرم پہلے درست .db بیک اپ فائل منتخب کریں۔'
+                });
+                return;
+            }
+
+            const confirmTitle = currentLang === 'en' ? 'Confirm Database Restore?' : 'کیا آپ واقعی ڈیٹا بحال کرنا چاہتے ہیں؟';
+            const confirmText = currentLang === 'en' 
+                ? 'Warning: All current data will be replaced by this backup database file.' 
+                : 'انتباہ! موجودہ تمام ریکارڈ اس پرانی فائل سے تبدیل ہو جائے گا۔';
+            const confirmBtnText = currentLang === 'en' ? 'Yes, Restore Now' : 'ہاں، بحال کریں';
+            const cancelBtnText = currentLang === 'en' ? 'Cancel' : 'کینسل';
+
+            Swal.fire({
+                title: confirmTitle,
+                text: confirmText,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: confirmBtnText,
+                cancelButtonText: cancelBtnText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: currentLang === 'en' ? 'Restoring Database...' : 'ڈیٹا بیس بحال ہو رہا ہے...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    const formData = new FormData();
+                    formData.append('backup_file', fileInput.files[0]);
+
+                    fetch('/api/backup/restore_db', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            const backupFile = res.backup_db || 'backup_pre_restore_safety.db';
+                            Swal.fire({
+                                icon: 'success',
+                                title: currentLang === 'en' ? 'Database Restored Successfully!' : 'ڈیٹا کامیابی سے بحال ہو گیا!',
+                                html: `
+                                    <div style="text-align: right; font-size: 0.92rem; line-height: 1.6;">
+                                        <p class="mb-2"><b>${currentLang === 'en' ? 'Data restored! Safety backup of previous data saved:' : 'ڈیٹا بحال ہو گیا ہے! بحالی سے پہلے کے ڈیٹا کا بیک اپ بھی محفوظ کر لیا گیا تھا:'}</b></p>
+                                        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-family: monospace; font-size: 0.83rem; direction: ltr; text-align: left;" class="mb-3">
+                                            📁 <b>Folder:</b> Desktop / daily_backups / database_backups<br>
+                                            💾 <b>File:</b> ${backupFile}
+                                        </div>
+                                    </div>
+                                `,
+                                confirmButtonText: currentLang === 'en' ? 'OK (Reload)' : 'ٹھیک ہے (سافٹ ویئر ریفریش کریں)',
+                                allowOutsideClick: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            let errMsg = res.message;
+                            if (errMsg === 'No backup file selected') {
+                                errMsg = currentLang === 'en' ? 'No file selected.' : 'کوئی بیک اپ فائل منتخب نہیں کی گئی۔';
+                            } else if (errMsg === 'Please select a valid .db file') {
+                                errMsg = currentLang === 'en' ? 'Please select a valid .db file.' : 'براہ کرم درست .db فائل منتخب کریں۔';
+                            } else if (errMsg && errMsg.includes('Invalid backup file')) {
+                                errMsg = currentLang === 'en' ? 'Invalid database file.' : 'یہ درست Smart POS بیک اپ فائل نہیں ہے۔';
+                            }
+                            Swal.fire({
+                                icon: 'error',
+                                title: currentLang === 'en' ? 'Restore Failed' : 'ڈیٹا بحالی ناکام',
+                                text: errMsg || (currentLang === 'en' ? 'Could not restore database.' : 'ڈیٹا بیس بحال نہیں ہو سکا۔')
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: currentLang === 'en' ? 'System Error' : 'سسٹم خرابی',
+                            text: String(err)
+                        });
+                    });
+                }
+            });
+        }
+
+        function openBackupFolder() {
+            fetch('/api/system/open_backup_folder')
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success) {
+                    alert('فولڈر کھولنے میں مسئلہ: ' + res.message);
+                }
+            })
+            .catch(e => console.error(e));
+        }
+
+        // ==================== Modal Tab Trigger ====================
+        function openBackupModal(tab = 'backup') {
+            const modalEl = document.getElementById('backupInfoModal');
+            if (!modalEl) return;
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            
+            if (tab === 'restore') {
+                const restoreTabBtn = document.getElementById('tab-restore-btn');
+                if (restoreTabBtn) {
+                    const tabTrigger = new bootstrap.Tab(restoreTabBtn);
+                    tabTrigger.show();
+                }
+            } else {
+                const backupTabBtn = document.getElementById('tab-backup-btn');
+                if (backupTabBtn) {
+                    const tabTrigger = new bootstrap.Tab(backupTabBtn);
+                    tabTrigger.show();
+                }
+            }
+            modal.show();
+        }
+
+        // ==================== Gmail-Style Hover-to-Expand Sidebar & Pin ====================
+        function initSidebarState() {
+            const isPinned = localStorage.getItem('pos_sidebar_pinned') === 'true';
+            applySidebarPinState(isPinned);
+        }
+
+        function toggleSidebarPin() {
+            const isCurrentlyPinned = document.body.classList.contains('sidebar-pinned');
+            const newPinned = !isCurrentlyPinned;
+            localStorage.setItem('pos_sidebar_pinned', newPinned);
+            applySidebarPinState(newPinned);
+
+            const currentLang = localStorage.getItem('pos_lang') || 'ur';
+            if (newPinned) {
+                showToast(currentLang === 'en' ? 'Sidebar Pinned (Always Visible)' : 'سائیڈ بار پن کر دیا گیا (ہمیشہ کھلا رہے گا)');
+            } else {
+                showToast(currentLang === 'en' ? 'Sidebar Mini Mode (Hover to Expand)' : 'سائیڈ بار منی موڈ (ماؤس لے جانے پر پھیلے گا)');
+            }
+        }
+
+        function applySidebarPinState(isPinned) {
+            const pinBtn = document.getElementById('pinSidebarBtn');
+            const pinIconPinned = pinBtn ? pinBtn.querySelector('.pin-icon-pinned') : null;
+            const pinIconUnpinned = pinBtn ? pinBtn.querySelector('.pin-icon-unpinned') : null;
+            const sidebar = document.querySelector('.pos-sidebar');
+
+            if (isPinned) {
+                document.documentElement.classList.add('sidebar-pinned');
+                document.documentElement.classList.remove('sidebar-unpinned');
+                document.body.classList.add('sidebar-pinned');
+                document.body.classList.remove('sidebar-unpinned');
+                if (pinBtn) {
+                    pinBtn.classList.add('active');
+                    pinBtn.setAttribute('data-en', 'Unpin Sidebar (Mini Hover Mode)');
+                    pinBtn.setAttribute('data-ur', 'سائیڈ بار ان پن کریں (منی ہوور موڈ)');
+                    pinBtn.setAttribute('title', (localStorage.getItem('pos_lang') === 'en') ? 'Unpin Sidebar' : 'سائیڈ بار ان پن کریں');
+                }
+                if (pinIconPinned) pinIconPinned.style.display = 'inline-block';
+                if (pinIconUnpinned) pinIconUnpinned.style.display = 'none';
+            } else {
+                document.documentElement.classList.remove('sidebar-pinned');
+                document.documentElement.classList.add('sidebar-unpinned');
+                document.body.classList.remove('sidebar-pinned');
+                document.body.classList.add('sidebar-unpinned');
+                if (pinBtn) {
+                    pinBtn.classList.remove('active');
+                    pinBtn.setAttribute('data-en', 'Pin Sidebar (Always visible)');
+                    pinBtn.setAttribute('data-ur', 'سائیڈ بار پن کریں (ہمیشہ کھلا رکھیں)');
+                    pinBtn.setAttribute('title', (localStorage.getItem('pos_lang') === 'en') ? 'Pin Sidebar' : 'سائیڈ بار پن کریں');
+                }
+                if (pinIconPinned) pinIconPinned.style.display = 'none';
+                if (pinIconUnpinned) pinIconUnpinned.style.display = 'inline-block';
+            }
+        }
+
+        function toggleSidebarDrawer() {
+            toggleSidebarPin();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            applySavedPreferences();
+            initSidebarState();
+        });
+
+        // ==========================================
+        // 🖨️ UNIVERSAL NATIVE IN-BROWSER PRINT ENGINE (SMART POS)
+        // Uses native window.print() so Chrome/Edge print dialog opens directly
+        // Matches exact PDF visual format without opening external Adobe Acrobat Reader
+        // ==========================================
+        window.addEventListener('beforeprint', function() {
+            let now = new Date();
+            let y = now.getFullYear();
+            let m = String(now.getMonth() + 1).padStart(2, '0');
+            let d = String(now.getDate()).padStart(2, '0');
+            let dateStr = `${y}-${m}-${d}`;
+            
+            let hours = now.getHours();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            let mins = String(now.getMinutes()).padStart(2, '0');
+            let timeStr = `${dateStr} ${String(hours).padStart(2, '0')}:${mins} ${ampm}`;
+
+            document.querySelectorAll('.print-current-date').forEach(function(el) {
+                el.textContent = dateStr;
+            });
+            document.querySelectorAll('.print-current-time').forEach(function(el) {
+                el.textContent = timeStr;
+            });
+        });
+
+        function printPdfDocument(url) {
+            window.print();
+        }
+
+        // Global Ctrl+P handler
+        window.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key && e.key.toLowerCase() === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+
+        // Window closing beacon to trigger final backup
+        window.addEventListener('beforeunload', function () {
+            if (navigator.sendBeacon) {
+                navigator.sendBeacon('/api/system/closing_ping');
+            }
+        });
+
+    </script>
+</body>
+</html>

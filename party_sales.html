@@ -1,0 +1,1155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animated-fade-in {
+        animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .party-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    /* Top Control Hub */
+    .control-hub {
+        background: #0f172a;
+        border-radius: 16px;
+        padding: 20px 24px;
+        color: #ffffff;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
+        margin-bottom: 20px;
+    }
+
+    .cust-select-container {
+        position: relative;
+    }
+
+    .cust-select-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff !important;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 600;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    body.lang-ur .cust-select-btn {
+        text-align: right;
+    }
+
+    .cust-select-btn:hover, .cust-select-btn:focus {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .cust-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 6px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.2);
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1050;
+        display: none;
+        padding: 6px;
+        animation: slideDown 0.2s ease forwards;
+    }
+
+    body.dark-mode .cust-dropdown-menu {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    .cust-opt-item {
+        padding: 9px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.15s ease;
+        color: #1e293b;
+    }
+
+    body.dark-mode .cust-opt-item {
+        color: #f8fafc;
+    }
+
+    .cust-opt-item:hover {
+        background: #f1f5f9;
+    }
+
+    body.dark-mode .cust-opt-item:hover {
+        background: #334155;
+    }
+
+    .cust-opt-item.active {
+        background: #0284c7 !important;
+        color: #ffffff !important;
+    }
+
+    .cust-opt-item.active .text-muted,
+    .cust-opt-item.active .badge {
+        color: #ffffff !important;
+    }
+
+    /* Time Filter Buttons */
+    .time-nav {
+        display: flex;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 4px;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    .time-tab-btn {
+        background: transparent;
+        border: none;
+        color: #cbd5e1;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 8px 14px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .time-tab-btn:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .time-tab-btn.active {
+        background: #0284c7 !important;
+        color: #ffffff !important;
+        font-weight: 700;
+    }
+
+    /* Quick Party Chips */
+    .quick-chips-bar {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: thin;
+    }
+
+    .party-chip {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #e2e8f0;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .party-chip:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .party-chip.active {
+        background: #38bdf8;
+        color: #0f172a;
+        border-color: #38bdf8;
+        font-weight: 700;
+    }
+
+    /* Stat Cards */
+    .stat-card-pro {
+        border-radius: 12px;
+        padding: 16px 20px;
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.2s ease;
+    }
+
+    .stat-card-pro:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.04);
+    }
+
+    body.dark-mode .stat-card-pro {
+        background: #1e293b;
+        border-color: #334155;
+    }
+
+    /* Modern Table */
+    .party-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+    }
+
+    .party-table thead th {
+        background-color: #0f172a;
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 12px 14px;
+        border: none;
+    }
+
+    .party-table tbody tr.item-row {
+        transition: all 0.15s ease;
+    }
+
+    .party-table tbody tr.item-row:hover {
+        background-color: #f8fafc;
+    }
+
+    body.dark-mode .party-table tbody tr.item-row:hover {
+        background-color: #334155;
+    }
+
+    .party-table tbody td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--card-border, #f1f5f9);
+    }
+
+    .sub-invoice-card {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin: 6px 10px 10px 10px;
+        animation: fadeInUp 0.2s ease;
+    }
+
+    body.dark-mode .sub-invoice-card {
+        background: #0f172a;
+        border-color: #334155;
+    }
+
+    /* Real Printed Receipt Slip inside Modal */
+    .real-thermal-slip {
+        max-width: 440px;
+        margin: 0 auto;
+        background: #ffffff;
+        color: #000000;
+        padding: 24px 20px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .real-thermal-slip .header h3 {
+        margin: 0 0 2px 0;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #000;
+    }
+
+    .real-thermal-slip .header p {
+        margin: 2px 0;
+        font-size: 11px;
+        color: #333;
+    }
+
+    .real-thermal-slip .slip-divider {
+        border-top: 1px dashed #000;
+        margin: 8px 0;
+    }
+
+    .real-thermal-slip .slip-double-divider {
+        border-top: 2px solid #000;
+        margin: 8px 0;
+    }
+
+    .real-thermal-slip table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 6px 0;
+    }
+
+    .real-thermal-slip th {
+        border-bottom: 1px solid #000;
+        padding: 4px 2px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .real-thermal-slip td {
+        padding: 5px 2px;
+        font-size: 12px;
+        vertical-align: top;
+    }
+
+    .real-thermal-slip .totals-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 2px 0;
+        font-size: 12px;
+    }
+
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">PARTY SALES &amp; PURCHASE REPORT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Party: <span id="printPartyCustName">All Customers</span></div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Invoices:</strong> <span id="printPartyInvoices">0</span></div>
+                <div><strong>Total Items:</strong> <span id="printPartyItems">0</span></div>
+            </div>
+            <div>
+                <div><strong>Total Units Sold:</strong> <span id="printPartyUnits">0</span></div>
+                <div><strong>Total Gross Spent:</strong> <span style="color: #0284c7; font-weight: 700;" id="printPartySpent">Rs. 0</span></div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Total Discount:</strong> <span style="color: #dc2626; font-weight: 700;" id="printPartyDiscount">Rs. 0</span></div>
+                <div style="font-size: 10px; color: #16a34a; font-weight: 700;">Verified Store Report</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Control Center Hub -->
+<div class="control-hub animated-fade-in no-print">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+        <div>
+            <h4 class="fw-bold m-0 lang-text" data-en="Party-Wise Product Purchase History" data-ur="گاہک وائز پروڈکٹ خریداری و سیل ہسٹری">Party-Wise Product Purchase History</h4>
+            <small class="text-white-50 lang-text" data-en="Select customer to view purchased items, quantities, and rates across time periods" data-ur="گاہک منتخب کر کے وقت کے فلٹر کے مطابق خریدی گئی تمام اشیاء، ریٹ اور بلز دیکھیں">Select customer to view purchased items, quantities, and rates across time periods</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <!-- 🖨️ Print Statement with Clean Offline Vector Icon -->
+            <button type="button" class="btn btn-sm btn-light fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" onclick="window.print()">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                    <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                </svg>
+                <span class="lang-text" data-en="Print Statement" data-ur="پرنٹ اسٹیٹمنٹ">Print Statement</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-danger fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" onclick="downloadPartySalesPDF()" title="پارٹی وائز سیل پی ڈی ایف ڈاؤن لوڈ کریں">
+                <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                </svg>
+                <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف محفوظ کریں">Save as PDF</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Interactive Selectors Row -->
+    <div class="row g-3 align-items-center">
+        <!-- 1. Customer Selector Dropdown -->
+        <div class="col-lg-5 col-md-6">
+            <label class="form-label text-white-50 small fw-bold mb-1 lang-text" data-en="Select Customer / Party:" data-ur="گاہک / پارٹی کا انتخاب:">Select Customer / Party:</label>
+            <div class="cust-select-container">
+                <button type="button" class="cust-select-btn" id="custDropdownToggle" onclick="toggleCustDropdown()">
+                    <span id="selectedCustBtnText">All Customers (Overall Store)</span>
+                    <span class="small">▼</span>
+                </button>
+
+                <div class="cust-dropdown-menu" id="custDropdownMenu">
+                    <div class="p-2 border-bottom">
+                        <input type="text" id="custSearchInput" class="form-control form-control-sm lang-placeholder" 
+                               data-en="Search customer name or phone..." data-ur="گاہک کا نام یا فون تلاش کریں..." 
+                               placeholder="Search customer name or phone..." onkeyup="filterCustDropdown(this.value)" autocomplete="off">
+                    </div>
+                    <div id="custOptionsList" class="p-1">
+                        <!-- 'All' Option -->
+                        <div class="cust-opt-item active" data-id="all" onclick="selectParty('all', 'All Customers (Overall Store)', '', 'Combined Store-Wide Sales', 0, 'all')">
+                            <div>
+                                <div class="fw-bold lang-text" data-en="All Customers (Overall Store)" data-ur="تمام گاہک (مجموعی دکان)">All Customers (Overall Store)</div>
+                                <small class="text-muted lang-text" data-en="Combined store-wide item sales" data-ur="دکان کے تمام بلز کا مشترکہ ریکارڈ">Combined store-wide item sales</small>
+                            </div>
+                        </div>
+
+                        <!-- Customer Options -->
+                        {% for c in customers %}
+                        <div class="cust-opt-item" data-id="{{ c.id }}" data-name="{{ c.name|lower }}" onclick="selectParty('{{ c.id }}', '{{ c.name|escape }}', '{{ (c.phone or '')|escape }}', '{{ (c.address or '')|escape }}', '{{ c.balance }}', '{{ c.type }}')">
+                            <div>
+                                <div class="fw-bold">
+                                    {{ c.name }}
+                                    {% if c.type == 'cash' %}
+                                    <span class="badge bg-light text-secondary border ms-1 font-monospace" style="font-size: 0.65rem;">Cash</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">
+                                    {% if c.type == 'cash' %}
+                                    <span class="text-muted">Walk-in Cash</span>
+                                    {% else %}
+                                    {% if c.phone %}<span class="font-monospace me-1">📞 {{ c.phone }}</span>{% endif %}
+                                    {% if c.address %}<span class="text-muted">📍 {{ c.address }}</span>{% endif %}
+                                    {% if not c.phone and not c.address %}<span class="text-muted">Khata Customer</span>{% endif %}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div>
+                                {% if c.balance > 0 %}
+                                <span class="badge bg-danger font-monospace">Rs. {{ "{:,.0f}".format(c.balance) }}</span>
+                                {% else %}
+                                <span class="badge bg-success font-monospace">Rs. 0</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Time Filter Pill Tabs -->
+        <div class="col-lg-7 col-md-6">
+            <label class="form-label text-white-50 small fw-bold mb-1 lang-text" data-en="Time Period / Date Range:" data-ur="مدت / وقت کا عرصہ:">Time Period / Date Range:</label>
+            <div class="time-nav">
+                <button type="button" class="time-tab-btn active lang-text font-monospace" id="tab-all" onclick="setPeriod('all')" data-en="All Time" data-ur="شروع سے اب تک">All Time</button>
+                {% for dt in recent_dates %}
+                <button type="button" class="time-tab-btn font-monospace" id="tab-date-{{ dt }}" onclick="setPeriod('date:{{ dt }}')">{{ dt }}</button>
+                {% endfor %}
+                <button type="button" class="time-tab-btn lang-text" id="tab-15days" onclick="setPeriod('15days')" data-en="Last 15 Days" data-ur="پچھلے 15 دن">Last 15 Days</button>
+                <button type="button" class="time-tab-btn lang-text" id="tab-30days" onclick="setPeriod('30days')" data-en="Last 1 Month" data-ur="پچھلا 1 مہینہ">Last 1 Month</button>
+                <button type="button" class="time-tab-btn lang-text" id="tab-6months" onclick="setPeriod('6months')" data-en="Last 6 Months" data-ur="پچھلے 6 ماہ">Last 6 Months</button>
+                <button type="button" class="time-tab-btn lang-text" id="tab-year" onclick="setPeriod('year')" data-en="Last 1 Year" data-ur="پچھلا 1 سال">Last 1 Year</button>
+                <button type="button" class="time-tab-btn lang-text" id="tab-custom" onclick="openCustomDateModal()" data-en="Custom Range" data-ur="تاریخیں چنیں">Custom Range</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Chips Bar for Frequent Parties -->
+    <div class="mt-3 pt-3 border-top border-secondary border-opacity-25 d-flex align-items-center gap-2">
+        <span class="small text-white-50 fw-bold lang-text text-nowrap" data-en="Quick Select:" data-ur="فوری انتخاب:">Quick Select:</span>
+        <div class="quick-chips-bar" id="quickChipsBar">
+            <span class="party-chip active lang-text" data-id="all" data-en="All Store" data-ur="تمام دکان" onclick="selectParty('all', 'All Customers (Overall Store)', '', 'Combined Store-Wide Sales', 0, 'all')">All Store</span>
+            {% for c in customers[:8] %}
+            <span class="party-chip" data-id="{{ c.id }}" onclick="selectParty('{{ c.id }}', '{{ c.name|escape }}', '{{ (c.phone or '')|escape }}', '{{ (c.address or '')|escape }}', '{{ c.balance }}', '{{ c.type }}')">
+                {{ c.name }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Active Profile & Stat Cards Row -->
+<div class="row g-3 mb-3">
+    <!-- Active Party Summary Header -->
+    <div class="col-12">
+        <div class="party-card p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold m-0 text-dark" id="displayCustName">All Customers (Overall Store)</h5>
+                <small class="text-muted" id="displayCustDetails">Showing combined product sales for all parties</small>
+            </div>
+            <div>
+                <span id="displayCustBadge" class="badge bg-primary fs-6 font-monospace px-3 py-2 lang-text" data-en="Overall Store Sales" data-ur="دکان کا مجموعی ریکارڈ">Overall Store Sales</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 1: Distinct Products -->
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card-pro">
+            <div>
+                <small class="text-muted fw-bold lang-text" data-en="Distinct Products" data-ur="مختلف پروڈکٹس">Distinct Products</small>
+                <h3 class="fw-bold font-monospace m-0 text-dark mt-1" id="statProductsCount">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 2: Total Units -->
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card-pro">
+            <div>
+                <small class="text-muted fw-bold lang-text" data-en="Total Units Sold" data-ur="کل خریدی گئی تعداد">Total Units Sold</small>
+                <h3 class="fw-bold font-monospace m-0 text-success mt-1" id="statTotalUnits">0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 3: Total Spent -->
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card-pro">
+            <div>
+                <small class="text-muted fw-bold lang-text" data-en="Total Amount Spent" data-ur="کل خریداری رقم">Total Amount Spent</small>
+                <h3 class="fw-bold font-monospace m-0 text-primary mt-1" id="statTotalAmount">Rs. 0</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat 4: Total Discount Given -->
+    <div class="col-lg-3 col-md-6">
+        <div class="stat-card-pro" style="border-left: 4px solid #ef4444;">
+            <div>
+                <small class="text-danger fw-bold lang-text" data-en="Total Discount Given" data-ur="کل رعایت / ڈسکاؤنٹ">Total Discount Given</small>
+                <h3 class="fw-bold font-monospace m-0 text-danger mt-1" id="statTotalDiscount">Rs. 0</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Products Table Section -->
+<div class="party-card p-0 overflow-hidden mb-4">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2 no-print bg-light">
+        <div class="fw-bold text-dark fs-6 lang-text" data-en="Customer Purchased Products List" data-ur="گاہک کی خریدی گئی مصنوعات کی تفصیل">
+            Customer Purchased Products List
+        </div>
+        <div style="min-width: 280px; position: relative;">
+            <input type="text" id="tableFilterInput" name="filter_query_item_search" 
+                   class="form-control form-control-sm lang-placeholder shadow-none" 
+                   data-en="Search product name..." data-ur="پروڈکٹ کا نام تلاش کریں..." 
+                   placeholder="Search product name..." 
+                   value=""
+                   oninput="filterItemsTable()" onkeyup="filterItemsTable()" 
+                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                   readonly onfocus="this.removeAttribute('readonly');">
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="party-table mb-0" id="partyItemsTable">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 32%;" class="lang-text" data-en="Product Name" data-ur="سامان / پروڈکٹ کا نام">Product Name</th>
+                    <th style="width: 10%; text-align: center;" class="lang-text" data-en="Unit" data-ur="پیمائش">Unit</th>
+                    <th style="width: 12%; text-align: right;" class="lang-text" data-en="Total Qty" data-ur="کل تعداد">Total Qty</th>
+                    <th style="width: 13%; text-align: right;" class="lang-text" data-en="Avg Rate" data-ur="اوسط ریٹ">Avg Rate</th>
+                    <th style="width: 15%; text-align: right;" class="lang-text" data-en="Total Amount" data-ur="کل رقم">Total Amount</th>
+                    <th style="width: 13%; text-align: center;" class="lang-text" data-en="Last Bought" data-ur="آخری خریداری">Last Bought</th>
+                </tr>
+            </thead>
+            <tbody id="partyItemsBody">
+                <tr><td colspan="7" class="text-center py-5 text-muted">Loading data...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="print-footer">
+        Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+    </div>
+</div>
+
+<!-- 📄 Authentic Thermal Printed Invoice Viewer Modal -->
+<div class="modal fade" id="invoiceViewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; background: #f1f5f9;">
+            <div class="modal-header bg-dark text-white py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold small lang-text" data-en="Invoice Preview" data-ur="اصل بل کا معائنہ">Invoice Preview</span>
+                    <span id="invModalTitleNo" class="badge bg-primary font-monospace">-</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-3">
+                <!-- Real Authentic Thermal Printed Slip Layout -->
+                <div class="real-thermal-slip" dir="rtl" id="thermalSlipBox">
+                    <div class="header text-center">
+                        <img src="{{ url_for('static', filename='img/jbs_logo_raw.png') }}" alt="JBS" style="max-height: 40px; margin-bottom: 3px;">
+                        <h3 class="fw-bold m-0">اسمارٹ پی او ایس</h3>
+                        <div class="fw-bold" style="font-size: 12px; margin-top: 1px;">SMART POS SYSTEM</div>
+                        <div style="text-align: center; margin: 2px 0 1px 0;" dir="rtl">
+                            <span style="display: inline-block; white-space: nowrap; margin: 0 4px;">
+                                <span style="font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif; font-size: 14px; font-weight: bold; color: #0284c7;">مین مارکیٹ، لاہور</span>&nbsp;<bdi dir="ltr" class="font-monospace fw-bold" style="font-size: 11.5px; color: #000;">| فون: 0300-0000000</bdi>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="slip-divider"></div>
+
+                    <div style="font-size: 11.5px; line-height: 1.5;">
+                        <div><strong>انوائس نمبر:</strong> <span id="slipInvNo" class="font-monospace fw-bold">-</span></div>
+                        <div><strong>تاریخ:</strong> <span id="slipDate" class="font-monospace">-</span></div>
+                        <div><strong>گاہک کا نام:</strong> <span id="slipCust" class="fw-bold">-</span></div>
+                        <div><strong>بل کی قسم:</strong> <span id="slipType" class="fw-bold">-</span></div>
+                    </div>
+
+                    <div class="slip-divider"></div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 44%; text-align: right;">تفصیل مال</th>
+                                <th style="width: 20%; text-align: center;">مقدار</th>
+                                <th style="width: 18%; text-align: center;">ریٹ</th>
+                                <th style="width: 18%; text-align: left;">ٹوٹل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="slipItemsBody">
+                            <tr><td colspan="4" class="text-center py-2 text-muted">Loading...</td></tr>
+                        </tbody>
+                    </table>
+
+                    <div class="slip-double-divider"></div>
+
+                    <div class="totals-row">
+                        <span>خالص رقم (Subtotal):</span>
+                        <span class="fw-bold font-monospace" id="slipSubtotal">Rs. 0</span>
+                    </div>
+
+                    <div class="totals-row" id="slipTaxRow" style="display: none;">
+                        <span>ٹیکس (GST):</span>
+                        <span class="font-monospace" id="slipTax">Rs. 0</span>
+                    </div>
+
+                    <div class="totals-row" id="slipDiscountRow" style="display: none;">
+                        <span>ڈسکاؤنٹ (Discount):</span>
+                        <span class="font-monospace" id="slipDiscount">Rs. 0</span>
+                    </div>
+
+                    <div class="totals-row" style="font-size: 14px; font-weight: 900; margin-top: 4px; border-top: 1px solid #000; padding-top: 4px;">
+                        <span>کل واجب الادا (Total):</span>
+                        <span class="font-monospace" id="slipGrandTotal">Rs. 0</span>
+                    </div>
+
+                    <div class="totals-row" style="margin-top: 2px;">
+                        <span>وصول شدہ رقم (Paid):</span>
+                        <span class="font-monospace fw-bold" id="slipPaid">Rs. 0</span>
+                    </div>
+
+                    <div class="totals-row" style="border-top: 1px dashed #000; padding-top: 4px; margin-top: 2px;">
+                        <span class="fw-bold" style="color: #b91c1c;">بقایا رقم (Balance Due):</span>
+                        <span class="font-monospace fw-bold" style="color: #b91c1c;" id="slipDue">Rs. 0</span>
+                    </div>
+
+                    <div class="slip-divider"></div>
+
+                    <div class="text-center" style="font-size: 10.5px; font-weight: 600; margin-top: 6px;">
+                        نوٹ: خریدا ہوا مال تبدیل یا واپس بل کے ساتھ ہوگا۔ شکریہ!
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light py-2 px-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm fw-bold px-3 lang-text" data-bs-dismiss="modal" data-en="Close" data-ur="بند کریں">Close</button>
+                <button type="button" class="btn btn-dark btn-sm fw-bold px-4 d-inline-flex align-items-center gap-2" id="invModalBottomPrintBtn">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                        <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                    </svg>
+                    <span class="lang-text" data-en="Print Receipt" data-ur="پرنٹ رسید">Print Receipt</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Date Modal -->
+<div class="modal fade" id="customDateModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content shadow border-0" style="border-radius: 14px;">
+            <div class="modal-header py-2 bg-dark text-white">
+                <h6 class="modal-title fw-bold lang-text" data-en="Select Date Range" data-ur="تاریخیں منتخب کریں">Select Date Range</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="mb-2">
+                    <label class="form-label small fw-bold lang-text" data-en="From Date:" data-ur="اس تاریخ سے:">From Date:</label>
+                    <input type="date" id="customStartDate" class="form-control">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold lang-text" data-en="To Date:" data-ur="اس تاریخ تک:">To Date:</label>
+                    <input type="date" id="customEndDate" class="form-control">
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm fw-bold lang-text" data-en="Apply Filter" data-ur="فلٹر لگائیں" onclick="applyCustomDate()">Apply Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentPartyId = 'all';
+let currentPeriod = 'all';
+let customStart = '';
+let customEnd = '';
+let currentItemsData = [];
+
+// Dropdown toggle & click outside
+function toggleCustDropdown() {
+    let menu = document.getElementById('custDropdownMenu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    if(menu.style.display === 'block') {
+        document.getElementById('custSearchInput').focus();
+    }
+}
+
+document.addEventListener('click', (e) => {
+    let container = document.querySelector('.cust-select-container');
+    if(container && !container.contains(e.target)) {
+        document.getElementById('custDropdownMenu').style.display = 'none';
+    }
+});
+
+function filterCustDropdown(val) {
+    let q = val.toLowerCase().trim();
+    let items = document.querySelectorAll('#custOptionsList .cust-opt-item');
+    items.forEach(it => {
+        let text = it.innerText.toLowerCase();
+        if(!q || text.includes(q)) {
+            it.style.display = 'flex';
+        } else {
+            it.style.display = 'none';
+        }
+    });
+}
+
+function selectParty(id, name, phone, address, balance, type) {
+    currentPartyId = id;
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    // Close Dropdown
+    document.getElementById('custDropdownMenu').style.display = 'none';
+
+    // Highlight Option in Dropdown
+    document.querySelectorAll('#custOptionsList .cust-opt-item').forEach(el => el.classList.remove('active'));
+    let selectedOpt = document.querySelector(`#custOptionsList .cust-opt-item[data-id="${CSS.escape(id)}"]`);
+    if(selectedOpt) selectedOpt.classList.add('active');
+
+    // Highlight Quick Chips
+    document.querySelectorAll('#quickChipsBar .party-chip').forEach(chip => {
+        chip.classList.remove('active');
+        if(chip.getAttribute('data-id') === String(id)) {
+            chip.classList.add('active');
+        }
+    });
+
+    // Update Dropdown button title
+    let btnText = id === 'all' 
+        ? (lang === 'en' ? 'All Customers (Overall Store)' : 'تمام گاہک (مجموعی دکان)') 
+        : name;
+    document.getElementById('selectedCustBtnText').innerText = btnText;
+
+    // Update Profile Card
+    let nameEl = document.getElementById('displayCustName');
+    let detailsEl = document.getElementById('displayCustDetails');
+    let badgeEl = document.getElementById('displayCustBadge');
+
+    if(id === 'all') {
+        nameEl.innerText = lang === 'en' ? 'All Customers (Overall Store)' : 'تمام گاہک (مجموعی دکان)';
+        detailsEl.innerText = lang === 'en' ? 'Showing combined product sales for all parties' : 'تمام گاہکوں کے تمام بلز کی مشترکہ پروڈکٹ سمری';
+        badgeEl.innerText = lang === 'en' ? 'Overall Store Sales' : 'دکان کا مجموعی ریکارڈ';
+        badgeEl.className = 'badge bg-primary fs-6 font-monospace px-3 py-2';
+    } else {
+        nameEl.innerText = name;
+        let sub = '';
+        if (type === 'cash') {
+            sub = lang === 'en' ? 'Walk-in Cash Customer' : 'نقد واک ان گاہک';
+        } else {
+            let parts = [];
+            if (phone) parts.push(phone);
+            if (address) parts.push(address);
+            sub = parts.join(' | ') || (lang === 'en' ? 'Registered Khata Customer' : 'رجسٹرڈ کھاتہ گاہک');
+        }
+        detailsEl.innerText = sub;
+
+        let bal = parseFloat(balance || 0);
+        if(bal > 0) {
+            badgeEl.innerText = `${lang === 'en' ? 'Due Balance:' : 'بقایا ادھار:'} Rs. ${bal.toLocaleString()}`;
+            badgeEl.className = 'badge bg-danger fs-6 font-monospace px-3 py-2';
+        } else {
+            badgeEl.innerText = `${lang === 'en' ? 'Khata Clear' : 'کھاتہ کلیئر'} (Rs. 0)`;
+            badgeEl.className = 'badge bg-success fs-6 font-monospace px-3 py-2';
+        }
+    }
+
+    // Reset table search filter
+    let searchInput = document.getElementById('tableFilterInput');
+    if(searchInput) searchInput.value = '';
+
+    loadPartySales();
+}
+
+function setPeriod(period) {
+    currentPeriod = period;
+    document.querySelectorAll('.time-tab-btn').forEach(btn => btn.classList.remove('active'));
+    let btnId = 'tab-' + (period.startsWith('date:') ? 'date-' + period.split('date:')[1] : period);
+    let activeBtn = document.getElementById(btnId);
+    if(activeBtn) activeBtn.classList.add('active');
+    loadPartySales();
+}
+
+function openCustomDateModal() {
+    let today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    if(!document.getElementById('customStartDate').value) {
+        document.getElementById('customStartDate').value = today;
+        document.getElementById('customEndDate').value = today;
+    }
+    new bootstrap.Modal(document.getElementById('customDateModal')).show();
+}
+
+function applyCustomDate() {
+    customStart = document.getElementById('customStartDate').value;
+    customEnd = document.getElementById('customEndDate').value;
+    if(!customStart || !customEnd) {
+        alert(localStorage.getItem('pos_lang') === 'en' ? 'Please select both dates' : 'براہ کرم دونوں تاریخیں منتخب کریں');
+        return;
+    }
+    bootstrap.Modal.getInstance(document.getElementById('customDateModal')).hide();
+    setPeriod('custom');
+}
+
+function loadPartySales() {
+    let url = `/api/party_sales_data?customer_id=${encodeURIComponent(currentPartyId)}&period=${currentPeriod}`;
+    if(currentPeriod === 'custom') {
+        url += `&start_date=${customStart}&end_date=${customEnd}`;
+    }
+
+    let tbody = document.getElementById('partyItemsBody');
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted">${lang === 'en' ? 'Loading data...' : 'ڈیٹا لوڈ ہو رہا ہے...'}</td></tr>`;
+
+    fetch(url)
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            currentItemsData = res.items || [];
+            
+            // Summary stats
+            document.getElementById('statProductsCount').innerText = (res.summary.products_count || 0).toLocaleString();
+            document.getElementById('statTotalUnits').innerText = (res.summary.total_units || 0).toLocaleString();
+            document.getElementById('statTotalAmount').innerText = `Rs. ${(res.summary.total_amount || 0).toLocaleString()}`;
+            if(document.getElementById('statTotalDiscount')) {
+                document.getElementById('statTotalDiscount').innerText = `Rs. ${(res.summary.total_discount || 0).toLocaleString()}`;
+            }
+
+            if(document.getElementById('printPartyItems')) document.getElementById('printPartyItems').innerText = (res.summary.products_count || 0).toLocaleString();
+            if(document.getElementById('printPartyUnits')) document.getElementById('printPartyUnits').innerText = (res.summary.total_units || 0).toLocaleString();
+            if(document.getElementById('printPartySpent')) document.getElementById('printPartySpent').innerText = `Rs. ${(res.summary.total_amount || 0).toLocaleString()}`;
+            if(document.getElementById('printPartyDiscount')) document.getElementById('printPartyDiscount').innerText = `Rs. ${(res.summary.total_discount || 0).toLocaleString()}`;
+            if(document.getElementById('printPartyInvoices')) document.getElementById('printPartyInvoices').innerText = (res.summary.invoices_count || res.summary.products_count || 0).toLocaleString();
+            if(document.getElementById('printPartyCustName')) {
+                let btnTxt = document.getElementById('selectedCustBtnText');
+                if(btnTxt) document.getElementById('printPartyCustName').innerText = btnTxt.innerText;
+            }
+
+            // Apply search filter if any
+            filterItemsTable();
+        } else {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">${res.message || 'Error'}</td></tr>`;
+        }
+    })
+    .catch(() => {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">${lang === 'en' ? 'Error loading data' : 'ڈیٹا لوڈ کرنے میں خرابی'}</td></tr>`;
+    });
+}
+
+function renderTable(items) {
+    let tbody = document.getElementById('partyItemsBody');
+    tbody.innerHTML = '';
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+
+    if(!items || items.length === 0) {
+        let emptyMsg = lang === 'en' ? 'No matching products found.' : 'کوئی مماثل پروڈکٹ نہیں ملی۔';
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fw-bold">${emptyMsg}</td></tr>`;
+        return;
+    }
+
+    items.forEach((it, idx) => {
+        let detailHtml = '';
+        if(it.invoices && it.invoices.length > 0) {
+            let invRows = it.invoices.map(inv => `
+                <tr>
+                    <td class="font-monospace fw-bold">
+                        <button type="button" class="btn btn-link p-0 text-primary fw-bold text-decoration-none" onclick="viewInvoiceModal(${inv.sale_id})" title="${lang === 'en' ? 'Click to inspect printed Receipt' : 'اصل پرنٹ رسید دیکھنے کے لیے کلک کریں'}">
+                            ${inv.invoice_no}
+                        </button>
+                    </td>
+                    <td class="fw-semibold text-dark text-start">${inv.customer_name}</td>
+                    <td class="font-monospace small text-muted">${inv.date}</td>
+                    <td class="font-monospace fw-semibold">${inv.qty} <span class="badge bg-light text-dark border">${inv.unit}</span></td>
+                    <td class="font-monospace">Rs. ${inv.price.toLocaleString()}</td>
+                    <td class="font-monospace text-danger fw-bold">${inv.discount > 0 ? ('Rs. ' + inv.discount.toLocaleString()) : '-'}</td>
+                    <td class="font-monospace fw-bold text-primary">Rs. ${inv.total.toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+            detailHtml = `
+                <tr id="drawer-row-${idx}" style="display: none;">
+                    <td colspan="7" class="p-0">
+                        <div class="sub-invoice-card">
+                            <div class="fw-bold small mb-2 text-dark">
+                                <span>${lang === 'en' ? 'Invoice-by-Invoice Breakdown for' : 'بل وائز تفصیلی خریداری برائے'} <strong>${it.product_name}</strong></span>
+                            </div>
+                            <table class="table table-sm table-bordered text-center align-middle bg-white mb-0 shadow-sm" style="border-radius: 8px; overflow: hidden;">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="lang-text" data-en="Bill / Invoice #" data-ur="بل نمبر">Bill / Invoice #</th>
+                                        <th class="lang-text text-start" data-en="Customer / Buyer" data-ur="گاہک / خریدار کا نام">Customer / Buyer</th>
+                                        <th class="lang-text" data-en="Date & Time" data-ur="تاریخ / وقت">Date & Time</th>
+                                        <th class="lang-text" data-en="Quantity" data-ur="تعداد">Quantity</th>
+                                        <th class="lang-text" data-en="Rate (Rs)" data-ur="ریٹ">Rate (Rs)</th>
+                                        <th class="lang-text" data-en="Discount" data-ur="رعایت">Discount</th>
+                                        <th class="lang-text" data-en="Total (Rs)" data-ur="ٹوٹل رقم">Total (Rs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${invRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        tbody.innerHTML += `
+            <tr class="item-row">
+                <td class="text-muted fw-bold font-monospace">${idx + 1}</td>
+                <td>
+                    <div class="fw-bold fs-6 text-dark">${it.product_name}</div>
+                    <small class="text-primary fw-semibold" style="cursor: pointer;" onclick="toggleDrawer(${idx})">
+                        <span>${it.invoice_count} ${lang === 'en' ? 'Bill(s)' : 'بلز میں خریدا'}</span> • <span class="text-decoration-underline">${lang === 'en' ? 'View Details' : 'تفصیل دیکھیں'}</span>
+                    </small>
+                </td>
+                <td class="text-center"><span class="badge bg-light text-dark border px-2 py-1">${it.unit}</span></td>
+                <td class="text-end font-monospace fw-bold fs-6">${it.total_qty.toLocaleString()}</td>
+                <td class="text-end font-monospace">Rs. ${it.avg_price.toLocaleString()}</td>
+                <td class="text-end font-monospace fw-bold fs-6 text-primary">Rs. ${it.total_amount.toLocaleString()}</td>
+                <td class="text-center font-monospace small text-muted">${it.last_date || '-'}</td>
+            </tr>
+            ${detailHtml}
+        `;
+    });
+
+    if(typeof applyLanguage === 'function') {
+        applyLanguage(lang);
+    }
+}
+
+function toggleDrawer(idx) {
+    let row = document.getElementById('drawer-row-' + idx);
+    if(row) {
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+    }
+}
+
+function filterItemsTable() {
+    let searchInput = document.getElementById('tableFilterInput');
+    let q = (searchInput ? searchInput.value : '').toLowerCase().trim();
+    if(!q) {
+        renderTable(currentItemsData);
+        return;
+    }
+    let filtered = currentItemsData.filter(it => {
+        let nameMatch = (it.product_name || '').toLowerCase().includes(q);
+        let unitMatch = (it.unit || '').toLowerCase().includes(q);
+        return nameMatch || unitMatch;
+    });
+    renderTable(filtered);
+}
+
+// 📄 View Exact Real Printed Receipt Slip in Modal Popup
+function viewInvoiceModal(saleId) {
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    fetch('/api/sale/get/' + saleId)
+    .then(r => r.json())
+    .then(data => {
+        if(!data.success) {
+            alert(lang === 'en' ? 'Invoice not found!' : 'بل نہیں ملا!');
+            return;
+        }
+        let s = data.sale;
+        let items = data.items || [];
+
+        document.getElementById('invModalTitleNo').innerText = s.invoice_no || ('#' + s.id);
+        document.getElementById('slipInvNo').innerText = `#${s.id} (${s.invoice_no || '-'})`;
+        document.getElementById('slipDate').innerText = s.date || '-';
+        document.getElementById('slipCust').innerText = s.customer_name || 'Cash Customer';
+        
+        let typeText = 'نقد خریداری (Cash)';
+        if(s.type === 'returned') {
+            typeText = 'واپس / منسوخ (Returned)';
+        } else if(parseFloat(s.due || 0) > 0 || s.type === 'credit') {
+            typeText = 'ادھار کھاتہ (Credit)';
+        }
+        document.getElementById('slipType').innerText = typeText;
+
+        let tbody = document.getElementById('slipItemsBody');
+        tbody.innerHTML = '';
+        items.forEach((it) => {
+            let unitStr = it.unit ? ` ${it.unit}` : '';
+            tbody.innerHTML += `
+                <tr>
+                    <td class="fw-bold text-end">${it.product_name}</td>
+                    <td style="text-align: center; font-weight: 600;">${parseFloat(it.quantity || 0).toLocaleString()}${unitStr}</td>
+                    <td style="text-align: center;">${parseFloat(it.price || 0).toLocaleString()}</td>
+                    <td style="text-align: left;" class="fw-bold">${parseFloat(it.total || 0).toLocaleString()}</td>
+                </tr>
+            `;
+        });
+
+        let subtotal = parseFloat(s.subtotal || s.total || 0);
+        let tax = parseFloat(s.tax_amount || 0);
+        let discount = parseFloat(s.discount || 0);
+        let grandTotal = parseFloat(s.total || 0);
+        let paid = parseFloat(s.paid || 0);
+        let due = parseFloat(s.due || 0);
+
+        document.getElementById('slipSubtotal').innerText = 'Rs. ' + subtotal.toLocaleString();
+        
+        let taxRow = document.getElementById('slipTaxRow');
+        if(tax > 0) {
+            taxRow.style.display = 'flex';
+            document.getElementById('slipTax').innerText = 'Rs. ' + tax.toLocaleString();
+        } else {
+            taxRow.style.display = 'none';
+        }
+
+        let discRow = document.getElementById('slipDiscountRow');
+        if(discount > 0) {
+            discRow.style.display = 'flex';
+            document.getElementById('slipDiscount').innerText = 'Rs. ' + discount.toLocaleString();
+        } else {
+            discRow.style.display = 'none';
+        }
+
+        document.getElementById('slipGrandTotal').innerText = 'Rs. ' + grandTotal.toLocaleString();
+        document.getElementById('slipPaid').innerText = 'Rs. ' + paid.toLocaleString();
+        document.getElementById('slipDue').innerText = 'Rs. ' + due.toLocaleString();
+
+        let printHandler = function() {
+            let iframe = document.getElementById('partySalesPrintIframe');
+            if (!iframe) {
+                iframe = document.createElement('iframe');
+                iframe.id = 'partySalesPrintIframe';
+                iframe.style.position = 'fixed';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
+                iframe.style.width = '0';
+                iframe.style.height = '0';
+                iframe.style.border = '0';
+                document.body.appendChild(iframe);
+            }
+            iframe.src = '/receipt/' + s.id;
+            iframe.onload = function() {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch(e) { console.error(e); }
+            };
+        };
+        document.getElementById('invModalBottomPrintBtn').onclick = printHandler;
+
+        let modal = new bootstrap.Modal(document.getElementById('invoiceViewModal'));
+        modal.show();
+        if(typeof applyLanguage === 'function') applyLanguage(lang);
+    })
+    .catch(() => alert(lang === 'en' ? 'Error loading invoice' : 'بل لوڈ کرنے میں خرابی'));
+}
+
+function exportExcel() {
+    let url = `/api/party_sales_excel?customer_id=${encodeURIComponent(currentPartyId)}&period=${currentPeriod}`;
+    if(currentPeriod === 'custom') {
+        url += `&start_date=${customStart}&end_date=${customEnd}`;
+    }
+    window.location.href = url;
+}
+
+function getPartySalesPdfUrl() {
+    let url = `/api/party_sales_pdf?customer_id=${encodeURIComponent(currentPartyId)}&period=${currentPeriod}`;
+    if(currentPeriod === 'custom') {
+        url += `&start_date=${customStart}&end_date=${customEnd}`;
+    }
+    return url;
+}
+
+function downloadPartySalesPDF() {
+    let url = getPartySalesPdfUrl();
+    window.location.href = url + (url.includes('?') ? '&' : '?') + 'download=1';
+}
+
+function printPartySalesPDF() {
+    window.print();
+}
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Clear search filter input to prevent browser autofill
+    let searchInput = document.getElementById('tableFilterInput');
+    if(searchInput) {
+        searchInput.value = '';
+        setTimeout(() => { searchInput.value = ''; }, 100);
+        setTimeout(() => { searchInput.value = ''; }, 500);
+    }
+
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if(typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+
+    // Check if customer_id is passed in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialCustId = urlParams.get('customer_id');
+    if(initialCustId) {
+        let opt = document.querySelector(`#custOptionsList .cust-opt-item[data-id="${CSS.escape(initialCustId)}"]`);
+        if(opt) {
+            opt.click();
+            return;
+        }
+    }
+
+    loadPartySales();
+});
+</script>
+{% endblock %}

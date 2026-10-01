@@ -1,0 +1,733 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* SaaS کارڈز اسٹائلنگ */
+    .saas-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 20px 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        transition: all 0.25s ease;
+    }
+    .saas-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+    }
+    .cursor-pointer { cursor: pointer; }
+
+    .saas-card-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #475569;
+        letter-spacing: 0.03em;
+    }
+    .saas-card-val {
+        font-size: 1.85rem;
+        font-weight: 800;
+        margin: 8px 0;
+        letter-spacing: -0.5px;
+    }
+    .saas-subtext {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .saas-chart-panel {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    }
+    .saas-time-btn {
+        background: transparent;
+        border: 1px solid var(--card-border, #cbd5e1);
+        color: #475569;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 6px 18px;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    .saas-time-btn.active {
+        background: #0284c7;
+        color: #ffffff !important;
+        border-color: #0284c7;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+    }
+
+    /* 💡 ہائی کنٹراسٹ ڈارک موڈ کلرز */
+    .dash-subtitle {
+        color: #64748b;
+    }
+
+    body.dark-mode .dash-subtitle {
+        color: #cbd5e1 !important;
+    }
+
+    body.dark-mode .saas-card-title {
+        color: #e2e8f0 !important;
+    }
+
+    body.dark-mode .text-muted {
+        color: #cbd5e1 !important;
+    }
+
+    body.dark-mode .saas-time-btn {
+        color: #e2e8f0;
+        border-color: #334155;
+    }
+
+    body.dark-mode .saas-time-btn.active {
+        color: #ffffff !important;
+        background: #0284c7 !important;
+    }
+
+    /* ماڈل اور RTL فکسز */
+    .custom-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--card-border, #e2e8f0);
+    }
+    
+    body.lang-ur .custom-modal-header .btn-close {
+        margin: 0 !important;
+    }
+
+    .custom-badge-danger {
+        background-color: #ef4444;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 6px;
+        display: inline-block;
+        direction: ltr !important;
+    }
+
+    .table thead th {
+        background: var(--card-bg, #f8fafc) !important;
+        color: var(--text-muted, #64748b) !important;
+        font-weight: 700;
+        border-bottom: 2px solid var(--card-border, #e2e8f0) !important;
+    }
+    body.dark-mode .table thead th {
+        background: #1e293b !important;
+        color: #94a3b8 !important;
+        border-bottom-color: #334155 !important;
+    }
+    body.dark-mode .table tbody tr {
+        border-bottom-color: #1e293b !important;
+    }
+    body.dark-mode .table-hover tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.03) !important;
+    }
+
+    .low-stock-table th {
+        font-size: 0.85rem;
+        font-weight: 700;
+        padding: 12px 14px;
+        background-color: #0f172a !important;
+        color: #f8fafc !important;
+    }
+
+    .low-stock-table td {
+        padding: 12px 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a !important;
+    }
+
+    body.dark-mode .low-stock-table td {
+        color: #0f172a !important;
+    }
+
+    /* رینکنگ کارڈ ہوور ایفیکٹ */
+    .ranking-metric-card:hover {
+        transform: translateY(-3px);
+        border-color: #0284c7 !important;
+        box-shadow: 0 8px 22px rgba(2, 132, 199, 0.15) !important;
+    }
+</style>
+
+<!-- عنوان اور بیک اپ بٹن -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold m-0 text-main lang-text" data-en="Business Intelligence & Analytics" data-ur="کاروباری خلاصہ و تجارتی تجزیہ">Business Intelligence & Analytics</h3>
+        <p class="dash-subtitle m-0 small lang-text" data-en="Comprehensive overview of daily sales, outstanding ledger, and stock inventory" data-ur="روزمرہ کی فروخت، بقایا کھاتہ اور اسٹاک کی تفصیلی کارکردگی">Comprehensive overview of daily sales, outstanding ledger, and stock inventory</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-primary shadow-sm px-3 fw-bold d-inline-flex align-items-center gap-2 rounded-pill" onclick="openBackupModal('backup')">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.579.481-.96 1.15-.992 1.93l-.048.653-.637.152C2.06 7.15 1 8.143 1 9.318 1 10.79 2.235 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+                <path d="M7.646 10.854a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 9.293V5.5a.5.5 0 0 0-1 0v3.793L6.354 8.146a.5.5 0 1 0-.708.708l2 2z"/>
+            </svg>
+            <span class="lang-text" data-en="Backup & Restore" data-ur="بیک اپ و بحالی">بیک اپ و بحالی</span>
+        </button>
+    </div>
+</div>
+
+<!-- 4 کارڈز -->
+<!-- Low Stock Alert -->
+{% if low_stock_products and low_stock_products|length > 0 %}
+<div class="alert alert-danger alert-dismissible fade show mx-0 mb-3 rounded-4 border-0 shadow-sm" role="alert" style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border-left: 4px solid #dc2626 !important;">
+    <div class="d-flex align-items-start gap-3">
+        <div class="d-inline-flex align-items-center justify-content-center text-danger" style="width: 36px; height: 36px; border-radius: 50%; background: #fee2e2; flex-shrink: 0;">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
+        </div>
+        <div class="flex-grow-1">
+            <strong class="d-block mb-1" style="color:#b91c1c;">Low Stock Alert! ({{ low_stock_products|length }} items)</strong>
+            <div class="d-flex flex-wrap gap-2">
+            {% for p in low_stock_products %}
+                <span class="badge rounded-pill" style="background:#dc2626; font-size:0.8rem; padding:5px 10px;">
+                    {{ p.name }} — {{ "{:g}".format(p.stock|float) }} {{ p.unit or 'Pcs' }} left
+                </span>
+            {% endfor %}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <!-- 1. فروخت (آج و ماہانہ سوئچر) -->
+    <div class="col-xl-3 col-md-6">
+        <div class="saas-card">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="saas-card-title lang-text" id="salesCardTitle" data-en="Today's Sales" data-ur="آج کی کل فروخت">Today's Sales</span>
+                <div class="btn-group btn-group-sm" role="group" style="background: rgba(2, 132, 199, 0.08); padding: 2px; border-radius: 20px;">
+                    <button type="button" class="btn btn-sm py-0 px-2 fw-bold active rounded-pill text-primary" id="btnSaleToday" onclick="switchDashboardSales('today')" style="font-size: 0.72rem;">
+                        <span class="lang-text" data-en="Today" data-ur="آج">Today</span>
+                    </button>
+                    <button type="button" class="btn btn-sm py-0 px-2 fw-bold text-muted rounded-pill" id="btnSaleMonth" onclick="switchDashboardSales('month')" style="font-size: 0.72rem;">
+                        <span class="lang-text" data-en="Month" data-ur="ماہ">Month</span>
+                    </button>
+                </div>
+            </div>
+            <!-- Today Display -->
+            <div id="viewSaleToday">
+                <div class="saas-card-val text-primary font-monospace">Rs. {{ "{:,.0f}".format(today_sale) }}</div>
+                <div class="saas-subtext d-flex justify-content-between align-items-center">
+                    <span class="text-danger">
+                        <span class="lang-text" data-en="Credit: " data-ur="ادھار: ">Credit: </span><span class="font-monospace">Rs. {{ "{:,.0f}".format(today_due) }}</span>
+                    </span>
+                    <span class="text-muted small">
+                        <span class="lang-text" data-en="Month:" data-ur="اس ماہ:">Month:</span> <strong class="text-success font-monospace">Rs. {{ "{:,.0f}".format(month_sale) }}</strong>
+                    </span>
+                </div>
+            </div>
+            <!-- Month Display -->
+            <div id="viewSaleMonth" class="d-none">
+                <div class="saas-card-val text-success font-monospace">Rs. {{ "{:,.0f}".format(month_sale) }}</div>
+                <div class="saas-subtext d-flex justify-content-between align-items-center">
+                    <span class="text-danger">
+                        <span class="lang-text" data-en="Month's Credit: " data-ur="ماہانہ ادھار: ">Month's Credit: </span><span class="font-monospace">Rs. {{ "{:,.0f}".format(month_due) }}</span>
+                    </span>
+                    <span class="text-muted small">
+                        <span class="lang-text" data-en="Today:" data-ur="آج:">Today:</span> <strong class="text-primary font-monospace">Rs. {{ "{:,.0f}".format(today_sale) }}</strong>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. سپلائرز کا ادھار (Payables) -->
+    <div class="col-xl-3 col-md-6">
+        <div class="saas-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="saas-card-title lang-text" data-en="Supplier Payables" data-ur="سپلائرز کا ادھار (قرضہ)">Supplier Payables</span>
+                <svg width="20" height="20" fill="#ea580c" viewBox="0 0 16 16">
+                    <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.02a1.5 1.5 0 0 1 1.17.563l1.481 1.85a1.5 1.5 0 0 1 .329.938V10.5a1.5 1.5 0 0 1-1.5 1.5H14a2 2 0 1 1-4 0H5a2 2 0 1 1-3.998-.085A1.5 1.5 0 0 1 0 10.5v-7zm1.294 7.456A1.999 1.999 0 0 1 4.732 11h5.536a2.01 2.01 0 0 1 .732-.732V3.5a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .294.456zM12 10a2 2 0 0 1 1.732 1h.768a.5.5 0 0 0 .5-.5V8.35a.5.5 0 0 0-.11-.312l-1.48-1.85A.5.5 0 0 0 13.02 6H12v4zm-9 1a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm8 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                </svg>
+            </div>
+            <div class="saas-card-val font-monospace" style="color: #ea580c !important;">Rs. {{ "{:,.0f}".format(payables) }}</div>
+            <div class="saas-subtext text-muted d-flex justify-content-between align-items-center">
+                <span class="lang-text" data-en="Total Due to Suppliers" data-ur="تمام سپلائرز کا واجب الادا قرضہ">Total Due to Suppliers</span>
+                <a href="/suppliers" class="text-decoration-none small fw-bold text-primary lang-text" data-en="View →" data-ur="کھاتہ دیکھیں ←">View →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. مجموعی مارکیٹ کھاتہ -->
+    <div class="col-xl-3 col-md-6">
+        <div class="saas-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="saas-card-title lang-text" data-en="Total Market Credit" data-ur="کل مجموعی کھاتہ (واجبات)">Total Market Credit</span>
+                <svg width="20" height="20" fill="#dc2626" viewBox="0 0 16 16">
+                    <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                    <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/>
+                </svg>
+            </div>
+            <div class="saas-card-val text-danger font-monospace">Rs. {{ "{:,.0f}".format(receivables) }}</div>
+            <div class="saas-subtext text-muted lang-text" data-en="All Customers Total Due" data-ur="تمام گاہکوں کا مجموعی بقایا">
+                All Customers Total Due
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. کم اسٹاک الرٹ کارڈ -->
+    <div class="col-xl-3 col-md-6">
+        <div class="saas-card cursor-pointer" data-bs-toggle="modal" data-bs-target="#lowStockModal" title="فہرست دیکھنے کے لیے کلک کریں">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="saas-card-title lang-text" data-en="Low Stock Alerts" data-ur="کم اسٹاک اشیاء">Low Stock Alerts</span>
+                <svg width="20" height="20" fill="#d97706" viewBox="0 0 16 16">
+                    <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6z"/>
+                </svg>
+            </div>
+            <div class="saas-card-val text-warning font-monospace">{{ low_stock_count }} <span class="fs-6 fw-normal text-muted lang-text" data-en="Items" data-ur="آئٹمز">Items</span></div>
+            <div class="saas-subtext text-info lang-text" data-en="Click to view item list →" data-ur="فہرست دیکھنے کے لیے کلک کریں ←">
+                Click to view item list →
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- گراف پینل -->
+<div class="saas-chart-panel mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h5 class="fw-bold m-0 text-main lang-text" data-en="Revenue & Receivables Trend" data-ur="آمدن اور واجبات کا تجارتی رجحان">Revenue & Receivables Trend</h5>
+            <small class="dash-subtitle lang-text" data-en="Sales performance compared against issued customer credit" data-ur="روزانہ کی بنیاد پر وصولی اور واجبات کا جائزہ">Sales performance compared against issued customer credit</small>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button class="saas-time-btn active lang-text" id="btnDaily" onclick="switchChartMode('daily')" data-en="Daily" data-ur="روزانہ">Daily</button>
+            <button class="saas-time-btn lang-text" id="btnWeekly" onclick="switchChartMode('weekly')" data-en="Weekly" data-ur="ہفتہ وار">Weekly</button>
+            <button class="saas-time-btn lang-text" id="btnMonthly" onclick="switchChartMode('monthly')" data-en="Monthly" data-ur="ماہانہ">Monthly</button>
+        </div>
+    </div>
+
+    <div style="position: relative; height: 360px; width: 100%;">
+        <canvas id="saasAnalyticsChart"></canvas>
+    </div>
+</div>
+
+<!-- ==================== نیا اسٹائلش رینکنگ میٹرک کارڈ ==================== -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="saas-card ranking-metric-card cursor-pointer" onclick="openRankingModal()" title="رینکنگ دیکھنے کے لیے کلک کریں" style="border: 1.5px solid rgba(2, 132, 199, 0.25);">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(2, 132, 199, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2 11h1v4H2v-4zm5-6h1v10H7V5zm5-3h1v13h-1V2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1 text-main lang-text" data-en="Top 10 Best Selling Products" data-ur="زیادہ فروخت ہونے والی 10 اشیاء کی رینکنگ">زیادہ فروخت ہونے والی 10 اشیاء کی رینکنگ</h5>
+                        <div class="text-muted small lang-text" data-en="Click to view detailed item sales performance & revenue ranking" data-ur="مکمل سیلز کارکردگی اور رینکنگ رپورٹ دیکھنے کے لیے کلک کریں">مکمل سیلز کارکردگی اور رینکنگ رپورٹ دیکھنے کے لیے کلک کریں</div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary px-3 py-2 fw-bold shadow-sm d-flex align-items-center gap-2" style="font-size: 0.88rem; border-radius: 8px;">
+                        <span>Top 10 Live</span>
+                        <span>➔</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- کم اسٹاک پاپ اپ ماڈل -->
+<div class="modal fade" id="lowStockModal" tabindex="-1" aria-labelledby="lowStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-themed-content shadow-lg border-0" style="border-radius: 14px; overflow: hidden;">
+            <div class="custom-modal-header">
+                <h5 class="modal-title fw-bold m-0 d-flex align-items-center" id="lowStockModalLabel" style="font-size: 1.15rem;">
+                    <svg width="20" height="20" fill="#d97706" class="me-2 ms-2" viewBox="0 0 16 16">
+                        <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.146.146 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.163.163 0 0 1-.054.06.145.145 0 0 1-.066.017H1.146a.145.145 0 0 1-.066-.017.163.163 0 0 1-.054-.06.176.176 0 0 1 .002-.183L7.884 2.073a.147.147 0 0 1 .054-.057zm1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566z"/>
+                        <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995z"/>
+                    </svg>
+                    <span class="lang-text" data-en="Low Stock Inventory List" data-ur="کم اسٹاک اشیاء کی تفصیلی فہرست">Low Stock Inventory List</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table low-stock-table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th class="lang-text" data-en="Item Code" data-ur="آئٹم کوڈ">Item Code</th>
+                                <th class="lang-text" data-en="Product Name" data-ur="پروڈکٹ کا نام">Product Name</th>
+                                <th class="lang-text" data-en="Category" data-ur="کیٹیگری">Category</th>
+                                <th class="text-center lang-text" data-en="Current Stock" data-ur="موجودہ اسٹاک">Current Stock</th>
+                                <th class="text-center lang-text" data-en="Alert Limit" data-ur="الرٹ حد">Alert Limit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in low_stock_items %}
+                            <tr>
+                                <td class="fw-bold" style="color: #64748b !important;">{{ loop.index }}</td>
+                                <td>
+                                    <span class="badge bg-dark font-monospace px-2 py-1">{{ item.code }}</span>
+                                </td>
+                                <td class="fw-bold" style="color: #0f172a !important;">{{ item.name }}</td>
+                                <td style="color: #475569 !important;">{{ item.category or '-' }}</td>
+                                <td class="text-center">
+                                    <span class="custom-badge-danger">
+                                        {{ item.stock }} {{ item.unit or 'Pcs' }}
+                                    </span>
+                                </td>
+                                <td class="text-center fw-bold" style="color: #475569 !important;">{{ item.alert_qty }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4 fw-bold lang-text" style="color: #64748b !important;" data-en="All products have sufficient stock." data-ur="تمام اشیاء کا اسٹاک تسلی بخش ہے۔">
+                                    All products have sufficient stock.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-light border-top p-2 px-3 d-flex justify-content-between align-items-center">
+                <a href="/api/low_stock/pdf?download=1" target="_blank" class="btn btn-danger btn-sm px-3 fw-bold d-inline-flex align-items-center gap-2 shadow-sm" title="کم اسٹاک پی ڈی ایف محفوظ کریں">
+                    <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        <path d="M4.603 14.087a.81.81 0 0 1-.438-.42c-.195-.388-.13-.776.08-1.143.244-.427.721-.867 1.413-1.296.38-.236.784-.442 1.205-.615.15-.062.298-.12.443-.177a8.4 8.4 0 0 1-.404-1.026 15 15 0 0 1-.397-1.42 1.34 1.34 0 0 1 .232-1.018c.205-.285.534-.448.887-.448.243 0 .47.078.653.226.33.267.464.708.384 1.258a12.7 12.7 0 0 1-.486 1.748c.451.782.973 1.488 1.547 2.086.326-.067.658-.107.988-.107.822 0 1.427.24 1.75.696.183.258.245.568.175.897a1.1 1.1 0 0 1-.617.814c-.383.195-.873.19-1.424-.015-.658-.245-1.378-.718-2.072-1.36-.615.176-1.253.38-1.898.608-.52.184-1.033.39-1.52.613-.393.18-.737.332-1.02.435-.11.04-.21.074-.3.103z"/>
+                    </svg>
+                    <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف محفوظ کریں">Save as PDF</span>
+                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/inventory" class="btn btn-primary btn-sm px-3 fw-bold lang-text" data-en="Manage Inventory" data-ur="اسٹاک مینجمنٹ کھولیں">Manage Inventory</a>
+                    <button type="button" class="btn btn-secondary btn-sm px-3 lang-text" data-bs-dismiss="modal" data-en="Close" data-ur="بند کریں">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== نیا کلین و پروفیشنل ٹاپ 10 رینکنگ ماڈل ==================== -->
+<div class="modal fade" id="rankingDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content modal-themed-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+            <div class="modal-header border-bottom py-3 px-4" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff;">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width: 34px; height: 34px; border-radius: 8px; background: #0284c7; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2 11h1v4H2v-4zm5-6h1v10H7V5zm5-3h1v13h-1V2z"/>
+                        </svg>
+                    </div>
+                    <h5 class="modal-title fw-bold m-0 text-white lang-text" data-en="Top 10 Best Selling Products" data-ur="زیادہ فروخت ہونے والی 10 اشیاء">زیادہ فروخت ہونے والی 10 اشیاء</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body p-3">
+                <!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+                <div class="print-header-container mb-3">
+                    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+                        <div>
+                            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+                            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+                            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+                        </div>
+                        <div class="text-end" style="text-align: right;">
+                            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">TOP SELLING PRODUCTS RANKING</h4>
+                            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+                            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+                            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Scope: Top 10 Best Sellers</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover align-middle mb-0" style="font-size: 0.95rem; width: 100%;">
+                        <thead class="table-light text-center" style="font-size: 0.88rem;">
+                            <tr>
+                                <th style="width: 70px; text-align: center;" class="lang-text" data-en="Rank" data-ur="نمبر">نمبر</th>
+                                <th style="min-width: 200px; text-align: start;" class="ps-3 lang-text" data-en="Product Name" data-ur="پروڈکٹ کا نام">پروڈکٹ کا نام</th>
+                                <th style="width: 130px; text-align: center;" class="lang-text" data-en="Category" data-ur="کیٹیگری">کیٹیگری</th>
+                                <th style="width: 150px; text-align: center;" class="lang-text" data-en="Current Stock" data-ur="موجودہ اسٹاک">موجودہ اسٹاک</th>
+                                <th style="width: 130px; text-align: center;" class="lang-text" data-en="Sold Qty" data-ur="فروخت شدہ تعداد">فروخت شدہ تعداد</th>
+                                <th style="width: 160px; text-align: center;" class="lang-text" data-en="Revenue" data-ur="حاصل شدہ رقم">حاصل شدہ رقم</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in top_selling %}
+                            <tr>
+                                <td style="text-align: center; font-weight: bold;">
+                                    {% if loop.index == 1 %}
+                                        <span class="badge bg-warning text-dark px-3 py-1 fs-6">01</span>
+                                    {% elif loop.index == 2 %}
+                                        <span class="badge bg-secondary text-white px-3 py-1 fs-6">02</span>
+                                    {% elif loop.index == 3 %}
+                                        <span class="badge bg-dark text-white px-3 py-1 fs-6">03</span>
+                                    {% else %}
+                                        <span class="text-muted fw-bold fs-6">{{ '%02d' % loop.index }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: start; font-weight: 700;">
+                                    {{ item.name }}
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="badge bg-light text-dark border px-2 py-1" style="font-size: 0.8rem;">{{ item.category or 'General' }}</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    {% if item.stock <= 10 %}
+                                        <span class="badge bg-danger text-white px-2 py-1 font-monospace" style="font-size: 0.85rem;">{{ "{:,}".format(item.stock) }} {{ item.unit or 'Pcs' }}</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark border px-2 py-1 font-monospace" style="font-size: 0.85rem;">{{ "{:,}".format(item.stock) }} {{ item.unit or 'Pcs' }}</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="badge bg-primary px-3 py-1 font-monospace fs-6">{{ "{:,}".format(item.total_sold or 0) }}</span>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span class="badge bg-success px-3 py-1 font-monospace fs-6">Rs. {{ "{:,.0f}".format(item.total_revenue or 0) }}</span>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4 lang-text" data-en="No sales recorded yet" data-ur="ابھی تک کوئی سیل ریکارڈ نہیں ہوئی">ابھی تک کوئی سیل ریکارڈ نہیں ہوئی</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="print-footer">
+                    Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+                </div>
+            </div>
+
+            <div class="modal-footer border-top py-2 px-4 bg-light d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-secondary btn-sm px-4 fw-bold lang-text" data-bs-dismiss="modal" data-en="Close" data-ur="بند کریں">بند کریں</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-dark btn-sm px-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1" onclick="window.print()">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                            <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        <span class="lang-text" data-en="Print List" data-ur="پرنٹ لسٹ">Print List</span>
+                    </button>
+                    <a href="/api/top_products/pdf?download=1" class="btn btn-danger btn-sm px-3 fw-bold shadow-sm d-inline-flex align-items-center gap-1" title="ٹاپ پروڈکٹس پی ڈی ایف ڈاؤن لوڈ کریں">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                        </svg>
+                        <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف محفوظ کریں">Save as PDF</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let chartInstance = null;
+let allChartData = null;
+let currentMode = 'daily';
+
+const verticalGuidePlugin = {
+    id: 'verticalGuidePlugin',
+    afterDraw: (chart) => {
+        if (chart.tooltip?._active && chart.tooltip._active.length) {
+            const ctx = chart.ctx;
+            const activePoint = chart.tooltip._active[0];
+            const x = activePoint.element.x;
+            const topY = chart.scales.y.top;
+            const bottomY = chart.scales.y.bottom;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([4, 4]);
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = '#94a3b8';
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+};
+
+function fetchChartData() {
+    fetch('/api/dashboard_charts')
+        .then(res => res.json())
+        .then(data => {
+            allChartData = data;
+            renderChart(currentMode);
+        })
+        .catch(err => console.error("Error loading analytics:", err));
+}
+
+function renderChart(mode) {
+    if (!allChartData) return;
+
+    const targetData = allChartData[mode];
+    const ctx = document.getElementById('saasAnalyticsChart').getContext('2d');
+    const isUrdu = (localStorage.getItem('pos_lang') === 'ur');
+    const isDark = document.body.classList.contains('dark-mode');
+
+    const salesGrad = ctx.createLinearGradient(0, 0, 0, 360);
+    salesGrad.addColorStop(0, isDark ? 'rgba(56, 189, 248, 0.35)' : 'rgba(2, 132, 199, 0.2)');
+    salesGrad.addColorStop(1, 'rgba(2, 132, 199, 0.0)');
+
+    const dueGrad = ctx.createLinearGradient(0, 0, 0, 360);
+    dueGrad.addColorStop(0, isDark ? 'rgba(244, 63, 94, 0.35)' : 'rgba(225, 29, 72, 0.2)');
+    dueGrad.addColorStop(1, 'rgba(225, 29, 72, 0.0)');
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: targetData.labels,
+            datasets: [
+                {
+                    label: isUrdu ? 'کل فروخت (آمدن)' : 'Gross Sales',
+                    data: targetData.sales,
+                    fill: true,
+                    backgroundColor: salesGrad,
+                    borderColor: '#0284c7',
+                    borderWidth: 2.5,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: isDark ? '#111827' : '#ffffff',
+                    pointBorderColor: '#0284c7',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: '#0284c7'
+                },
+                {
+                    label: isUrdu ? 'ادھار رقم (واجبات)' : 'Customer Credit',
+                    data: targetData.dues,
+                    fill: true,
+                    backgroundColor: dueGrad,
+                    borderColor: '#e11d48',
+                    borderWidth: 2.5,
+                    tension: 0.3,
+                    pointRadius: 4,
+                    pointBackgroundColor: isDark ? '#111827' : '#ffffff',
+                    pointBorderColor: '#e11d48',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: '#e11d48'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 800,
+                easing: 'easeOutQuart'
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: isDark ? '#e2e8f0' : '#475569',
+                        font: { size: 12, weight: '700' },
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleColor: '#ffffff',
+                    bodyColor: '#e2e8f0',
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.dataset.label}: Rs. ${Number(context.raw).toLocaleString()}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grace: '20%',
+                    suggestedMax: 1000,
+                    grid: {
+                        color: isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: isDark ? '#cbd5e1' : '#64748b',
+                        font: { size: 12, weight: '600' },
+                        callback: function(value) {
+                            return 'Rs. ' + value.toLocaleString();
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: isDark ? '#cbd5e1' : '#64748b',
+                        font: { size: 12, weight: '600' }
+                    }
+                }
+            }
+        },
+        plugins: [verticalGuidePlugin]
+    });
+}
+
+function switchChartMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.saas-time-btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (mode === 'daily') document.getElementById('btnDaily').classList.add('active');
+    if (mode === 'weekly') document.getElementById('btnWeekly').classList.add('active');
+    if (mode === 'monthly') document.getElementById('btnMonthly').classList.add('active');
+
+    renderChart(mode);
+}
+
+function openRankingModal() {
+    var modal = new bootstrap.Modal(document.getElementById('rankingDetailModal'));
+    modal.show();
+}
+
+function switchDashboardSales(mode) {
+    const isToday = mode === 'today';
+    document.getElementById('viewSaleToday').classList.toggle('d-none', !isToday);
+    document.getElementById('viewSaleMonth').classList.toggle('d-none', isToday);
+    
+    const btnToday = document.getElementById('btnSaleToday');
+    const btnMonth = document.getElementById('btnSaleMonth');
+    const title = document.getElementById('salesCardTitle');
+    
+    if (isToday) {
+        btnToday.classList.add('active', 'text-primary', 'bg-white', 'shadow-sm');
+        btnToday.classList.remove('text-muted');
+        btnMonth.classList.remove('active', 'text-primary', 'bg-white', 'shadow-sm');
+        btnMonth.classList.add('text-muted');
+        title.setAttribute('data-en', "Today's Sales");
+        title.setAttribute('data-ur', "آج کی کل فروخت");
+    } else {
+        btnMonth.classList.add('active', 'text-primary', 'bg-white', 'shadow-sm');
+        btnMonth.classList.remove('text-muted');
+        btnToday.classList.remove('active', 'text-primary', 'bg-white', 'shadow-sm');
+        btnToday.classList.add('text-muted');
+        title.setAttribute('data-en', "This Month Sales");
+        title.setAttribute('data-ur', "اس ماہ کی کل فروخت");
+    }
+    const currentLang = localStorage.getItem('pos_lang') || 'ur';
+    title.innerText = title.getAttribute(`data-${currentLang}`) || title.innerText;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    fetchChartData();
+});
+</script>
+{% endblock %}

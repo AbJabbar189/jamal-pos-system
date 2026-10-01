@@ -1,0 +1,814 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+
+    body.dark-mode .custom-card {
+        background-color: #111827 !important;
+        border-color: #1f2937 !important;
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        width: 100%;
+        background: transparent !important;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        padding: 14px 18px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .table-modern thead th:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+    .table-modern tbody tr {
+        background: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        transition: all 0.2s ease;
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+
+    body.dark-mode .table-modern tbody tr {
+        background-color: #1e293b !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    }
+
+    .table-modern td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        color: #0f172a !important;
+        background-color: transparent !important;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    body.dark-mode .table-modern td {
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+    .table-modern td:first-child { border-left: 1px solid #e2e8f0; border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .table-modern td:last-child { border-right: 1px solid #e2e8f0; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+    body.dark-mode .table-modern td:first-child, body.dark-mode .table-modern td:last-child { border-color: #334155 !important; }
+
+    .empty-state-text {
+        color: #64748b !important;
+        font-weight: 700;
+    }
+
+    body.dark-mode .empty-state-text {
+        color: #94a3b8 !important;
+    }
+
+    .page-subtitle { color: #64748b; }
+    body.dark-mode .page-subtitle { color: #cbd5e1 !important; }
+
+    body.dark-mode .modal-content {
+        background-color: #111827 !important;
+        color: #f8fafc !important;
+        border: 1px solid #334155 !important;
+    }
+    body.dark-mode .modal-footer {
+        background-color: #0f172a !important;
+        border-color: #1f2937 !important;
+    }
+    body.dark-mode .form-control, body.dark-mode .form-select {
+        background-color: #1e293b !important;
+        border-color: #334155 !important;
+        color: #ffffff !important;
+    }
+
+    @media print {
+        .no-print { display: none !important; }
+    }
+
+    /* Empty State Animations */
+    .empty-state-animated {
+        padding: 40px 20px;
+        animation: fadeInScale 0.5s ease-out forwards;
+    }
+    .empty-icon-pulse {
+        display: inline-flex;
+        padding: 20px;
+        background: #f0f9ff;
+        border-radius: 50%;
+        margin-bottom: 15px;
+        animation: pulseIcon 2s infinite;
+    }
+    body.dark-mode .empty-icon-pulse {
+        background: rgba(14, 165, 233, 0.1);
+    }
+    .create-pulse-btn {
+        transition: all 0.3s ease;
+        animation: btnPulse 2s infinite;
+    }
+    .create-pulse-btn:hover {
+        transform: scale(1.05);
+        animation: none;
+    }
+    @keyframes fadeInScale {
+        0% { opacity: 0; transform: scale(0.95); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    @keyframes pulseIcon {
+        0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); transform: scale(1); }
+        70% { box-shadow: 0 0 0 15px rgba(14, 165, 233, 0); transform: scale(1.05); }
+        100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); transform: scale(1); }
+    }
+    @keyframes btnPulse {
+        0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h4 class="fw-bold m-0">
+            <span class="lang-text" data-en="Price Quotations & Estimates" data-ur="کوٹیشنز و تخمینہ ریٹ">Price Quotations & Estimates</span>
+            <span class="badge bg-primary rounded-pill font-monospace fs-6 align-middle ms-2">{{ quotes|length }} Quotes</span>
+        </h4>
+        <small class="page-subtitle lang-text" data-en="Create estimate slips without reducing inventory stock" data-ur="گاہک کے لیے کچا تخمینہ / ریٹ لسٹ تیار کریں (بغیر اسٹاک مائنس ہوئے)">Create estimate slips without reducing inventory stock</small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-dark fw-bold px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2" onclick="window.print()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+            <span class="lang-text" data-en="Print List" data-ur="پرنٹ لسٹ">Print List</span>
+        </button>
+        <button class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-sm d-inline-flex align-items-center gap-2" onclick="resetQuoteModal()" data-bs-toggle="modal" data-bs-target="#newQuoteModal">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+            <span class="lang-text" data-en="Create New Quotation" data-ur="نیا تخمینہ / کوٹیشن بنائیں">Create New Quotation</span>
+        </button>
+    </div>
+</div>
+
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table-modern align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;" class="lang-text" data-en="#" data-ur="نمبر">#</th>
+                    <th style="width: 70px;">ID</th>
+                    <th class="lang-text" data-en="Quote #" data-ur="کوٹیشن نمبر">Quote #</th>
+                    <th class="lang-text" data-en="Customer Name" data-ur="گاہک کا نام">Customer Name</th>
+                    <th class="lang-text" data-en="Phone" data-ur="فون نمبر">Phone</th>
+                    <th class="lang-text" data-en="Date & Time" data-ur="تاریخ و وقت">Date & Time</th>
+                    <th class="lang-text" data-en="Total Estimate" data-ur="کل تخمینہ رقم">Total Estimate</th>
+                    <th class="text-center lang-text" data-en="Actions" data-ur="کارروائی">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in quotes %}
+                <tr>
+                    <td class="text-center font-monospace fw-bold text-muted row-sr-no">{{ loop.index }}</td>
+                    <td class="font-monospace fw-bold" style="color: #94a3b8 !important;">#{{ q.id }}</td>
+                    <td class="font-monospace fw-bold text-primary">{{ q.quote_no }}</td>
+                    <td class="fw-bold">{{ q.customer_name }}</td>
+                    <td class="font-monospace">{{ q.customer_phone or '-' }}</td>
+                    <td class="font-monospace small text-muted">{{ q.date }}</td>
+                    <td class="font-monospace fw-bold text-success fs-6">Rs. {{ "{:,.0f}".format(q.total) }}</td>
+                    <td class="text-center">
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="/api/quotation/pdf/{{ q.id }}" class="btn btn-sm btn-danger fw-bold px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm text-decoration-none" style="border-radius: 6px;" title="Save as PDF">
+                                <span>📄</span> <span>PDF</span>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-success fw-bold px-2 py-1 shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 6px;" onclick="convertQuotToInvoice('{{ q.id }}')" title="Convert to Sale Invoice">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5V2.914a1.5 1.5 0 0 0-.44-1.06L14.147.439A1.5 1.5 0 0 0 13.086 0H1.5zM4 3.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zM4 6.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm.5 2.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1 0-1z"/></svg>
+                                <span>Invoice</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-primary fw-bold px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 6px;" onclick="openViewQuotationModal({{ q.id }})" title="View / Print">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>
+                                <span class="lang-text" data-en="View" data-ur="دیکھیں">View</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-warning text-dark fw-bold px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 6px;" onclick="openEditQuotationModal({{ q.id }})" title="Edit Quotation">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                                <span class="lang-text" data-en="Edit" data-ur="ایڈٹ">Edit</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger fw-bold px-2 py-1 d-inline-flex align-items-center gap-1 shadow-sm" style="border-radius: 6px;" onclick="deleteQuotation({{ q.id }}, '{{ q.quote_no }}')" title="Delete Quotation">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                <span class="lang-text" data-en="Delete" data-ur="ڈیلیٹ">Delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <div class="empty-state-animated">
+                            <div class="empty-icon-pulse">
+                                <svg width="60" height="60" fill="none" stroke="#0ea5e9" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <h4 class="fw-bold mt-3 text-main lang-text" data-en="No Quotations Yet!" data-ur="ابھی تک کوئی کوٹیشن نہیں بنی!">No Quotations Yet!</h4>
+                            <p class="text-muted lang-text mb-4" data-en="Create your first estimate without affecting stock." data-ur="اسٹاک کو کم کیے بغیر اپنا پہلا کچا بل / تخمینہ بنائیں۔">Create your first estimate without affecting stock.</p>
+                            <button class="btn btn-primary fw-bold btn-lg shadow-sm create-pulse-btn lang-text" onclick="resetQuoteModal()" data-en="+ Create New Quotation" data-ur="+ نیا تخمینہ / کوٹیشن بنائیں" data-bs-toggle="modal" data-bs-target="#newQuoteModal">
+                                + Create New Quotation
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Create Quotation -->
+<div class="modal fade" id="newQuoteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold lang-text" id="newQuoteModalTitle" data-en="Create Estimate / Quotation" data-ur="نیا تخمینہ / ریٹ کوٹیشن تیار کریں">Create Estimate / Quotation</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="qEditId" value="">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted small text-uppercase lang-text" data-en="Customer Name *" data-ur="گاہک کا نام *">Customer Name *</label>
+                        <input list="qCustList" id="qCustName" class="form-control form-control-lg rounded-3 shadow-sm border-0 bg-light lang-placeholder" data-en="Type or select name..." data-ur="نام لکھیں یا چنیں..." placeholder="Type or select name..." required autocomplete="off" oninput="onCustChange()">
+                        <datalist id="qCustList">
+                            {% for c in customers %}
+                            <option data-phone="{{ c.phone }}" value="{{ c.name }}"></option>
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted small text-uppercase lang-text" data-en="Phone (Optional)" data-ur="فون نمبر (اختیاری)">Phone (Optional)</label>
+                        <input type="text" id="qCustPhone" class="form-control form-control-lg rounded-3 shadow-sm border-0 bg-light font-monospace" placeholder="0300-0000000" autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="p-3 bg-light rounded-4 mb-4 border border-1 shadow-sm">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase lang-text" data-en="Search Product" data-ur="سامان تلاش کریں">Search Product</label>
+                            <input list="qProdList" id="qProdSearch" class="form-control rounded-3 border-2 border-primary-subtle lang-placeholder" data-en="Type to search product..." data-ur="سامان تلاش کرنے کے لیے لکھیں..." placeholder="Type to search product..." autocomplete="off" oninput="onQProdChange()">
+                            <datalist id="qProdList">
+                                {% for p in products %}
+                                <option data-id="{{ p.id }}" data-name="{{ p.name }}" data-price="{{ p.sale_price }}" data-unit="{{ p.unit or 'Pcs' }}" data-units='{{ p.units | tojson }}' value="[#{{ p.code or p.id }}] {{ p.name }}"></option>
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold text-muted small text-uppercase lang-text" data-en="Price (Rs)" data-ur="ریٹ (Rs)">Price (Rs)</label>
+                            <input type="number" step="any" id="qPrice" class="form-control rounded-3 border-2 font-monospace" placeholder="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold text-muted small text-uppercase lang-text" data-en="Qty" data-ur="تعداد / وزن">Qty</label>
+                            <input type="number" step="any" id="qQty" class="form-control rounded-3 border-2 font-monospace text-center fw-bold" placeholder="1" min="0.01">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold text-muted small text-uppercase lang-text" data-en="Unit" data-ur="اکائی (Unit)">Unit</label>
+                            <select id="qUnit" class="form-select rounded-3 border-2 fw-bold" onchange="onQUnitChange()">
+                                <option value="Pcs">Pcs</option>
+                                <option value="KG">KG</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100 fw-bold rounded-3 shadow-sm d-flex justify-content-center align-items-center gap-1" style="height: 40px;" onclick="addQuoteItem()">
+                                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/></svg>
+                                <span class="lang-text" data-en="Add" data-ur="شامل">Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4 border rounded-3 shadow-sm">
+                    <table class="table table-borderless text-center align-middle mb-0">
+                        <thead class="table-light border-bottom">
+                            <tr>
+                                <th class="text-secondary small text-uppercase lang-text py-3" data-en="Item" data-ur="سامان">Item</th>
+                                <th class="text-secondary small text-uppercase lang-text py-3" data-en="Qty" data-ur="مقدار / اکائی">Qty</th>
+                                <th class="text-secondary small text-uppercase lang-text py-3" data-en="Rate" data-ur="ریٹ">Rate</th>
+                                <th class="text-secondary small text-uppercase lang-text py-3" data-en="Total" data-ur="کل رقم">Total</th>
+                                <th class="py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="qItemsBody">
+                            <tr><td colspan="5" class="text-muted py-4 fw-bold lang-text" data-en="No items added yet" data-ur="کوئی آئٹم شامل نہیں">No items added yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-end mb-2">
+                    <div class="bg-primary-subtle text-primary border border-primary px-4 py-3 rounded-4 shadow-sm text-end" style="min-width: 300px;">
+                        <span class="text-uppercase small fw-bold mb-1 d-block lang-text" data-en="Total Estimate" data-ur="کل تخمینہ بل">Total Estimate</span>
+                        <h3 class="fw-bold m-0 font-monospace">Rs. <span id="qGrandTotal">0</span></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 bg-light d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary fw-bold rounded-pill px-4 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary fw-bold rounded-pill px-4 shadow-sm d-flex align-items-center gap-2 lang-text" data-en="Save Estimate" data-ur="کوٹیشن محفوظ کریں" onclick="submitQuotation(false)">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v4.5h2a.5.5 0 0 1 .354.854l-2.5 2.5a.5.5 0 0 1-.708 0l-2.5-2.5A.5.5 0 0 1 5.5 6.5h2V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
+                        <span class="lang-text" data-en="Save Estimate" data-ur="کوٹیشن محفوظ کریں">Save Estimate</span>
+                    </button>
+                    <button type="button" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm d-flex align-items-center gap-2 lang-text" data-en="Save & Print Slip" data-ur="محفوظ و پرنٹ کریں" onclick="submitQuotation(true)">
+                        <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                        <span class="lang-text" data-en="Save & Print Slip" data-ur="محفوظ و پرنٹ کریں">Save & Print Slip</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal View Quotation Details (معائنہ کوٹیشن) -->
+<div class="modal fade" id="viewQuotationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0" style="border-radius: 16px;">
+            <div class="modal-header bg-primary text-white py-3 px-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/></svg>
+                    <span class="lang-text" data-en="Quotation Details" data-ur="کوٹیشن کی تفصیل">Quotation Details</span>
+                    <span class="badge bg-light text-primary font-monospace ms-2" id="vqQuoteNo">-</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <!-- Info Summary Bar -->
+                <div class="row g-3 p-3 bg-light rounded-4 mb-4 border shadow-sm">
+                    <div class="col-md-4">
+                        <small class="text-muted fw-bold d-block text-uppercase lang-text" data-en="Customer Name" data-ur="گاہک کا نام">Customer Name</small>
+                        <h6 class="fw-bold text-dark m-0 mt-1" id="vqCustomerName">-</h6>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted fw-bold d-block text-uppercase lang-text" data-en="Phone Number" data-ur="فون نمبر">Phone Number</small>
+                        <h6 class="fw-bold text-dark m-0 mt-1 font-monospace" id="vqCustomerPhone">-</h6>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted fw-bold d-block text-uppercase lang-text" data-en="Date & Time" data-ur="تاریخ و وقت">Date & Time</small>
+                        <h6 class="fw-bold text-dark m-0 mt-1 font-monospace small" id="vqDate">-</h6>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="table-responsive mb-4 border rounded-3 shadow-sm">
+                    <table class="table table-hover text-center align-middle mb-0">
+                        <thead class="table-light border-bottom">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th class="text-start lang-text" data-en="Item Name" data-ur="سامان کا نام">Item Name</th>
+                                <th class="lang-text" data-en="Unit" data-ur="اکائی">Unit</th>
+                                <th class="lang-text" data-en="Rate (Rs.)" data-ur="ریٹ (روپے)">Rate (Rs.)</th>
+                                <th class="lang-text" data-en="Quantity" data-ur="تعداد">Quantity</th>
+                                <th class="lang-text" data-en="Total (Rs.)" data-ur="کل رقم">Total (Rs.)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vqItemsBody">
+                            <tr><td colspan="6" class="text-muted py-3">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Grand Total Bar -->
+                <div class="d-flex justify-content-end mb-2">
+                    <div class="bg-primary-subtle text-primary border border-primary px-4 py-3 rounded-4 shadow-sm text-end" style="min-width: 280px;">
+                        <span class="text-uppercase small fw-bold mb-1 d-block lang-text" data-en="Total Estimate" data-ur="کل تخمینہ رقم">Total Estimate</span>
+                        <h3 class="fw-bold m-0 font-monospace">Rs. <span id="vqTotal">0</span></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light px-4 py-3" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                <button type="button" class="btn btn-outline-secondary fw-bold rounded-pill px-4 lang-text" data-en="Close" data-ur="بند کریں" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="vqPdfBtn" class="btn btn-danger fw-bold rounded-pill px-4 shadow-sm d-inline-flex align-items-center gap-2" title="کوٹیشن پی ڈی ایف ڈاؤن لوڈ کریں">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                    </svg>
+                    <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف کوٹیشن">Save as PDF</span>
+                </a>
+                <a href="#" id="vqPrintBtn" class="btn btn-primary fw-bold rounded-pill px-5 shadow-sm d-inline-flex align-items-center gap-2">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                    <span class="lang-text" data-en="Print Slip" data-ur="پرنٹ سلپ">Print Slip</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let qItems = [];
+
+function openViewQuotationModal(quoteId) {
+    fetch(`/api/quotation/${quoteId}`)
+    .then(r => r.json())
+    .then(data => {
+        if(data.success) {
+            const q = data.quote;
+            const lang = localStorage.getItem('pos_lang') || 'ur';
+            document.getElementById('vqQuoteNo').innerText = q.quote_no;
+            document.getElementById('vqCustomerName').innerText = q.customer_name;
+            document.getElementById('vqCustomerPhone').innerText = q.customer_phone || '-';
+            document.getElementById('vqDate').innerText = q.date;
+            document.getElementById('vqTotal').innerText = Number(q.total).toLocaleString();
+            document.getElementById('vqPrintBtn').href = `/view_quotation/${q.id}`;
+            document.getElementById('vqPdfBtn').href = `/api/quotation/pdf/${q.id}`;
+
+            let tbody = document.getElementById('vqItemsBody');
+            tbody.innerHTML = '';
+            if(q.items && q.items.length > 0) {
+                q.items.forEach((it, idx) => {
+                    let price = parseFloat(it.price) || 0;
+                    let qty = parseFloat(it.qty) || 0;
+                    let total = qty * price;
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="font-monospace text-muted">${idx + 1}</td>
+                            <td class="fw-bold text-dark text-start">${it.name}</td>
+                            <td><span class="badge bg-light text-dark border">${it.unit || 'Pcs'}</span></td>
+                            <td class="font-monospace">Rs. ${price.toLocaleString()}</td>
+                            <td class="font-monospace fw-bold">${qty}</td>
+                            <td class="font-monospace fw-bold text-primary">Rs. ${total.toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-muted py-3">${lang === 'en' ? 'No items in this quotation' : 'کوئی آئٹم درج نہیں'}</td></tr>`;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('viewQuotationModal'));
+            modal.show();
+            document.getElementById('viewQuotationModal').addEventListener('shown.bs.modal', () => {
+                if(typeof applyLanguage === 'function') applyLanguage(lang);
+            }, {once: true});
+        } else {
+            alert(data.message || 'Error loading quotation details');
+        }
+    })
+}
+
+function getSelectedQProdOption() {
+    let inputVal = document.getElementById('qProdSearch').value;
+    let datalist = document.getElementById('qProdList');
+    for (let i = 0; i < datalist.options.length; i++) {
+        if (datalist.options[i].value === inputVal) {
+            return datalist.options[i];
+        }
+    }
+    return null;
+}
+
+function onCustChange() {
+    let inputVal = document.getElementById('qCustName').value;
+    let datalist = document.getElementById('qCustList');
+    for (let i = 0; i < datalist.options.length; i++) {
+        if (datalist.options[i].value === inputVal) {
+            let phone = datalist.options[i].getAttribute('data-phone');
+            if(phone) {
+                document.getElementById('qCustPhone').value = phone;
+            }
+            return;
+        }
+    }
+}
+
+function onQProdChange() {
+    let opt = getSelectedQProdOption();
+    let uSelect = document.getElementById('qUnit');
+    if (!uSelect) return;
+    
+    uSelect.innerHTML = '';
+    
+    if (opt) {
+        let basePrice = parseFloat(opt.getAttribute('data-price')) || 0;
+        let baseUnit = opt.getAttribute('data-unit') || 'Pcs';
+        let unitsJson = opt.getAttribute('data-units');
+        let units = [];
+        try {
+            if (unitsJson && unitsJson !== '[]') {
+                units = JSON.parse(unitsJson);
+            }
+        } catch(e) {
+            units = [];
+        }
+
+        if (units && units.length > 0) {
+            units.forEach(u => {
+                let optEl = document.createElement('option');
+                optEl.value = u.unit_name;
+                optEl.innerText = u.unit_name;
+                optEl.setAttribute('data-conv', u.conversion_factor || 1.0);
+                optEl.setAttribute('data-price', u.sale_price !== undefined ? u.sale_price : basePrice);
+                uSelect.appendChild(optEl);
+            });
+            uSelect.selectedIndex = 0;
+            let firstOpt = uSelect.options[0];
+            document.getElementById('qPrice').value = firstOpt.getAttribute('data-price') || basePrice;
+        } else {
+            let optEl = document.createElement('option');
+            optEl.value = baseUnit;
+            optEl.innerText = baseUnit;
+            optEl.setAttribute('data-conv', '1.0');
+            optEl.setAttribute('data-price', basePrice);
+            uSelect.appendChild(optEl);
+            document.getElementById('qPrice').value = basePrice;
+        }
+    } else {
+        uSelect.innerHTML = '<option value="Pcs">Pcs</option><option value="KG">KG</option>';
+        document.getElementById('qPrice').value = '';
+    }
+}
+
+function onQUnitChange() {
+    let uSelect = document.getElementById('qUnit');
+    if (!uSelect) return;
+    let selOpt = uSelect.options[uSelect.selectedIndex];
+    if (selOpt && selOpt.getAttribute('data-price')) {
+        let p = parseFloat(selOpt.getAttribute('data-price'));
+        if (p > 0) {
+            document.getElementById('qPrice').value = p;
+        }
+    }
+}
+
+function resetQuoteModal() {
+    document.getElementById('qEditId').value = '';
+    document.getElementById('qCustName').value = '';
+    document.getElementById('qCustPhone').value = '';
+    document.getElementById('qProdSearch').value = '';
+    document.getElementById('qPrice').value = '';
+    document.getElementById('qQty').value = '';
+    if (document.getElementById('qUnit')) document.getElementById('qUnit').innerHTML = '<option value="Pcs">Pcs</option><option value="KG">KG</option>';
+    qItems = [];
+    renderQItems();
+    const lang = localStorage.getItem('pos_lang') || 'ur';
+    document.getElementById('newQuoteModalTitle').innerHTML = lang === 'en' ? 'Create Estimate / Quotation' : 'نیا تخمینہ / ریٹ کوٹیشن تیار کریں';
+}
+
+function openEditQuotationModal(quoteId) {
+    fetch(`/api/quotation/${quoteId}`)
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            return alert(data.message || 'Error loading quotation');
+        }
+        const q = data.quote;
+        const lang = localStorage.getItem('pos_lang') || 'ur';
+        
+        document.getElementById('qEditId').value = q.id;
+        document.getElementById('qCustName').value = q.customer_name;
+        document.getElementById('qCustPhone').value = (q.customer_phone === '-' ? '' : q.customer_phone);
+        document.getElementById('newQuoteModalTitle').innerHTML = lang === 'en' 
+            ? `Edit Estimate / Quotation <span class="badge bg-warning text-dark ms-2 font-monospace">${q.quote_no}</span>`
+            : `کوٹیشن میں تبدیلی <span class="badge bg-warning text-dark ms-2 font-monospace">${q.quote_no}</span>`;
+        
+        qItems = (q.items || []).map(it => {
+            let opt = document.querySelector(`#qProdList option[data-name="${it.name}"]`) ||
+                      document.querySelector(`#qProdList option[data-id="${it.id}"]`);
+            let prodUnits = [];
+            if (opt) {
+                try {
+                    let uJson = opt.getAttribute('data-units');
+                    if (uJson && uJson !== '[]') prodUnits = JSON.parse(uJson);
+                } catch(e){}
+            }
+            return {
+                id: it.id || (opt ? opt.getAttribute('data-id') : ''),
+                name: it.name,
+                unit: it.unit || 'Pcs',
+                price: parseFloat(it.price) || 0,
+                qty: parseFloat(it.qty) || 1,
+                units: prodUnits
+            };
+        });
+        
+        renderQItems();
+        
+        const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('newQuoteModal'));
+        modal.show();
+    })
+    .catch(e => alert('Error loading quotation: ' + e));
+}
+
+function deleteQuotation(quoteId, quoteNo) {
+    const lang = localStorage.getItem('pos_lang') || 'ur';
+    const confirmMsg = lang === 'en' 
+        ? `Are you sure you want to delete quotation #${quoteNo}?` 
+        : `کیا آپ واقعی کوٹیشن #${quoteNo} کو مستقل ڈیلیٹ کرنا چاہتے ہیں؟`;
+        
+    if (!confirm(confirmMsg)) return;
+
+    fetch(`/api/quotation/delete/${quoteId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            window.location.reload();
+        } else {
+            alert(d.message || 'Error deleting quotation');
+        }
+    })
+    .catch(e => alert('Error: ' + e));
+}
+
+function addQuoteItem() {
+    let opt = getSelectedQProdOption();
+    let currentLang = localStorage.getItem('pos_lang') || 'ur';
+    if(!opt) return alert(currentLang === 'en' ? 'Please select a valid product from the list.' : 'براہ کرم لسٹ میں سے ایک درست سامان منتخب کریں۔');
+
+    let prodId = opt.getAttribute('data-id');
+    let prodName = opt.getAttribute('data-name');
+    let unitEl = document.getElementById('qUnit');
+    let prodUnit = (unitEl ? unitEl.value : null) || opt.getAttribute('data-unit') || 'Pcs';
+    let price = parseFloat(document.getElementById('qPrice').value) || 0;
+    let qty = parseFloat(document.getElementById('qQty').value) || 1;
+
+    let unitsJson = opt.getAttribute('data-units');
+    let prodUnits = [];
+    try {
+        if (unitsJson && unitsJson !== '[]') {
+            prodUnits = JSON.parse(unitsJson);
+        }
+    } catch(e){}
+
+    // Check if product already exists in qItems list with matching unit
+    let existingIndex = qItems.findIndex(item => ((item.id && item.id === prodId) || item.name.toLowerCase() === prodName.toLowerCase()) && item.unit === prodUnit);
+
+    if (existingIndex !== -1) {
+        // Accumulate / merge quantity into existing row!
+        let newQty = qItems[existingIndex].qty + qty;
+        qItems[existingIndex].qty = Math.round(newQty * 1000) / 1000;
+        if (price > 0) {
+            qItems[existingIndex].price = price;
+        }
+    } else {
+        qItems.push({
+            id: prodId,
+            name: prodName,
+            unit: prodUnit,
+            price: price,
+            qty: qty,
+            units: prodUnits
+        });
+    }
+
+    renderQItems();
+    document.getElementById('qProdSearch').value = '';
+    document.getElementById('qPrice').value = '';
+    document.getElementById('qQty').value = '';
+    document.getElementById('qProdSearch').focus();
+}
+
+function updateQItemQty(idx, val) {
+    let q = parseFloat(val);
+    if (isNaN(q) || q <= 0) q = 1;
+    qItems[idx].qty = Math.round(q * 1000) / 1000;
+    renderQItems();
+}
+
+function updateQItemUnit(idx, val, selectEl) {
+    if (qItems[idx]) {
+        qItems[idx].unit = val;
+        if (selectEl) {
+            let opt = selectEl.options[selectEl.selectedIndex];
+            if (opt && opt.getAttribute('data-price')) {
+                let p = parseFloat(opt.getAttribute('data-price'));
+                if (p > 0) {
+                    qItems[idx].price = p;
+                }
+            }
+        }
+        renderQItems();
+    }
+}
+
+function updateQItemPrice(idx, val) {
+    let p = parseFloat(val);
+    if (isNaN(p) || p < 0) p = 0;
+    qItems[idx].price = p;
+    renderQItems();
+}
+
+function renderQItems() {
+    let tbody = document.getElementById('qItemsBody');
+    if(qItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted py-3 lang-text" data-en="No items added" data-ur="کوئی آئٹم شامل نہیں">No items added</td></tr>';
+        document.getElementById('qGrandTotal').innerText = '0';
+        return;
+    }
+
+    let html = '';
+    let total = 0;
+    qItems.forEach((it, idx) => {
+        let itTot = it.qty * it.price;
+        total += itTot;
+        
+        let unitOpts = '';
+        if (it.units && it.units.length > 0) {
+            it.units.forEach(u => {
+                unitOpts += `<option value="${u.unit_name}" data-price="${u.sale_price !== undefined ? u.sale_price : ''}" ${it.unit === u.unit_name ? 'selected' : ''}>${u.unit_name}</option>`;
+            });
+        } else {
+            let u1 = it.unit || 'Pcs';
+            let u2 = (u1 === 'KG' ? 'Pcs' : 'KG');
+            unitOpts = `<option value="${u1}" selected>${u1}</option><option value="${u2}">${u2}</option>`;
+        }
+
+        html += `<tr class="border-bottom bg-white">
+            <td class="text-start fw-bold text-dark fs-6">${it.name}</td>
+            <td class="font-monospace fs-6">
+                <div class="d-inline-flex align-items-center gap-1 justify-content-center">
+                    <input type="number" step="any" min="0.01" class="form-control form-control-sm text-center font-monospace fw-bold" style="max-width: 80px;" value="${it.qty}" onchange="updateQItemQty(${idx}, this.value)">
+                    <select class="form-select form-select-sm fw-bold border bg-light font-monospace" style="width: auto; padding: 2px 22px 2px 6px; font-size: 0.75rem;" onchange="updateQItemUnit(${idx}, this.value, this)">
+                        ${unitOpts}
+                    </select>
+                </div>
+            </td>
+            <td class="font-monospace text-muted">
+                <div class="d-inline-flex align-items-center gap-1 justify-content-center">
+                    <span class="small text-muted">Rs.</span>
+                    <input type="number" step="any" min="0" class="form-control form-control-sm text-center font-monospace" style="max-width: 85px;" value="${it.price}" onchange="updateQItemPrice(${idx}, this.value)">
+                </div>
+            </td>
+            <td class="font-monospace fw-bold text-primary fs-6">Rs. ${Math.round(itTot).toLocaleString()}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger rounded-circle shadow-sm" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;" onclick="qItems.splice(${idx},1);renderQItems();" title="Remove">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                </button>
+            </td>
+        </tr>`;
+    });
+
+    tbody.innerHTML = html;
+    document.getElementById('qGrandTotal').innerText = Math.round(total).toLocaleString();
+}
+
+function submitQuotation(shouldPrint = true) {
+    let name = document.getElementById('qCustName').value.trim();
+    if(!name) return alert('Please enter customer name / گاہک کا نام لکھیں');
+    if(qItems.length === 0) return alert('Add at least one item / کم از کم ایک آئٹم شامل کریں');
+
+    let editId = document.getElementById('qEditId').value;
+    let url = editId ? `/api/quotation/edit/${editId}` : '/api/quotation/save';
+
+    let payload = {
+        customer_name: name,
+        customer_phone: document.getElementById('qCustPhone').value.trim(),
+        total_amount: parseFloat(document.getElementById('qGrandTotal').innerText.replace(/,/g, '')) || 0,
+        items: qItems
+    };
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(d => {
+        if(d.success) {
+            let quoteId = d.quote_id || editId;
+            if(shouldPrint) {
+                window.location.href = '/view_quotation/' + quoteId;
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert(d.message || 'Error saving quotation');
+        }
+    })
+    .catch(e => alert('Error: ' + e));
+}
+
+function convertQuotToInvoice(quotId) {
+    if (!confirm('Convert this quotation to a Sale Invoice? / کیا آپ اس کوٹیشن کو سیل انوائس میں تبدیل کرنا چاہتے ہیں؟')) return;
+    fetch('/api/quotation/convert/' + quotId, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            window.location.href = '/receipt/' + res.sale_id;
+        } else {
+            alert('Error: ' + res.message);
+        }
+    })
+    .catch(e => alert('Error: ' + e));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+</script>
+{% endblock %}

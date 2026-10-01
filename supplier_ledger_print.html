@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ 'ltr' if lang == 'en' else 'rtl' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier_Khata_{{ supplier.name | replace(' ', '_') }}_{{ today }}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Jameel Noori Nastaleeq';
+            src: local('Jameel Noori Nastaleeq'),
+                 url('/static/fonts/JameelNooriNastaleeq.ttf') format('truetype');
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 20px 0;
+            margin: 0;
+        }
+        .print-container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 32px 36px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .supplier-info-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .invoice-table {
+            width: 100%;
+            margin-top: 14px;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        .invoice-table th {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 10px 12px;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .invoice-table td {
+            padding: 9px 12px;
+            font-size: 0.86rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+        .invoice-table tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        .summary-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 14px 18px;
+        }
+        .net-balance-box {
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+        .net-balance-box.due {
+            background: #fef2f2;
+            border: 1.5px solid #fca5a5;
+            color: #dc2626;
+        }
+        .net-balance-box.clear {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            color: #16a34a;
+        }
+        .floating-action-bar {
+            position: fixed;
+            top: 16px;
+            {% if lang == 'en' %}right: 20px;{% else %}left: 20px;{% endif %}
+            z-index: 9999;
+            background: #ffffff;
+            padding: 8px 16px;
+            border-radius: 30px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            display: flex;
+            gap: 10px;
+        }
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 8mm;
+            }
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .print-container {
+                max-width: 100% !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .invoice-table th {
+                background-color: #0f172a !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .net-balance-box.due {
+                background-color: #fef2f2 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .net-balance-box.clear {
+                background-color: #f0fdf4 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Top Bar for user convenience -->
+    <div class="floating-action-bar no-print">
+        <button class="btn btn-sm btn-dark fw-bold px-3 d-inline-flex align-items-center gap-1" onclick="window.print()">
+            <span>🖨️</span> <span>{% if lang == 'en' %}Print{% else %}پرنٹ کریں{% endif %}</span>
+        </button>
+        <a href="/api/supplier/pdf/{{ supplier.id }}?download=1" download="Supplier_Khata_{{ supplier.name }}.pdf" class="btn btn-sm btn-outline-danger fw-bold px-3 d-inline-flex align-items-center gap-1">
+            <span>💾</span> <span>{% if lang == 'en' %}Save as PDF{% else %}پی ڈی ایف محفوظ کریں{% endif %}</span>
+        </a>
+        <button class="btn btn-sm btn-outline-secondary fw-bold px-3" onclick="window.close()">
+            <span>✖ {% if lang == 'en' %}Close{% else %}بند کریں{% endif %}</span>
+        </button>
+    </div>
+
+    <div class="print-container">
+        <!-- 1. Executive Header Banner -->
+        <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3 flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ url_for('static', filename='img/jbs_icon.png') }}" alt="JBS" style="width: 54px; height: 54px; object-fit: contain; border-radius: 12px; background: #0f172a; padding: 6px;">
+                <div>
+                    <h3 class="mb-0 fw-bold" style="letter-spacing: -0.5px; color: #0f172a;">SMART POS SYSTEM</h3>
+                    <div class="small fw-semibold text-muted">
+                        {% if lang == 'en' %}Point of Sale & Retail Management System{% else %}مکمل ریٹیل سیلز، اسٹاک اور کھاتہ مینجمنٹ سسٹم{% endif %}
+                    </div>
+                    <div class="small text-secondary" style="font-size: 0.82rem;">
+                        📍 {% if lang == 'en' %}Main Market, Lahore | 📞 0300-0000000{% else %}مین مارکیٹ، لاہور | 📞 0300-0000000{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="{% if lang == 'en' %}text-end{% else %}text-start{% endif %}">
+                <div class="badge px-3 py-2 fs-6 fw-bold" style="background: #0f172a; color: #f8fafc; border-radius: 8px;">
+                    {% if lang == 'en' %}SUPPLIER ACCOUNT LEDGER{% else %}سپلائر کھاتہ اسٹیٹمنٹ{% endif %}
+                </div>
+                <div class="small text-muted mt-1">
+                    {% if lang == 'en' %}Issue Date:{% else %}تاریخ اجراء:{% endif %} <span class="font-monospace fw-bold text-dark">{{ now_str }}</span>
+                </div>
+                <div class="mt-1">
+                    {% if final_balance > 0 %}
+                    <span class="badge bg-danger text-white px-2 py-1 small">{% if lang == 'en' %}Balance Payable: Rs. {{ "{:,.2f}".format(final_balance) }}{% else %}واجب الادا رقم: {{ "{:,.2f}".format(final_balance) }} روپے{% endif %}</span>
+                    {% else %}
+                    <span class="badge bg-success text-white px-2 py-1 small">{% if lang == 'en' %}Account Cleared ✅{% else %}کھاتہ صاف ✅{% endif %}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Supplier Profile Card -->
+        <div class="supplier-info-card mb-3">
+            <div class="row g-2 align-items-center">
+                <div class="col-5">
+                    <div class="text-muted small">{% if lang == 'en' %}Supplier Name & Account{% else %}سپلائر کا نام و کھاتہ نمبر{% endif %}</div>
+                    <div class="fs-5 fw-bold text-dark d-flex align-items-center gap-2">
+                        <span>{{ supplier.name }}</span>
+                        <span class="badge bg-secondary font-monospace" style="font-size: 0.75rem;">#{{ supplier.id }}</span>
+                    </div>
+                </div>
+                <div class="col-4 border-start ps-3">
+                    <div class="text-muted small">{% if lang == 'en' %}Company / Market{% else %}کمپنی یا مارکیٹ{% endif %}</div>
+                    <div class="fw-bold font-monospace text-dark">{{ supplier.company if supplier.company else '-' }}</div>
+                </div>
+                <div class="col-3 border-start ps-3">
+                    <div class="text-muted small">{% if lang == 'en' %}Contact Phone{% else %}فون نمبر{% endif %}</div>
+                    <div class="small fw-semibold text-truncate font-monospace text-dark">{{ supplier.phone if supplier.phone else '-' }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Transactions Table -->
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th style="width: 17%;">{% if lang == 'en' %}DATE & TIME{% else %}تاریخ و وقت{% endif %}</th>
+                    <th style="width: 14%;">{% if lang == 'en' %}REF / BILL #{% else %}بل نمبر / حوالہ{% endif %}</th>
+                    <th style="width: 39%;">{% if lang == 'en' %}DESCRIPTION / ITEMS{% else %}تفصیل و سامان{% endif %}</th>
+                    <th style="width: 10%; text-align: right;">{% if lang == 'en' %}BILL AMOUNT (Rs){% else %}بل کی رقم (روپے){% endif %}</th>
+                    <th style="width: 10%; text-align: right;">{% if lang == 'en' %}PAID AMOUNT (Rs){% else %}ادائیگی (روپے){% endif %}</th>
+                    <th style="width: 10%; text-align: right;">{% if lang == 'en' %}BALANCE (Rs){% else %}بقایا (روپے){% endif %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if timeline %}
+                {% for ev in timeline %}
+                <tr>
+                    <td class="font-monospace small">{{ ev.date }}</td>
+                    <td class="font-monospace fw-bold">{{ ev.ref }}</td>
+                    <td>{{ ((ev.description_en if lang == 'en' else ev.description_ur) or ev.description) | safe }}</td>
+                    <td class="text-end font-monospace text-danger fw-semibold">
+                        {{ "{:,.2f}".format(ev.bill_amount) if ev.bill_amount > 0 else '-' }}
+                    </td>
+                    <td class="text-end font-monospace text-success fw-semibold">
+                        {{ "{:,.2f}".format(ev.paid_amount) if ev.paid_amount > 0 else '-' }}
+                    </td>
+                    <td class="text-end font-monospace fw-bold {{ 'text-danger' if ev.balance > 0 else 'text-success' }}">
+                        {% if ev.balance == 0 %}
+                        <span style="color:#16a34a">✅ Rs. 0</span>
+                        {% else %}
+                        Rs. {{ "{:,.2f}".format(ev.balance) }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% if ev.cleared_here %}
+                <tr style="background:#f0fdf4; border:1.5px dashed #16a34a;">
+                    <td colspan="6" class="text-center py-2 fw-bold" style="color:#16a34a; font-size:0.92rem;">
+                        {% if lang == 'en' %}🎉 Account Cleared — Balance settled in full{% else %}🎉 کھاتہ صاف ہو گیا — تمام رقم ادا ہو چکی ہے{% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-3 text-muted">
+                        {% if lang == 'en' %}No transactions found.{% else %}کوئی ٹرانزیکشن ریکارڈ نہیں ملا۔{% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- 4. Summary & Verification Stamp Section -->
+        <div class="row mt-4 g-3 align-items-end">
+            <div class="col-6">
+                <div class="p-3 bg-light rounded border h-100 d-flex flex-column justify-content-between" style="font-size: 0.82rem;">
+                    <div>
+                        <div class="fw-bold text-dark mb-1">
+                            {% if lang == 'en' %}Terms & Supplier Verification:{% else %}ضروری نوٹ و تصدیق:{% endif %}
+                        </div>
+                        <div class="text-muted">
+                            {% if lang == 'en' %}This ledger records all purchases and payments up to the date shown. Please report any discrepancies within 3 days.{% else %}یہ کھاتہ آج کی تاریخ تک کی تمام خریداری اور ادائیگیوں پر مشتمل ہے۔ کسی بھی قسم کی تصدیق کے لیے 3 دن کے اندر رابطہ فرمائیں۔{% endif %}
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">{% if lang == 'en' %}Authorized Signature / Stamp:{% else %}دستخط و مہر دکان:{% endif %}</span>
+                        <span class="font-monospace fw-bold text-dark" style="border-bottom: 1.5px dashed #64748b; width: 140px; display: inline-block;">&nbsp;</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="summary-card">
+                    <div class="d-flex justify-content-between py-1 border-bottom">
+                        <span class="fw-semibold text-secondary">{% if lang == 'en' %}Total Purchases:{% else %}کل خریداری / بلز:{% endif %}</span>
+                        <span class="font-monospace fw-bold text-dark">Rs. {{ "{:,.2f}".format(total_bought) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-1 border-bottom">
+                        <span class="fw-semibold text-success">{% if lang == 'en' %}Total Paid:{% else %}کل ادا شدہ رقم:{% endif %}</span>
+                        <span class="font-monospace fw-bold text-success">Rs. {{ "{:,.2f}".format(total_paid) }}</span>
+                    </div>
+                    <div class="net-balance-box {{ 'due' if final_balance > 0 else 'clear' }} mt-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold fs-6">{% if lang == 'en' %}BALANCE PAYABLE:{% else %}خالص واجب الادا رقم:{% endif %}</span>
+                        <span class="font-monospace fw-bold fs-5">Rs. {{ "{:,.2f}".format(final_balance) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center pt-3 mt-3 border-top">
+            <small class="text-muted">
+                {% if lang == 'en' %}Thank you for your partnership! Smart POS System — Quality Hardware & Industrial Fasteners.{% else %}آپ کے تعاون کا شکریہ! اسمارٹ پی او ایس — معیاری ہارڈویئر و نٹ بولٹ{% endif %}
+            </small>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.self === window.top) {
+                setTimeout(() => {
+                    window.print();
+                }, 350);
+            }
+        });
+    </script>
+</body>
+</html>

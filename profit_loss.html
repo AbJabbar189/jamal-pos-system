@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* 🌟 اسٹیٹ کارڈز اور لفٹ اینیمیشن */
+    .stat-card-closing {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-closing:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .card-total-sales { border-left: 5px solid #0284c7; }
+    .card-cogs { border-left: 5px solid #64748b; }
+    .card-expenses { border-left: 5px solid #ef4444; }
+    .card-net-profit { border-left: 5px solid {% if net_profit >= 0 %}#10b981{% else %}#dc2626{% endif %}; }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .card-total-sales .stat-icon-wrapper { background: rgba(2, 132, 199, 0.15); color: #0284c7; }
+    .card-cogs .stat-icon-wrapper { background: rgba(100, 116, 139, 0.15); color: #64748b; }
+    .card-expenses .stat-icon-wrapper { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .card-net-profit .stat-icon-wrapper { background: {% if net_profit >= 0 %}rgba(16, 185, 129, 0.15){% else %}rgba(239, 68, 68, 0.15){% endif %}; color: {% if net_profit >= 0 %}#10b981{% else %}#dc2626{% endif %}; }
+
+    /* 💡 واضح اور نمایاں ٹیکسٹ کلاسز */
+    .stat-label {
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .stat-sub {
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+    .custom-card-title {
+        color: var(--text-main, #0f172a);
+        font-size: 1rem;
+    }
+
+    body.dark-mode .stat-label {
+        color: #e2e8f0 !important;
+    }
+    body.dark-mode .stat-sub {
+        color: #cbd5e1 !important;
+    }
+    body.dark-mode .custom-card-title {
+        color: #f8fafc !important;
+    }
+
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 24px;
+    }
+
+    /* ✨ جدید ٹیبل اسٹائل ڈارک موڈ سپورٹ کے ساتھ */
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-modern thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    .table-modern tbody tr {
+        background: var(--card-bg, #ffffff);
+        color: var(--text-main, #0f172a);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    body.dark-mode .table-modern tbody tr,
+    html.dark-mode .table-modern tbody tr {
+        background: #111827 !important;
+        color: #f3f4f6 !important;
+    }
+    body.dark-mode .table-modern thead th,
+    html.dark-mode .table-modern thead th {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    }
+
+    .table-modern td {
+        padding: 14px 16px;
+        vertical-align: middle;
+        border-top: 1px solid var(--card-border, #e2e8f0);
+        border-bottom: 1px solid var(--card-border, #e2e8f0);
+    }
+
+    .table-modern td:first-child {
+        border-left: 1px solid var(--card-border, #e2e8f0);
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .table-modern td:last-child {
+        border-right: 1px solid var(--card-border, #e2e8f0);
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">PROFIT &amp; LOSS STATEMENT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Period: Month {{ month }}</div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Sales Revenue:</strong> Rs. {{ "{:,.2f}".format(total_sales) }}</div>
+                <div><strong>Cost of Goods Sold:</strong> Rs. {{ "{:,.2f}".format(total_cogs) }}</div>
+            </div>
+            <div>
+                <div><strong>Gross Profit:</strong> <span style="color: #16a34a; font-weight: 700;">Rs. {{ "{:,.2f}".format(gross_profit) }}</span></div>
+                <div><strong>Operating Expenses:</strong> <span style="color: #dc2626; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_expenses) }}</span></div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Net Profit / (Loss):</strong></div>
+                <div style="font-weight: 800; font-size: 12px; color: {% if net_profit >= 0 %}#16a34a{% else %}#dc2626{% endif %};">
+                    Rs. {{ "{:,.2f}".format(net_profit) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Title & Filter Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 no-print">
+    <div>
+        <h4 class="fw-bold m-0 text-main">
+            <svg width="22" height="22" fill="#0284c7" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3zm2 .5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5z"/>
+                <path d="M10 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM4 5.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            <span class="lang-text" data-en="Profit & Loss Statement" data-ur="نفع و نقصان کی رپورٹ (P&L)">Profit & Loss Statement</span>
+        </h4>
+        <small class="text-muted lang-text" data-en="Comprehensive view of revenue, product cost, expenses, and net profit" data-ur="فروخت، اصل لاگت، اخراجات اور خالص منافع کا تفصیلی جائزہ">Comprehensive view of revenue, product cost, expenses, and net profit</small>
+    </div>
+
+    <!-- فلٹر فارم اور پرنٹ بٹن -->
+    <div class="d-flex align-items-center gap-2">
+        <form method="GET" action="/profit-loss" class="d-flex align-items-center gap-2 m-0">
+            <input type="month" name="month" class="form-control form-control-sm font-monospace fw-bold" value="{{ month }}" style="width: 160px;">
+            <button type="submit" class="btn btn-sm btn-dark fw-bold px-3">
+                <span class="lang-text" data-en="View Report" data-ur="رپورٹ دیکھیں">View Report</span>
+            </button>
+        </form>
+        <button class="btn btn-sm btn-primary fw-bold px-3 shadow-sm" onclick="window.print()">
+            <svg width="15" height="15" fill="currentColor" class="me-1 inline-block align-text-bottom" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            <span class="lang-text" data-en="Print Report" data-ur="پرنٹ رپورٹ">Print Report</span>
+        </button>
+        <a href="/api/profit_loss/pdf?month={{ month }}&download=1" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" title="نفع و نقصان پی ڈی ایف ڈاؤن لوڈ کریں">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف رپورٹ">Save as PDF</span>
+        </a>
+    </div>
+</div>
+
+<!-- پرنٹ ہیڈر -->
+<div class="text-center mb-3 d-none d-print-block">
+    <img src="{{ url_for('static', filename='img/jbs_logo_raw.png') }}" alt="JBS" style="max-height: 40px; margin-bottom: 4px;">
+    <h3 class="fw-bold m-0">SMART POS SYSTEM (اسمارٹ پی او ایس)</h3>
+    <div class="small text-muted">Main Market, Lahore | Profit & Loss Statement - Month: <strong>{{ month }}</strong></div>
+    <hr>
+</div>
+
+<!-- 4 خلاصہ اسٹیٹ کارڈز (Summary KPI Cards) -->
+<div class="row g-3 mb-4">
+    <!-- 1. کل فروخت (آمدن) -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-closing card-total-sales">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Total Revenue" data-ur="کل فروخت (آمدن)">Total Revenue</span>
+                    <h3 class="fw-bold font-monospace text-primary mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_sales) }}</h3>
+                    <small class="stat-sub">Gross: Rs. {{ "{:,.0f}".format(total_sales + total_discount) }} | Disc: Rs. {{ "{:,.0f}".format(total_discount) }}</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5zM3.14 5l1.25 5h8.22l1.25-5H3.14zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm6 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. مال کی لاگت خرید (COGS & Total Purchases) -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-closing card-cogs">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Total Purchases" data-ur="کل خریدا گیا مال">Total Purchases</span>
+                    <h3 class="fw-bold font-monospace text-secondary mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_purchases) }}</h3>
+                    <small class="stat-sub">New Stock: Rs. {{ "{:,.0f}".format(total_purchases) }} | Sold COGS: Rs. {{ "{:,.0f}".format(total_cogs) }}</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. دکان کے اخراجات -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-closing card-expenses">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Total Expenses" data-ur="دکان کے کل اخراجات">Total Expenses</span>
+                    <h3 class="fw-bold font-monospace text-danger mt-2 mb-0">Rs. {{ "{:,.0f}".format(total_expenses) }}</h3>
+                    <small class="stat-sub">Bills, Wages & Tea</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. خالص منافع -->
+    <div class="col-md-3 col-sm-6">
+        <div class="stat-card-closing card-net-profit">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Net Profit" data-ur="خالص منافع (صاف بچت)">Net Profit</span>
+                    <h3 class="fw-bold font-monospace {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %} mt-2 mb-0">Rs. {{ "{:,.0f}".format(net_profit) }}</h3>
+                    <small class="stat-sub">Net Operating Earnings</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                        <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- سیکشن 1: حساب کتاب کا تفصیلی خلاصہ -->
+    <div class="col-lg-7">
+        <div class="custom-card">
+            <h6 class="fw-bold mb-3 custom-card-title">
+                <svg width="18" height="18" fill="#0284c7" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+                </svg>
+                <span class="lang-text" data-en="Financial Summary Breakdown" data-ur="حساب کتاب کا تفصیلی خلاصہ">Financial Summary Breakdown</span>
+            </h6>
+            
+            <div class="table-responsive">
+                <table class="table table-modern align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="lang-text" data-en="Account Head / Description" data-ur="تفصیل">Account Head / Description</th>
+                            <th class="text-end lang-text" data-en="Amount (PKR)" data-ur="رقم (روپے)">Amount (PKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold text-dark lang-text" data-en="Gross Sales (Before Discount)" data-ur="کل سیلز (ڈسکاؤنٹ سے پہلے)">Gross Sales (Before Discount)</td>
+                            <td class="text-end font-monospace fw-bold text-secondary fs-6">Rs. {{ "{:,.0f}".format(total_sales + total_discount) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-danger lang-text" data-en="Total Discounts Given" data-ur="گاہکوں کو دی گئی کل رعایت (ڈسکاؤنٹ)">Total Discounts Given</td>
+                            <td class="text-end font-monospace fw-bold text-danger fs-6">- Rs. {{ "{:,.0f}".format(total_discount) }}</td>
+                        </tr>
+                        <tr style="background: rgba(2, 132, 199, 0.04);">
+                            <td class="fw-bold text-primary lang-text" data-en="Net Sales Turnover" data-ur="حتمی خالص سیلز (Net Sales)">Net Sales Turnover</td>
+                            <td class="text-end font-monospace fw-bold text-primary fs-6">Rs. {{ "{:,.0f}".format(total_sales) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-dark lang-text" data-en="Cost of Sold Items (COGS)" data-ur="فروخت شدہ مال کی اصل لاگت">Cost of Sold Items (COGS)</td>
+                            <td class="text-end font-monospace fw-bold text-dark fs-6">- Rs. {{ "{:,.0f}".format(total_cogs) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-dark lang-text" data-en="Gross Operating Profit" data-ur="مجموعی تجارتی منافع (Gross Profit)">Gross Operating Profit</td>
+                            <td class="text-end font-monospace fw-bold text-dark fs-6">Rs. {{ "{:,.0f}".format(gross_profit) }}</td>
+                        </tr>
+                        <tr style="background: rgba(2, 132, 199, 0.06);">
+                            <td class="fw-bold text-primary lang-text" data-en="Total Stock Purchased (This Month)" data-ur="اس ماہ خریدا گیا نیا مال (اسٹاک ان)">Total Stock Purchased (This Month)</td>
+                            <td class="text-end font-monospace fw-bold text-primary fs-6">Rs. {{ "{:,.0f}".format(total_purchases) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-danger fw-bold lang-text" data-en="Shop Operational Expenses" data-ur="دکان کے کل اخراجات">Shop Operational Expenses</td>
+                            <td class="text-end font-monospace text-danger fw-bold fs-6">- Rs. {{ "{:,.0f}".format(total_expenses) }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold fs-6 {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %} lang-text" data-en="Net Profit / (Loss)" data-ur="خالص حتمی منافع / (نقصان)">Net Profit / (Loss)</td>
+                            <td class="text-end font-monospace fw-bold fs-5 {% if net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                Rs. {{ "{:,.0f}".format(net_profit) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- سیکشن 2: اخراجات کی تفصیل -->
+    <div class="col-lg-5">
+        <div class="custom-card">
+            <h6 class="fw-bold mb-3 text-danger">
+                <svg width="18" height="18" fill="#ef4444" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                    <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/>
+                </svg>
+                <span class="lang-text" data-en="Expense Category Breakdown" data-ur="اخراجات کی تفصیل">Expense Category Breakdown</span>
+            </h6>
+
+            <div class="table-responsive">
+                <table class="table table-modern align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="lang-text" data-en="Category" data-ur="کیٹیگری">Category</th>
+                            <th class="text-end lang-text" data-en="Total (PKR)" data-ur="کل رقم">Total (PKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cat in expense_breakdown %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ cat[0] }}</td>
+                            <td class="text-end font-monospace text-danger fw-bold fs-6">Rs. {{ "{:,.0f}".format(cat[1]) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="text-center py-4 text-dark fw-bold lang-text" data-en="No expenses recorded for this month." data-ur="اس ماہ کا کوئی خرچہ درج نہیں ہے۔">No expenses recorded for this month.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="print-footer">
+    Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+</div>
+
+<script>
+function getProfitLossPdfUrl() {
+    let m = "{{ month }}";
+    let inputM = document.querySelector('input[name="month"]');
+    if (inputM && inputM.value) m = inputM.value;
+    return '/api/profit_loss/pdf' + (m ? '?month=' + encodeURIComponent(m) : '');
+}
+
+function printProfitLossPDF() {
+    window.print();
+}
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+</script>
+{% endblock %}

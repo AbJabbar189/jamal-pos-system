@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Tax Invoice - Smart POS System</title>
+    <style>
+        @page {
+            size: auto;
+            margin: 5mm;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 10px;
+            color: #000;
+            background: #fff;
+            font-size: 13px;
+        }
+        @font-face {
+            font-family: 'Jameel Noori Nastaleeq';
+            src: local('Jameel Noori Nastaleeq'),
+                 local('JameelNooriNastaleeq'),
+                 url('/static/fonts/JameelNooriNastaleeq.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        .urdu-owner-name {
+            font-family: 'Jameel Noori Nastaleeq', 'Noto Nastaliq Urdu', serif;
+            font-size: 16px;
+            font-weight: bold;
+            color: #991b1b;
+            line-height: 1;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .owner-phone {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            color: #000;
+            letter-spacing: 0.3px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .invoice-box {
+            max-width: 80mm;
+            margin: auto;
+            padding: 5px;
+        }
+        .text-center { text-align: center; }
+        .text-end { text-align: right; }
+        .text-start { text-align: left; }
+        .fw-bold { font-weight: bold; }
+        
+        .header h2 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            margin: 2px 0;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        .divider {
+            border-top: 1px dashed #000;
+            margin: 6px 0;
+        }
+        .double-divider {
+            border-top: 2px solid #000;
+            margin: 6px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 6px 0;
+        }
+        th {
+            border-bottom: 1px solid #000;
+            padding: 4px 2px;
+            font-size: 11px;
+            text-align: right;
+        }
+        td {
+            padding: 4px 2px;
+            font-size: 12px;
+            vertical-align: top;
+        }
+        .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 0;
+            font-size: 12px;
+        }
+        .grand-total {
+            font-size: 15px;
+            font-weight: 900;
+        }
+        .no-print {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .print-btn {
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body dir="ltr">
+
+
+
+    <div class="invoice-box">
+        <div class="header text-center">
+            <img src="{{ url_for('static', filename='img/jbs_logo_raw.png') }}" alt="JBS" style="max-height: 44px; margin-bottom: 3px;">
+            <h2 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800;">اسمارٹ پی او ایس</h2>
+            <div class="fw-bold" style="font-size: 12px; letter-spacing: 0.5px;">SMART POS SYSTEM</div>
+            <p style="font-weight: 700; margin: 3px 0 1px 0; font-size: 11px;">مین مارکیٹ، لاہور</p>
+            <p style="font-size: 10px; margin: 0 0 2px 0;">Main Market, Lahore</p>
+            <div style="text-align: center; margin: 3px 0 2px 0;" dir="rtl">
+                <span style="display: inline-block; white-space: nowrap; margin: 0 4px;">
+                    <span class="urdu-owner-name">فون نمبر:</span>&nbsp;<bdi dir="ltr" class="owner-phone">0300-0000000</bdi>
+                </span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="font-size: 11px;">
+            <div><strong>Invoice No:</strong> #{{ sale.invoice_no if sale.invoice_no else sale.id }}</div>
+            <div><strong>Date:</strong> {{ sale.date }}</div>
+            <div><strong>Customer Name:</strong> {{ sale.customer_name }}</div>
+            <div><strong>Payment Mode:</strong> 
+                {% if (sale.cash_amount or 0)|float > 0 and (sale.online_amount or 0)|float > 0 %}
+                    <strong>Split (Cash + Online)</strong>
+                {% elif (sale.online_amount or 0)|float > 0 %}
+                    <strong>Online / Bank Transfer</strong>
+                {% elif sale.type == 'credit' or ((sale.due or 0)|float > 0 and (sale.paid or 0)|float == 0) %}
+                    <strong>Credit / ادھار</strong>
+                {% else %}
+                    <strong>Cash / نقد</strong>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40%; text-align: left;">Item Description</th>
+                    <th style="width: 22%; text-align: center;">Qty / Unit</th>
+                    <th style="width: 18%; text-align: center;">Rate</th>
+                    <th style="width: 20%; text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="fw-bold text-start">{{ item.product_name }}</td>
+                    <td style="text-align: center; font-weight: 600;">
+                        {{ "{:g}".format((item.quantity or 0)|float) }} {{ item.unit if item.unit else '' }}
+                        {% if item.weight and (item.weight|float > 0) %}
+                        <br><span style="font-size: 0.78em; font-weight: normal; color: #444;">Weight: {{ "{:g}".format(item.weight|float) }} KG</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">{{ "{:,.0f}".format((item.price or 0)|float) }}</td>
+                    <td style="text-align: right;" class="fw-bold">{{ "{:,.0f}".format((item.total or 0)|float) }}</td>
+                </tr>
+                {% if item.returned_qty and (item.returned_qty|float > 0) %}
+                <tr style="color: #dc2626; font-size: 0.85em;">
+                    <td style="padding-left: 10px;">↩ Return / واپسی</td>
+                    <td style="text-align: center;">- {{ "{:g}".format((item.returned_qty or 0)|float) }} {{ item.unit if item.unit else '' }}</td>
+                    <td style="text-align: center;">{{ "{:,.0f}".format((item.price or 0)|float) }}</td>
+                    <td style="text-align: right; font-weight: 600;">- Rs. {{ "{:,.0f}".format(((item.returned_qty or 0)|float) * ((item.price or 0)|float)) }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="double-divider"></div>
+
+        <div class="totals-row">
+            <span>Subtotal:</span>
+            <span class="fw-bold">Rs. {{ "{:,.0f}".format((sale.subtotal or sale.total or 0)|float) }}</span>
+        </div>
+
+        {% if sale.tax_amount and (sale.tax_amount|float > 0) %}
+        <div class="totals-row" style="color: #b91c1c;">
+            <span>GST Sales Tax ({{ (sale.tax_rate or 0)|float }}%):</span>
+            <span class="fw-bold">Rs. {{ "{:,.0f}".format((sale.tax_amount or 0)|float) }}</span>
+        </div>
+        {% endif %}
+
+        {% if sale.discount and (sale.discount|float > 0) %}
+        <div class="totals-row" style="color: #15803d;">
+            <span>Discount:</span>
+            <span class="fw-bold">- Rs. {{ "{:,.0f}".format((sale.discount or 0)|float) }}</span>
+        </div>
+        {% endif %}
+
+        <div class="divider"></div>
+
+        <div class="totals-row grand-total">
+            <span>Grand Total:</span>
+            <span>Rs. {{ "{:,.0f}".format((sale.total or 0)|float) }}</span>
+        </div>
+
+        <div class="totals-row" style="font-size: 13px;">
+            <span>Paid Amount:</span>
+            <span class="fw-bold">Rs. {{ "{:,.0f}".format((sale.paid or 0)|float) }}</span>
+        </div>
+        {% if (sale.cash_amount or 0)|float > 0 and (sale.online_amount or 0)|float > 0 %}
+        <div class="totals-row" style="font-size: 10.5px; color: #0284c7; padding-left: 6px;">
+            <span>↳ Cash Paid:</span>
+            <span>Rs. {{ "{:,.0f}".format((sale.cash_amount or 0)|float) }}</span>
+        </div>
+        <div class="totals-row" style="font-size: 10.5px; color: #0284c7; padding-left: 6px;">
+            <span>↳ Online Paid:</span>
+            <span>Rs. {{ "{:,.0f}".format((sale.online_amount or 0)|float) }}</span>
+        </div>
+        {% elif (sale.online_amount or 0)|float > 0 %}
+        <div class="totals-row" style="font-size: 10.5px; color: #0284c7; padding-left: 6px;">
+            <span>↳ Method:</span>
+            <span class="fw-bold">Online Transfer</span>
+        </div>
+        {% elif (sale.paid or 0)|float > 0 %}
+        <div class="totals-row" style="font-size: 10.5px; color: #166534; padding-left: 6px;">
+            <span>↳ Method:</span>
+            <span class="fw-bold">Cash</span>
+        </div>
+        {% endif %}
+
+        {% if sale.due and (sale.due|float > 0) %}
+        <div class="totals-row fw-bold" style="color: #dc2626; font-size: 13px;">
+            <span>Balance Due:</span>
+            <span>Rs. {{ "{:,.0f}".format((sale.due or 0)|float) }}</span>
+        </div>
+        {% endif %}
+
+        <div class="double-divider"></div>
+
+        <div class="text-center" style="font-size: 11px; margin-top: 6px;">
+            <div>Exchange is possible within 3 days with this original receipt.</div>
+            <div class="fw-bold" style="margin-top: 3px;">Thank You For Your Business!</div>
+        </div>
+    </div>
+
+</body>
+</html>

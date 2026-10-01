@@ -1,0 +1,1347 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        animation: slideUpFade 0.4s ease-out forwards;
+    }
+
+    @keyframes slideUpFade {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .search-box-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-box-wrapper svg {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 16px;
+        color: #94a3b8;
+    }
+
+    body.lang-ur .search-box-wrapper svg {
+        left: auto;
+        right: 16px;
+    }
+
+    .search-input-modern {
+        background: var(--card-bg, #ffffff);
+        border: 1.5px solid var(--card-border, #cbd5e1);
+        border-radius: 12px;
+        padding: 12px 18px 12px 45px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--text-main);
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+    body.lang-ur .search-input-modern {
+        padding: 12px 45px 12px 18px;
+    }
+
+    .search-input-modern:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    .form-control:focus, .form-select:focus {
+        transform: scale(1.01);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15) !important;
+        border-color: #0ea5e9 !important;
+    }
+
+    .modal.fade .modal-dialog {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform: scale(0.95);
+    }
+    
+    .modal.show .modal-dialog {
+        transform: scale(1);
+    }
+
+    .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .btn:active {
+        transform: scale(0.96);
+    }
+
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc !important;
+        font-weight: 700;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 14px 18px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child {
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .table-modern thead th:last-child {
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .table-modern tbody tr {
+        background: #ffffff !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-3px) scale(1.002);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .table-modern td {
+        padding: 14px 18px;
+        vertical-align: middle;
+        border-top: 1px solid #e2e8f0;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a !important;
+    }
+
+    .table-modern td:first-child {
+        border-left: 1px solid #e2e8f0;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+    }
+
+    .table-modern td:last-child {
+        border-right: 1px solid #e2e8f0;
+        border-top-right-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+
+    .code-badge {
+        background: #0f172a;
+        color: #ffffff !important;
+        font-family: monospace;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #334155;
+        display: inline-block;
+    }
+
+    .status-in-stock {
+        background-color: #dcfce7;
+        color: #15803d !important;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        border: 1px solid #bbf7d0;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .status-low-stock {
+        background-color: #fee2e2;
+        color: #b91c1c !important;
+        font-size: 0.82rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        border: 1px solid #fecaca;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-add-product {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 8px 18px;
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        transition: all 0.25s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-add-product:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-add-stock {
+        background: linear-gradient(135deg, #0284c7, #0369a1);
+        color: #ffffff !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: none;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-action-edit {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #0f172a !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .btn-action-edit:hover {
+        background: #0284c7;
+        border-color: #0284c7;
+        color: #ffffff !important;
+    }
+
+    .btn-action-delete {
+        background: #fee2e2;
+        border: 1px solid #fecaca;
+        color: #dc2626 !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-action-delete:hover {
+        background: #dc2626;
+        color: #ffffff !important;
+    }
+
+    .inv-subtitle {
+        color: #64748b;
+    }
+
+    body.dark-mode .inv-subtitle {
+        color: #cbd5e1 !important;
+    }
+
+    /* بارکوڈ اسکینر پینل برائے ایڈ پروڈکٹ */
+    .barcode-scan-banner {
+        background: #f0fdf4;
+        border: 2px dashed #22c55e;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
+
+    body.dark-mode .barcode-scan-banner {
+        background: #064e3b !important;
+        border-color: #10b981 !important;
+    }
+
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">STOCK &amp; INVENTORY AUDIT REPORT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Scope: Full Store Inventory</div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    {% set total_prods = products|length %}
+    {% set total_stock_units = products|map(attribute='stock')|map('float')|sum if products else 0 %}
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Products:</strong> {{ total_prods }}</div>
+                <div><strong>Total Units in Stock:</strong> {{ "{:,.1f}".format(total_stock_units) }}</div>
+            </div>
+            <div>
+                <div><strong>Store Location:</strong> Main Warehouse &amp; Shop</div>
+                <div><strong>Audit Status:</strong> Verified Active Inventory</div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Stock Status:</strong> Real-Time Audit</div>
+                <div style="font-size: 10px; color: #16a34a; font-weight: 700;">Stock Updated Live</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Title & Action Header -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h4 class="fw-bold m-0 text-main">
+            <svg width="22" height="22" fill="#0284c7" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2l-2.218-.887zm3.564 1.426L5.596 5 8 5.961 14.154 3.5l-2.404-.961zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6z"/>
+            </svg>
+            <span class="lang-text" data-en="Stock & Inventory Management" data-ur="اسٹاک و گودام کنٹرول">Stock & Inventory Management</span>
+            <span class="badge bg-primary rounded-pill font-monospace fs-6 align-middle ms-2" id="totalItemsCountBadge">{{ products|length }} Items</span>
+        </h4>
+        <small class="inv-subtitle lang-text" data-en="Manage store supplies, add incoming inventory, edit products, and track stock alerts" data-ur="دکان کا سامان، نیا مال بارکوڈ اسکین سے شامل کریں، ریٹ ایڈٹ کریں اور الرٹس دیکھیں">Manage store supplies, add incoming inventory, edit products, and track stock alerts</small>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-dark fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" onclick="window.print()">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            <span class="lang-text" data-en="Print Stock" data-ur="اسٹاک پرنٹ کریں">Print Stock</span>
+        </button>
+
+        <a href="/api/inventory/pdf?download=1" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" title="اسٹاک لسٹ پی ڈی ایف ڈاؤن لوڈ کریں">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف محفوظ کریں">Save as PDF</span>
+        </a>
+
+        <button class="btn-add-product shadow-sm" data-bs-toggle="modal" data-bs-target="#addProductModal" onclick="openAddProductModal()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            <span class="lang-text" data-en="Add Product (Barcode)" data-ur="نیا آئٹم / بارکوڈ شامل کریں">Add Product (Barcode)</span>
+        </button>
+    </div>
+</div>
+
+<!-- 🔍 اینٹی آٹو فِل سرچ بار -->
+<div class="d-flex gap-2 mb-3 no-print">
+    <div class="search-box-wrapper flex-grow-1 mb-0">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+        </svg>
+        <input type="text" id="inventorySearchInput" class="search-input-modern lang-placeholder" data-en="Search by name, code or category..." data-ur="پروڈکٹ کا نام، کوڈ یا کیٹیگری تلاش کریں..." placeholder="Search by name, code or category..." autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly');" onkeyup="filterInventoryTable()">
+    </div>
+    <select id="catFilter" class="form-select" style="width:200px; display:inline-block; border-radius: 12px; border: 1.5px solid var(--card-border, #cbd5e1);" onchange="filterByCategory()">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}">{{ cat.name }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="custom-card">
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0" id="inventoryTable">
+            <thead>
+                <tr>
+                    <th style="width: 50px; text-align: center;" class="lang-text" data-en="#" data-ur="نمبر">#</th>
+                    <th class="lang-text" data-en="Code / Barcode" data-ur="کوڈ / بارکوڈ">Code / Barcode</th>
+                    <th class="lang-text" data-en="Product Name" data-ur="پروڈکٹ کا نام">Product Name</th>
+                    <th class="lang-text" data-en="Category" data-ur="کیٹیگری">Category</th>
+                    <th class="lang-text" data-en="Current Stock" data-ur="موجودہ اسٹاک">Current Stock</th>
+                    <th class="lang-text" data-en="Status" data-ur="اسٹیٹس">Status</th>
+                    <th class="text-center lang-text no-print" data-en="Actions" data-ur="کارروائی">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr class="inventory-row product-row" data-cat="{{ p.category_id if (p.category_id is defined and p.category_id) else '' }}">
+                    <td class="text-center font-monospace fw-bold text-muted row-sr-no">{{ loop.index }}</td>
+                    <td>
+                        <span class="code-badge">{{ p.code or ('P-' ~ p.id) }}</span>
+                    </td>
+                    <td>
+                        <div class="fw-bold fs-6" style="color: #0f172a !important;">
+                            {{ p.name }}
+                            {% if p.min_stock is defined and p.min_stock is not none and p.stock is defined and (p.stock|float <= p.min_stock|float) %}
+                            <span class="badge bg-danger ms-1" style="font-size:0.65rem;">LOW</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="fw-semibold" style="color: #475569 !important;">{{ p.category or 'General' }}</span>
+                    </td>
+
+                    <td class="font-monospace">
+                        {% if p.stock <= (p.alert_qty or 10) %}
+                            <span class="text-danger fw-bold fs-6">{{ p.stock }}</span> <small style="color: #64748b;">{{ p.unit or 'Pcs' }}</small>
+                        {% else %}
+                            <span class="fw-bold fs-6" style="color: #0f172a !important;">{{ p.stock }}</span> <small style="color: #64748b;">{{ p.unit or 'Pcs' }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if p.stock <= (p.alert_qty or 10) %}
+                            <span class="status-low-stock">
+                                <span class="lang-text" data-en="Low Stock" data-ur="کم اسٹاک">Low Stock</span>
+                            </span>
+                        {% else %}
+                            <span class="status-in-stock">
+                                <span class="lang-text" data-en="In Stock" data-ur="دستیاب">In Stock</span>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center no-print">
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            <!-- اسٹاک بٹن -->
+                            <button class="btn-add-stock" onclick="openAddStockModal('{{ p.id }}', '{{ p.name|escape }}', '{{ p.stock }}')" title="اسٹاک اضافہ">
+                                <span>+</span> <span class="lang-text" data-en="Stock" data-ur="مال">Stock</span>
+                            </button>
+                            <!-- ایڈٹ بٹن -->
+                            <button class="btn-action-edit" onclick="openEditProductModal('{{ p.id }}', '{{ p.code|escape }}', '{{ p.name|escape }}', '{{ p.category|escape }}', '{{ p.purchase_price or p.buy_price }}', '{{ p.price or p.sale_price }}', '{{ p.stock }}', '{{ p.unit|escape }}', '{{ p.alert_qty }}', '{{ p.units|tojson|forceescape }}', '{{ p.category_id or '' }}', '{{ p.min_stock or 5 }}')" title="پروڈکٹ ایڈٹ کریں">
+                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/></svg>
+                            </button>
+                            <!-- ڈیلیٹ بٹن -->
+                            <form action="/api/product/delete/{{ p.id }}" method="POST" style="display:inline;" onsubmit="return confirmSecureDelete(event, this)">
+                                <button type="submit" class="btn-action-delete" title="ڈیلیٹ">
+                                    <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 fw-bold lang-text" style="color: #64748b !important;" data-en="No inventory items found." data-ur="کوئی سامان موجود نہیں ہے۔">No inventory items found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="print-footer">
+        Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+    </div>
+</div>
+
+<!-- ➕ نیا پروڈکٹ ماڈل (مع بارکوڈ اسکینر سپورٹ) -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0" style="border-radius: 16px;">
+            <div class="modal-header py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <span class="lang-text" data-en="Add New Product (Barcode Ready)" data-ur="نیا پروڈکٹ شامل کریں (بارکوڈ اسکین)">Add New Product (Barcode Ready)</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/api/product/add" id="addProductForm">
+                <div class="modal-body p-4">
+                    
+                    <!-- 🟢 بارکوڈ اسکینر فیلڈ سب سے اوپر -->
+                    <div class="barcode-scan-banner">
+                        <label class="form-label fw-bold small text-success text-uppercase mb-1 d-flex align-items-center gap-1">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v3a.5.5 0 0 1-1 0v-3A1.5 1.5 0 0 1 1.5 0h3a.5.5 0 0 1 0 1h-3zM11 .5a.5.5 0 0 1 .5-.5h3A1.5 1.5 0 0 1 16 1.5v3a.5.5 0 0 1-1 0v-3a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 1-.5-.5zM.5 11a.5.5 0 0 1 .5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 1 0 1h-3A1.5 1.5 0 0 1 0 14.5v-3a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v3a1.5 1.5 0 0 1-1.5 1.5h-3a.5.5 0 0 1 0-1h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 1 .5-.5zM3 4.5a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm2 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-7zm3 0a.5.5 0 0 1 1 0v7a.5.5 0 0 1-1 0v-7z"/></svg>
+                            <span class="lang-text" data-en="Scan Barcode / Enter Code:" data-ur="بارکوڈ اسکین کریں یا کوڈ درج کریں:">Scan Barcode / Enter Code:</span>
+                        </label>
+                        <input type="text" id="addProdBarcode" name="barcode" class="form-control form-control-lg font-monospace fw-bold lang-placeholder" data-en="Scan with gun or type code..." data-ur="اسکینر گن سے اسکین کریں یا کوڈ لکھیں..." placeholder="Scan with gun or type code..." autocomplete="off" onkeydown="handleBarcodeEnter(event)">
+                        <small class="text-muted lang-text" data-en="(If product exists, it will load automatically upon scan)" data-ur="(اسکین کرنے پر اگر آئٹم پہلے سے موجود ہوا تو خودکار لوڈ ہو جائے گا)" style="font-size: 11px;">(If product exists, it will load automatically upon scan)</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Product Name *" data-ur="سامان / پروڈکٹ کا نام *">Product Name *</label>
+                        <input type="text" id="addProdName" name="name" class="form-control fw-bold lang-placeholder" data-en="e.g., SS201 Bolt 8x25" data-ur="مثلاً: SS201 Bolt 8x25" required placeholder="e.g., SS201 Bolt 8x25">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Category" data-ur="کیٹیگری">Category</label>
+                            <input type="text" name="category" id="addProdCategory" list="categoryDatalist" class="form-control" placeholder="Select or type category..." autocomplete="off" onfocus="this.value=''" onchange="syncCatId(this, 'addProdCategoryId')">
+                            <input type="hidden" name="category_id" id="addProdCategoryId">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Stock Unit (Base)" data-ur="پیمائش (Unit)">Stock Unit (Base)</label>
+                            <select id="addProdUnit" name="unit" class="form-select fw-bold">
+                                <option value="Pcs" class="lang-text" data-en="Pcs" data-ur="پیس / عدد (Pcs)" selected>Pcs</option>
+                                <option value="KG" class="lang-text" data-en="KG" data-ur="کلوگرام / وزن (KG)">KG</option>
+                                <option value="Cartons" class="lang-text" data-en="Cartons" data-ur="کارٹن / ڈبے (Cartons)">Cartons</option>
+                                <option value="Bags" class="lang-text" data-en="Bags" data-ur="بوریاں / تھیلے (Bags)">Bags</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Default Purchase Price" data-ur="ابتدائی خرید قیمت (Default)">Default Purchase Price</label>
+                            <input type="number" step="any" id="addProdBuyPrice" name="purchase_price" class="form-control font-monospace" placeholder="0">
+                            
+                            <!-- Bulk Calculator -->
+                            <div class="mt-1">
+                                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="document.getElementById('addBulkCalc').classList.toggle('d-none')">
+                                    <span class="lang-text" data-en="🧮 Calculator (Find 1 Piece/KG Price)" data-ur="🧮 ایک دانہ/کلو کا ریٹ نکالیں (کیلکولیٹر)">🧮 Calculator (Find 1 Piece/KG Price)</span>
+                                </a>
+                            </div>
+                            <div id="addBulkCalc" class="d-none mt-2 p-2 rounded" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-5">
+                                        <input type="number" id="addCalcTotal" class="form-control form-control-sm font-monospace lang-placeholder" data-en="Total Price" data-ur="کل رقم" placeholder="Total Price">
+                                    </div>
+                                    <div class="col-1 text-center text-muted fw-bold">÷</div>
+                                    <div class="col-4">
+                                        <input type="number" id="addCalcQty" class="form-control form-control-sm font-monospace lang-placeholder" data-en="Total Qty" data-ur="کل تعداد" placeholder="Total Qty">
+                                    </div>
+                                    <div class="col-2 text-end">
+                                        <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="runBulkCalc('add')">=</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Default Sale Price *" data-ur="ابتدائی سیل قیمت (Default) *">Default Sale Price *</label>
+                            <input type="number" step="any" id="addProdSalePrice" name="price" class="form-control font-monospace fw-bold text-success" required placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Selling Units Section -->
+                    <div class="card bg-light border-0 shadow-sm mb-3">
+                        <div class="card-header bg-transparent border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
+                            <label class="form-label fw-bold small text-uppercase text-primary mb-0 lang-text" data-en="Selling Units (Optional)" data-ur="فروخت کے دیگر یونٹس (Optional)">Selling Units (Optional)</label>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0" onclick="addAdvancedUnitRow('addProdUnitsContainer')">+ Add Unit</button>
+                        </div>
+                        <div class="card-body pt-2" id="addProdUnitsContainer">
+                            <!-- Dynamic rows will be added here -->
+                        </div>
+                    </div>
+                    
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Initial Stock" data-ur="شروع کا اسٹاک">Initial Stock</label>
+                            <input type="number" step="any" id="addProdStock" name="stock" class="form-control font-monospace fw-bold" placeholder="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Min Stock Alert" data-ur="کم از کم اسٹاک الرٹ">Min Stock Alert</label>
+                            <input type="number" step="any" id="addProdMinStock" name="min_stock" class="form-control font-monospace" placeholder="5" value="5">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary fw-bold px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 lang-text" data-en="Save Product" data-ur="محفوظ کریں">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ✏️ پروڈکٹ ایڈٹ ماڈل (Edit Product Modal) -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0" style="border-radius: 16px;">
+            <div class="modal-header py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <span class="lang-text" data-en="Edit Product & Prices" data-ur="پروڈکٹ و ریٹ تبدیل کریں">Edit Product & Prices</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/api/product/edit">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editProdId" name="id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Barcode / Code" data-ur="بارکوڈ / کوڈ">Barcode / Code</label>
+                        <input type="text" id="editProdBarcode" name="barcode" class="form-control font-monospace fw-bold">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="Product Name *" data-ur="سامان / پروڈکٹ کا نام *">Product Name *</label>
+                        <input type="text" id="editProdName" name="name" class="form-control fw-bold" required>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Category" data-ur="کیٹیگری">Category</label>
+                            <input type="text" name="category" id="editProdCategory" list="categoryDatalist" class="form-control" placeholder="Select or type category..." autocomplete="off" onchange="syncCatId(this, 'editProdCategoryId')">
+                            <input type="hidden" name="category_id" id="editProdCategoryId">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Stock Unit (Base)" data-ur="پیمائش (Unit)">Stock Unit (Base)</label>
+                            <select id="editProdUnit" name="unit" class="form-select fw-bold">
+                                <option value="Pcs" class="lang-text" data-en="Pcs" data-ur="پیس / عدد (Pcs)">Pcs</option>
+                                <option value="KG" class="lang-text" data-en="KG" data-ur="کلوگرام / وزن (KG)">KG</option>
+                                <option value="Cartons" class="lang-text" data-en="Cartons" data-ur="کارٹن / ڈبے (Cartons)">Cartons</option>
+                                <option value="Bags" class="lang-text" data-en="Bags" data-ur="بوریاں / تھیلے (Bags)">Bags</option>
+                                <option value="Carton" class="d-none">Carton</option>
+                                <option value="Bag" class="d-none">Bag</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Default Purchase Price" data-ur="ابتدائی خرید قیمت (Default)">Default Purchase Price</label>
+                            <input type="number" step="any" id="editProdBuyPrice" name="purchase_price" class="form-control font-monospace" placeholder="0">
+                            
+                            <!-- Bulk Calculator -->
+                            <div class="mt-1">
+                                <a href="javascript:void(0)" class="text-decoration-none small text-primary fw-bold" onclick="document.getElementById('editBulkCalc').classList.toggle('d-none')">
+                                    <span class="lang-text" data-en="🧮 Calculator (Find 1 Piece/KG Price)" data-ur="🧮 ایک دانہ/کلو کا ریٹ نکالیں (کیلکولیٹر)">🧮 Calculator (Find 1 Piece/KG Price)</span>
+                                </a>
+                            </div>
+                            <div id="editBulkCalc" class="d-none mt-2 p-2 rounded" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-5">
+                                        <input type="number" id="editCalcTotal" class="form-control form-control-sm font-monospace lang-placeholder" data-en="Total Price" data-ur="کل رقم" placeholder="Total Price">
+                                    </div>
+                                    <div class="col-1 text-center text-muted fw-bold">÷</div>
+                                    <div class="col-4">
+                                        <input type="number" id="editCalcQty" class="form-control form-control-sm font-monospace lang-placeholder" data-en="Total Qty" data-ur="کل تعداد" placeholder="Total Qty">
+                                    </div>
+                                    <div class="col-2 text-end">
+                                        <button type="button" class="btn btn-sm btn-success w-100 fw-bold" onclick="runBulkCalc('edit')">=</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Default Sale Price *" data-ur="ابتدائی سیل قیمت (Default) *">Default Sale Price *</label>
+                            <input type="number" step="any" id="editProdSalePrice" name="price" class="form-control font-monospace fw-bold text-success" required placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Selling Units Section -->
+                    <div class="card bg-light border-0 shadow-sm mb-3">
+                        <div class="card-header bg-transparent border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
+                            <label class="form-label fw-bold small text-uppercase text-primary mb-0 lang-text" data-en="Selling Units (Optional)" data-ur="فروخت کے دیگر یونٹس (Optional)">Selling Units (Optional)</label>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0" onclick="addAdvancedUnitRow('editProdUnitsContainer')">+ Add Unit</button>
+                        </div>
+                        <div class="card-body pt-2" id="editProdUnitsContainer">
+                            <!-- Dynamic rows will be added here -->
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Current Stock" data-ur="موجودہ اسٹاک">Current Stock</label>
+                            <input type="number" step="any" id="editProdStock" name="stock" class="form-control font-monospace fw-bold">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold small text-uppercase lang-text" data-en="Min Stock Alert" data-ur="کم از کم اسٹاک الرٹ">Min Stock Alert</label>
+                            <input type="number" step="any" id="editProdMinStock" name="min_stock" class="form-control font-monospace" placeholder="5">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary fw-bold px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4 lang-text" data-en="Update Product" data-ur="تبدیلی محفوظ کریں">Update Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 📦 اسٹاک شامل کرنے کا ماڈل (Quick Add Stock Modal) -->
+<div class="modal fade" id="addStockModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow border-0" style="border-radius: 16px;">
+            <div class="modal-header py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                <h5 class="modal-title fw-bold fs-6">
+                    <span class="lang-text" data-en="Add Stock (Incoming Inventory)" data-ur="نیا اسٹاک شامل کریں">Add Stock (Incoming Inventory)</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="/api/stock/add">
+                <div class="modal-body p-4">
+                    <input type="hidden" id="stockProdId" name="product_id">
+                    <div class="mb-3">
+                        <label class="fw-bold small text-uppercase lang-text" style="color: #64748b;" data-en="Product Name:" data-ur="پروڈکٹ کا نام:">Product Name:</label>
+                        <h5 id="stockProdName" class="fw-bold text-dark mb-0">-</h5>
+                    </div>
+                    <div class="mb-3">
+                        <label class="fw-bold small text-uppercase lang-text" style="color: #64748b;" data-en="Current Stock:" data-ur="موجودہ اسٹاک:">Current Stock:</label>
+                        <h5 class="fw-bold text-primary font-monospace mb-0"><span id="stockCurrentQty">0</span></h5>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase lang-text" data-en="New Incoming Quantity:" data-ur="نئی شامل کرنے والی تعداد:">New Incoming Quantity:</label>
+                        <input type="number" name="quantity" class="form-control form-control-lg font-monospace fw-bold lang-placeholder" data-en="e.g. 50" data-ur="مثلاً: 50" placeholder="e.g. 50" min="1" required autofocus>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                    <button type="button" class="btn btn-secondary fw-bold px-3 lang-text" data-en="Cancel" data-ur="کینسل" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 lang-text" data-en="Update Stock" data-ur="اسٹاک اپ ڈیٹ کریں">Update Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Datalist for Categories (Dropdown list + direct typing support) -->
+<datalist id="categoryDatalist">
+    {% for cat in categories %}
+    <option value="{{ cat.name }}" data-id="{{ cat.id }}">{{ cat.name }}</option>
+    {% endfor %}
+</datalist>
+
+<script>
+function syncCatId(inputEl, hiddenIdElName) {
+    const val = (inputEl.value || '').trim();
+    const hiddenEl = document.getElementById(hiddenIdElName);
+    if (!hiddenEl) return;
+    const datalist = document.getElementById('categoryDatalist');
+    let matchedId = '';
+    if (datalist) {
+        for (let opt of datalist.options) {
+            if (opt.value.toLowerCase() === val.toLowerCase()) {
+                matchedId = opt.getAttribute('data-id') || '';
+                break;
+            }
+        }
+    }
+    hiddenEl.value = matchedId;
+}
+
+function addAdvancedUnitRow(containerId, uName = '', uConv = '', uPrice = '') {
+    const container = document.getElementById(containerId);
+    const row = document.createElement('div');
+    row.className = 'row g-2 mb-2 align-items-end advanced-unit-row';
+    row.innerHTML = `
+        <div class="col-4">
+            <label class="form-label small fw-bold mb-1">Unit (e.g. Box)</label>
+            <input type="text" name="unit_name[]" class="form-control form-control-sm fw-bold" value="${uName}" required>
+        </div>
+        <div class="col-3">
+            <label class="form-label small fw-bold mb-1">Base Qty</label>
+            <input type="number" step="any" name="unit_conversion[]" class="form-control form-control-sm font-monospace" value="${uConv}" placeholder="e.g. 12" required>
+        </div>
+        <div class="col-4">
+            <label class="form-label small fw-bold mb-1 text-success">Sale Price</label>
+            <input type="number" step="any" name="unit_sale_price[]" class="form-control form-control-sm font-monospace text-success fw-bold" value="${uPrice}" required>
+        </div>
+        <div class="col-1 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="this.closest('.advanced-unit-row').remove()">✖</button>
+        </div>
+    `;
+    container.appendChild(row);
+}
+
+function openAddProductModal() {
+    document.getElementById('addProdUnitsContainer').innerHTML = '';
+    const modalEl = document.getElementById('addProductModal');
+    modalEl.addEventListener('shown.bs.modal', function () {
+        const barcodeInp = document.getElementById('addProdBarcode');
+        if (barcodeInp) barcodeInp.focus();
+    }, { once: true });
+}
+
+function handleBarcodeEnter(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const code = e.target.value.trim();
+        if (!code) return;
+
+        fetch('/api/product/by_barcode/' + encodeURIComponent(code))
+        .then(r => r.json())
+        .then(res => {
+            if (res.success && res.product) {
+                const p = res.product;
+                document.getElementById('addProdName').value = p.name || '';
+                if (document.getElementById('addProdCategory')) {
+                    document.getElementById('addProdCategory').value = p.category || '';
+                    syncCatId(document.getElementById('addProdCategory'), 'addProdCategoryId');
+                    if (p.category_id && document.getElementById('addProdCategoryId')) {
+                        document.getElementById('addProdCategoryId').value = p.category_id;
+                    }
+                }
+                document.getElementById('addProdUnit').value = p.unit || 'Pcs';
+                document.getElementById('addProdBuyPrice').value = p.buy_price || '';
+                document.getElementById('addProdSalePrice').value = p.sale_price || '';
+                document.getElementById('addProdStock').value = '';
+                if (document.getElementById('addProdMinStock')) {
+                    document.getElementById('addProdMinStock').value = p.min_stock || p.alert_qty || 5;
+                }
+                document.getElementById('addProdSalePrice').focus();
+                showToast('پروڈکٹ ڈیٹا لوڈ ہو گیا!');
+            } else {
+                document.getElementById('addProdName').focus();
+            }
+        })
+        .catch(() => {
+            document.getElementById('addProdName').focus();
+        });
+    }
+}
+
+function openAddStockModal(id, name, stock) {
+    document.getElementById('stockProdId').value = id;
+    document.getElementById('stockProdName').innerText = name;
+    document.getElementById('stockCurrentQty').innerText = stock;
+    new bootstrap.Modal(document.getElementById('addStockModal')).show();
+}
+
+function openEditProductModal(id, code, name, category, buyPrice, salePrice, stock, unit, alertQty, unitsJson = '[]', catId = '', minStock = '') {
+    if (document.getElementById('editProdCategory')) {
+        document.getElementById('editProdCategory').value = category || '';
+        syncCatId(document.getElementById('editProdCategory'), 'editProdCategoryId');
+        if (catId && document.getElementById('editProdCategoryId')) {
+            document.getElementById('editProdCategoryId').value = catId;
+        }
+    }
+    if (document.getElementById('editProdMinStock')) {
+        document.getElementById('editProdMinStock').value = minStock || alertQty || 5;
+    }
+    document.getElementById('editProdId').value = id;
+    document.getElementById('editProdBarcode').value = code || '';
+    document.getElementById('editProdName').value = name || '';
+    let uVal = unit || 'Pcs';
+    if (uVal === 'Carton') uVal = 'Cartons';
+    if (uVal === 'Bag') uVal = 'Bags';
+    document.getElementById('editProdUnit').value = uVal;
+    if (!document.getElementById('editProdUnit').value) document.getElementById('editProdUnit').value = 'Pcs';
+    document.getElementById('editProdBuyPrice').value = buyPrice || '';
+    document.getElementById('editProdSalePrice').value = salePrice || '';
+    document.getElementById('editProdStock').value = stock || '';
+    
+    const unitsContainer = document.getElementById('editProdUnitsContainer');
+    unitsContainer.innerHTML = '';
+    try {
+        const units = JSON.parse(unitsJson);
+        units.forEach(u => {
+            addAdvancedUnitRow('editProdUnitsContainer', u.unit_name, u.conversion_factor, u.sale_price);
+        });
+    } catch (e) { console.error('Failed to parse units', e); }
+
+    new bootstrap.Modal(document.getElementById('editProductModal')).show();
+}
+
+function runBulkCalc(prefix) {
+    let total = parseFloat(document.getElementById(prefix + 'CalcTotal').value);
+    let qty = parseFloat(document.getElementById(prefix + 'CalcQty').value);
+    if (!total || !qty || qty <= 0) {
+        alert('براہ کرم ڈبے کی درست کل قیمت اور پیسز کی تعداد درج کریں / Please enter valid Total and Qty');
+        return;
+    }
+    let piecePrice = (total / qty).toFixed(2);
+    document.getElementById(prefix + 'ProdBuyPrice').value = piecePrice;
+    
+    // flash the input green to show it worked
+    let targetInput = document.getElementById(prefix + 'ProdBuyPrice');
+    targetInput.style.backgroundColor = '#dcfce7';
+    targetInput.style.transition = 'background-color 0.5s ease';
+    setTimeout(() => targetInput.style.backgroundColor = '', 600);
+}
+
+function filterInventoryTable() {
+    let input = (document.getElementById('inventorySearchInput').value || '').trim().toLowerCase();
+    let catFilter = document.getElementById('catFilter');
+    let catId = catFilter ? catFilter.value : '';
+    let tokens = input.split(/\s+/).filter(Boolean);
+    let rows = document.querySelectorAll('.inventory-row');
+    let hasMatch = false;
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        let code = row.cells[1]?.innerText.toLowerCase() || "";
+        let name = row.cells[2]?.innerText.toLowerCase() || "";
+        let cat = row.cells[3]?.innerText.toLowerCase() || "";
+        let rowCat = row.getAttribute('data-cat') || '';
+        let combined = `${code} ${name} ${cat}`;
+        
+        let matchText = tokens.length === 0 || tokens.every(tok => combined.includes(tok));
+        let matchCat = !catId || rowCat === catId;
+
+        if (matchText && matchCat) {
+            row.style.display = "";
+            hasMatch = true;
+            visibleCount++;
+            let srCell = row.querySelector('.row-sr-no');
+            if (srCell) srCell.innerText = visibleCount;
+        } else {
+            row.style.display = "none";
+        }
+    });
+    
+    let badge = document.getElementById('totalItemsCountBadge');
+    if (badge) {
+        if (tokens.length > 0 || catId) {
+            badge.innerText = `${visibleCount} / {{ products|length }} Items`;
+        } else {
+            badge.innerText = `{{ products|length }} Items`;
+        }
+    }
+    
+    let noMatchRow = document.getElementById('noSearchResultRow');
+    if (!noMatchRow) {
+        noMatchRow = document.createElement('tr');
+        noMatchRow.id = 'noSearchResultRow';
+        noMatchRow.style.display = 'none';
+        noMatchRow.innerHTML = `<td colspan="7" class="text-center py-4 fw-bold text-muted lang-text" data-en="No matching product found." data-ur="کوئی مماثل پروڈکٹ نہیں ملی">No matching product found.</td>`;
+        document.querySelector('#inventoryTable tbody').appendChild(noMatchRow);
+        
+        // Re-apply language if needed
+        const savedLang = localStorage.getItem('pos_lang') || 'ur';
+        if (typeof applyLanguage === 'function') applyLanguage(savedLang);
+    }
+    
+    noMatchRow.style.display = hasMatch ? "none" : "";
+}
+
+function filterByCategory() {
+    filterInventoryTable();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+});
+</script>
+
+<!-- ماڈل: یونیفائیڈ پرچیز و اسٹاک ان (Unified Central Purchase & Stock Modal) -->
+<div class="modal fade" id="newPurchaseModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold lang-text" data-en="Purchase & Stock In (نیا مال خریداری و اسٹاک انٹری)" data-ur="نیا مال خریداری و اسٹاک انٹری">Purchase & Stock In</h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-2 mb-3">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold lang-text" data-en="Select Supplier (or Type New)" data-ur="سپلائر منتخب کریں (یا نیا نام لکھیں)">Select Supplier</label>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <input type="text" id="pSupplierInput" class="form-control fw-bold lang-placeholder" 
+                                       data-en="Type or select supplier..." data-ur="نام لکھیں یا لسٹ کھولیں..." 
+                                       placeholder="Type or select supplier..." autocomplete="off"
+                                       oninput="onSearchSupplierInput()" onclick="openSupplierDropdown()" onfocus="openSupplierDropdown()">
+                                <button class="btn btn-outline-secondary px-3" type="button" onclick="toggleSupplierDropdown(event)" title="Show all">
+                                    <span style="font-size: 0.75rem;">▼</span>
+                                </button>
+                            </div>
+                            <ul id="pSupplierMenu" class="dropdown-menu w-100 shadow-lg border" style="max-height: 220px; overflow-y: auto; display: none; position: absolute; z-index: 1055; top: 100%; left: 0;">
+                                {% for sup in suppliers %}
+                                <li>
+                                    <a class="dropdown-item py-2 border-bottom sup-item" href="javascript:void(0)" 
+                                       data-id="{{ sup.id }}" data-name="{{ sup.name|escape }}" data-company="{{ (sup.company or '')|escape }}"
+                                       onclick="chooseSupplier('{{ sup.id }}', '{{ sup.name|escape }}', '{{ (sup.company or '')|escape }}')">
+                                        <strong>{{ sup.name }}</strong> <small class="text-muted">({{ sup.company or 'No Company' }})</small>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <input type="hidden" id="pSupplierSelectedId" value="">
+                            <input type="hidden" id="pSupplierSelectedName" value="">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold lang-text" data-en="Bill / Invoice #" data-ur="بل / انوائس نمبر">Bill / Invoice #</label>
+                        <input type="text" id="pBillNo" class="form-control font-monospace" placeholder="INV-892" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold lang-text" data-en="Purchase Date" data-ur="خریداری کی تاریخ">Purchase Date</label>
+                        <input type="date" id="pDateInput" class="form-control font-monospace">
+                    </div>
+                </div>
+                <hr>
+                <div class="row g-2 mb-3 align-items-end">
+                    <div class="col-md-4 col-12">
+                        <label class="form-label fw-bold lang-text small" data-en="Product Name (Select or Type New)" data-ur="سامان / پروڈکٹ کا نام (چنیں یا نیا لکھیں)">Product Name</label>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <input type="text" id="pProdInput" class="form-control fw-bold lang-placeholder" 
+                                       data-en="Type or select product..." data-ur="پروڈکٹ نام لکھیں یا لسٹ کھولیں..." 
+                                       placeholder="Type or select product..." autocomplete="off"
+                                       oninput="onSearchProductInput()" onclick="openProductDropdown()" onfocus="openProductDropdown()">
+                                <button class="btn btn-outline-secondary px-3" type="button" onclick="toggleProductDropdown(event)" title="Show all">
+                                    <span style="font-size: 0.75rem;">▼</span>
+                                </button>
+                            </div>
+                            <ul id="pProductMenu" class="dropdown-menu w-100 shadow-lg border" style="max-height: 220px; overflow-y: auto; display: none; position: absolute; z-index: 1055; top: 100%; left: 0;">
+                                {% for p in products %}
+                                <li>
+                                    <a class="dropdown-item py-2 border-bottom prod-item" href="javascript:void(0)" 
+                                       data-id="{{ p.id }}" data-name="{{ p.name|escape }}" data-buy="{{ p.purchase_price or p.buy_price or 0 }}" data-stock="{{ p.stock }}" data-unit="{{ p.unit or 'Pcs' }}"
+                                       onclick="chooseProduct('{{ p.id }}', '{{ p.name|escape }}', '{{ p.purchase_price or p.buy_price or 0 }}', '{{ p.stock }}', '{{ p.unit or 'Pcs' }}')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span><strong>{{ p.name }}</strong></span>
+                                            <span class="badge bg-light text-dark font-monospace border">{{ p.stock }} {{ p.unit or 'Pcs' }}</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <input type="hidden" id="pProdSelectedId" value="">
+                            <input type="hidden" id="pProdSelectedName" value="">
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-4">
+                        <label class="form-label fw-bold lang-text small" data-en="Unit" data-ur="اکائی">Unit</label>
+                        <select id="pProdUnit" class="form-select font-monospace fw-bold">
+                            <option value="Pcs" class="lang-text" data-en="Pcs" data-ur="پیس / عدد (Pcs)" selected>Pcs</option>
+                            <option value="KG" class="lang-text" data-en="KG" data-ur="کلوگرام / وزن (KG)">KG</option>
+                            <option value="Cartons" class="lang-text" data-en="Cartons" data-ur="کارٹن / ڈبے (Cartons)">Cartons</option>
+                            <option value="Bags" class="lang-text" data-en="Bags" data-ur="بوریاں / تھیلے (Bags)">Bags</option>
+                            <option value="Carton" class="d-none">Carton</option>
+                            <option value="Bag" class="d-none">Bag</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-4">
+                        <label class="form-label fw-bold lang-text small" data-en="Buy Price (Rs)" data-ur="خرید ریٹ">Buy Price (Rs)</label>
+                        <input type="number" step="any" id="pBuyPrice" class="form-control font-monospace" placeholder="0">
+                    </div>
+                    <div class="col-md-2 col-4">
+                        <label class="form-label fw-bold lang-text small" data-en="Qty" data-ur="تعداد / وزن">Qty</label>
+                        <input type="number" step="any" id="pQty" class="form-control font-monospace" placeholder="10">
+                    </div>
+                    <div class="col-md-2 col-12">
+                        <button type="button" class="btn btn-dark w-100 fw-bold lang-text" data-en="+ Add Item" data-ur="+ آئٹم شامل کریں" onclick="addPurchaseItem()">+ Add Item</button>
+                    </div>
+                </div>
+
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="lang-text" data-en="Item" data-ur="سامان">Item</th>
+                            <th class="lang-text" data-en="Qty & Unit" data-ur="تعداد و اکائی">Qty & Unit</th>
+                            <th class="lang-text" data-en="Buy Rate" data-ur="خرید ریٹ">Buy Rate</th>
+                            <th class="lang-text" data-en="Total" data-ur="ٹوٹل">Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="pItemsBody">
+                        <tr><td colspan="5" class="text-muted lang-text" data-en="No items added" data-ur="کوئی آئٹم شامل نہیں">No items added</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="row g-2 mt-2">
+                    <div class="col-4">
+                        <h5 class="fw-bold"><span class="lang-text" data-en="Total: " data-ur="کل بل: ">Total: </span>Rs. <span id="pTotalLbl">0</span></h5>
+                    </div>
+                    <div class="col-4">
+                        <label class="fw-bold lang-text" data-en="Paid Amount:" data-ur="ادا شدہ رقم:">Paid Amount:</label>
+                        <input type="number" step="any" id="pPaidInput" class="form-control font-monospace" placeholder="0" oninput="calcPDue()">
+                    </div>
+                    <div class="col-4">
+                        <h5 class="fw-bold text-danger"><span class="lang-text" data-en="Due: " data-ur="بقایا ادھار: ">Due: </span>Rs. <span id="pDueLbl">0</span></h5>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success fw-bold px-4 lang-text" data-en="Save Purchase" data-ur="خریداری محفوظ کریں" onclick="submitPurchase()">Save Purchase</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// UNIFIED PURCHASE SYSTEM SCRIPT IN INVENTORY
+let pItems = [];
+
+function openNewPurchaseModal() {
+    pItems = [];
+    renderPItems();
+    document.getElementById('pSupplierInput').value = '';
+    document.getElementById('pSupplierSelectedId').value = '';
+    document.getElementById('pSupplierSelectedName').value = '';
+    document.getElementById('pBillNo').value = 'PB-' + Math.floor(Date.now() / 1000);
+    document.getElementById('pDateInput').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    document.getElementById('pProdInput').value = '';
+    document.getElementById('pProdSelectedId').value = '';
+    document.getElementById('pProdSelectedName').value = '';
+    document.getElementById('pBuyPrice').value = '';
+    document.getElementById('pQty').value = '10';
+    document.getElementById('pPaidInput').value = '0';
+}
+
+function openPurchaseForProduct(id, name, buyPrice, stock, unit) {
+    openNewPurchaseModal();
+    chooseProduct(id, name, buyPrice, stock, unit);
+    let modalEl = document.getElementById('newPurchaseModal');
+    let modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+    setTimeout(() => {
+        let qInput = document.getElementById('pQty');
+        if (qInput) { qInput.focus(); qInput.select(); }
+    }, 400);
+}
+
+function openSupplierDropdown() {
+    let m = document.getElementById('pSupplierMenu');
+    if (m) { m.style.display = 'block'; filterSupplierItems(''); }
+}
+
+function toggleSupplierDropdown(e) {
+    if (e) e.stopPropagation();
+    let menu = document.getElementById('pSupplierMenu');
+    if (!menu) return;
+    if (menu.style.display === 'block') menu.style.display = 'none';
+    else { openSupplierDropdown(); document.getElementById('pSupplierInput').focus(); }
+}
+
+function onSearchSupplierInput() {
+    let q = document.getElementById('pSupplierInput').value.trim();
+    document.getElementById('pSupplierMenu').style.display = 'block';
+    filterSupplierItems(q);
+    let items = document.querySelectorAll('#pSupplierMenu .sup-item');
+    let matched = false;
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        let comp = (item.getAttribute('data-company') || '').toLowerCase();
+        let full = `${name} (${comp})`.toLowerCase();
+        if (name === q.toLowerCase() || full === q.toLowerCase()) {
+            document.getElementById('pSupplierSelectedId').value = item.getAttribute('data-id');
+            document.getElementById('pSupplierSelectedName').value = item.getAttribute('data-name');
+            matched = true;
+        }
+    });
+    if (!matched) {
+        document.getElementById('pSupplierSelectedId').value = '';
+        document.getElementById('pSupplierSelectedName').value = q;
+    }
+}
+
+function filterSupplierItems(query) {
+    let q = (query || '').toLowerCase().trim();
+    let tokens = q.split(/\s+/).filter(Boolean);
+    let items = document.querySelectorAll('#pSupplierMenu .sup-item');
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        let comp = (item.getAttribute('data-company') || '').toLowerCase();
+        let combined = `${name} ${comp}`;
+        let matches = tokens.length === 0 || tokens.every(tok => combined.includes(tok));
+        item.parentElement.style.display = matches ? '' : 'none';
+    });
+}
+
+function chooseSupplier(id, name, company) {
+    let display = company ? `${name} (${company})` : name;
+    document.getElementById('pSupplierInput').value = display;
+    document.getElementById('pSupplierSelectedId').value = id;
+    document.getElementById('pSupplierSelectedName').value = name;
+    document.getElementById('pSupplierMenu').style.display = 'none';
+}
+
+function openProductDropdown() {
+    let m = document.getElementById('pProductMenu');
+    if (m) { m.style.display = 'block'; filterProductItems(''); }
+}
+
+function toggleProductDropdown(e) {
+    if (e) e.stopPropagation();
+    let menu = document.getElementById('pProductMenu');
+    if (!menu) return;
+    if (menu.style.display === 'block') menu.style.display = 'none';
+    else { openProductDropdown(); document.getElementById('pProdInput').focus(); }
+}
+
+function onSearchProductInput() {
+    let q = document.getElementById('pProdInput').value.trim();
+    document.getElementById('pProductMenu').style.display = 'block';
+    filterProductItems(q);
+    let items = document.querySelectorAll('#pProductMenu .prod-item');
+    let matched = false;
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        if (name === q.toLowerCase()) {
+            document.getElementById('pProdSelectedId').value = item.getAttribute('data-id');
+            document.getElementById('pProdSelectedName').value = item.getAttribute('data-name');
+            document.getElementById('pBuyPrice').value = item.getAttribute('data-buy') || '';
+            let pU = document.getElementById('pProdUnit');
+            if (pU) {
+                let uVal = item.getAttribute('data-unit') || 'Pcs';
+                if (uVal === 'Carton') uVal = 'Cartons';
+                if (uVal === 'Bag') uVal = 'Bags';
+                pU.value = uVal;
+            }
+            matched = true;
+        }
+    });
+    if (!matched) {
+        document.getElementById('pProdSelectedId').value = '';
+        document.getElementById('pProdSelectedName').value = q;
+    }
+}
+
+function filterProductItems(query) {
+    let q = (query || '').toLowerCase().trim();
+    let tokens = q.split(/\s+/).filter(Boolean);
+    let items = document.querySelectorAll('#pProductMenu .prod-item');
+    items.forEach(item => {
+        let name = (item.getAttribute('data-name') || '').toLowerCase();
+        let code = (item.getAttribute('data-code') || item.getAttribute('data-id') || '').toLowerCase();
+        let combined = `${code} ${name}`;
+        let matches = tokens.length === 0 || tokens.every(tok => combined.includes(tok));
+        item.parentElement.style.display = matches ? '' : 'none';
+    });
+}
+
+function chooseProduct(id, name, buyPrice, stock, unit) {
+    document.getElementById('pProdInput').value = name;
+    document.getElementById('pProdSelectedId').value = id;
+    document.getElementById('pProdSelectedName').value = name;
+    let pU = document.getElementById('pProdUnit');
+    if (pU) {
+        let uVal = unit || 'Pcs';
+        if (uVal === 'Carton') uVal = 'Cartons';
+        if (uVal === 'Bag') uVal = 'Bags';
+        pU.value = uVal;
+    }
+    document.getElementById('pBuyPrice').value = buyPrice || '';
+    document.getElementById('pProductMenu').style.display = 'none';
+}
+
+document.addEventListener('click', (e) => {
+    let supMenu = document.getElementById('pSupplierMenu');
+    let supInp = document.getElementById('pSupplierInput');
+    if (supMenu && supInp && !supMenu.contains(e.target) && e.target !== supInp && !e.target.closest('#pSupplierInput') && !e.target.closest('button[onclick*="Supplier"]')) {
+        supMenu.style.display = 'none';
+    }
+    let prodMenu = document.getElementById('pProductMenu');
+    let prodInp = document.getElementById('pProdInput');
+    if (prodMenu && prodInp && !prodMenu.contains(e.target) && e.target !== prodInp && !e.target.closest('#pProdInput') && !e.target.closest('button[onclick*="Product"]')) {
+        prodMenu.style.display = 'none';
+    }
+});
+
+function addPurchaseItem() {
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    let pId = document.getElementById('pProdSelectedId').value;
+    let pName = document.getElementById('pProdSelectedName').value || document.getElementById('pProdInput').value.trim();
+    let pUnit = document.getElementById('pProdUnit') ? document.getElementById('pProdUnit').value : 'Pcs';
+
+    if (!pName) {
+        alert(lang === 'en' ? 'Please enter product name.' : 'براہ کرم سامان کا نام درج یا منتخب کریں۔');
+        return;
+    }
+    if (!pId) {
+        pId = 'new_' + Date.now();
+    }
+    let buyPrice = parseFloat(document.getElementById('pBuyPrice').value) || 0;
+    let qty = parseFloat(document.getElementById('pQty').value) || 1;
+
+    let item = { 
+        id: pId, 
+        name: pName, 
+        buy_price: buyPrice, 
+        qty: qty,
+        unit: pUnit
+    };
+    pItems.push(item);
+    renderPItems();
+    
+    document.getElementById('pProdInput').value = '';
+    document.getElementById('pProdSelectedId').value = '';
+    document.getElementById('pProdSelectedName').value = '';
+    document.getElementById('pBuyPrice').value = '';
+    document.getElementById('pQty').value = '10';
+}
+
+function renderPItems() {
+    let tbody = document.getElementById('pItemsBody');
+    if (!tbody) return;
+    if (pItems.length === 0) { 
+        tbody.innerHTML = '<tr><td colspan="5" class="text-muted">No items added</td></tr>'; 
+        updatePTotals(0); 
+        return; 
+    }
+    let html = ''; let tot = 0;
+    pItems.forEach((it, idx) => {
+        let itTot = it.qty * it.buy_price; tot += itTot;
+        html += `<tr><td>${it.name}</td><td>${it.qty} <span class="badge bg-light text-dark border">${it.unit || 'Pcs'}</span></td><td>${it.buy_price}</td><td>${itTot}</td><td><button class="btn btn-sm btn-danger py-0" onclick="pItems.splice(${idx},1);renderPItems();">×</button></td></tr>`;
+    });
+    tbody.innerHTML = html;
+    updatePTotals(tot);
+}
+
+function updatePTotals(total) {
+    let lbl = document.getElementById('pTotalLbl');
+    if (lbl) lbl.innerText = total.toLocaleString();
+    calcPDue();
+}
+
+function calcPDue() {
+    let totLbl = document.getElementById('pTotalLbl');
+    let tot = totLbl ? (parseFloat(totLbl.innerText.replace(/,/g,'')) || 0) : 0;
+    let paidInp = document.getElementById('pPaidInput');
+    let paid = paidInp ? (parseFloat(paidInp.value) || 0) : 0;
+    let dueLbl = document.getElementById('pDueLbl');
+    if (dueLbl) dueLbl.innerText = Math.max(0, tot - paid).toLocaleString();
+}
+
+function submitPurchase() {
+    let lang = localStorage.getItem('pos_lang') || 'ur';
+    let supId = document.getElementById('pSupplierSelectedId').value;
+    let supName = document.getElementById('pSupplierSelectedName').value || document.getElementById('pSupplierInput').value.trim();
+
+    if (!supName) {
+        supName = "Direct Stock In";
+    }
+    let billNo = document.getElementById('pBillNo').value.trim();
+    let pDate = document.getElementById('pDateInput') ? document.getElementById('pDateInput').value : '';
+    let paid = parseFloat(document.getElementById('pPaidInput').value) || 0;
+    let totLbl = document.getElementById('pTotalLbl');
+    let tot = totLbl ? (parseFloat(totLbl.innerText.replace(/,/g,'')) || 0) : 0;
+
+    if (pItems.length === 0) return alert(lang === 'en' ? 'Please add at least one item.' : 'کم از کم ایک آئٹم شامل کریں');
+
+    fetch('/api/purchase/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            supplier_id: supId,
+            supplier_name: supName,
+            bill_no: billNo,
+            date: pDate,
+            items: pItems,
+            total_amount: tot,
+            paid_amount: paid
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            alert(lang === 'en' ? 'Purchase saved and stock updated!' : 'خریداری اور اسٹاک کامیابی سے درج ہو گیا!');
+            location.reload();
+        } else {
+            alert(res.message);
+        }
+    });
+}
+
+// Auto open modal if URL has ?action=purchase
+window.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'purchase' || params.get('open') === 'purchase') {
+        openNewPurchaseModal();
+        let modalEl = document.getElementById('newPurchaseModal');
+        if (modalEl) {
+            let m = bootstrap.Modal.getOrCreateInstance(modalEl);
+            m.show();
+        }
+    }
+});
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+</script>
+
+{% endblock %}

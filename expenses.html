@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* 🌟 اسٹیٹ کارڈز اور لفٹ اینیمیشن */
+    .stat-card-closing {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 16px;
+        padding: 20px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-closing:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .card-today-exp { border-left: 5px solid #ef4444; }
+    .card-month-exp { border-left: 5px solid #f59e0b; }
+
+    .stat-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .card-today-exp .stat-icon-wrapper { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .card-month-exp .stat-icon-wrapper { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+    /* 💡 ہائی کنٹراسٹ لیبلز (لائٹ اور ڈارک دونوں کے لیے) */
+    .stat-label {
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .stat-sub {
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+    .custom-card-title {
+        color: var(--text-main, #0f172a);
+        font-size: 1rem;
+    }
+
+    body.dark-mode .stat-label {
+        color: #e2e8f0 !important;
+    }
+    body.dark-mode .stat-sub {
+        color: #cbd5e1 !important;
+    }
+    body.dark-mode .custom-card-title {
+        color: #f8fafc !important;
+    }
+    body.dark-mode .text-muted-custom {
+        color: #cbd5e1 !important;
+    }
+
+    .custom-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--card-border, #e2e8f0);
+        border-radius: 14px;
+        padding: 22px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        margin-bottom: 24px;
+    }
+
+    /* ✨ جدید ٹیبل اسٹائل */
+    .table-modern {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+
+    .table-modern thead th {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        border: none;
+    }
+
+    .table-modern thead th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+    .table-modern thead th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+    .table-modern tbody tr {
+        background: #ffffff;
+        color: #0f172a;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .table-modern tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+    }
+
+    .table-modern td {
+        padding: 14px 16px;
+        vertical-align: middle;
+        border-top: 1px solid var(--card-border, #e2e8f0);
+        border-bottom: 1px solid var(--card-border, #e2e8f0);
+    }
+
+    .table-modern td:first-child {
+        border-left: 1px solid var(--card-border, #e2e8f0);
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .table-modern td:last-child {
+        border-right: 1px solid var(--card-border, #e2e8f0);
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    /* 🖨️ پرنٹ کی خصوصی فارمیٹنگ */
+</style>
+
+<!-- 🖨️ HIGH-DEFINITION PRINT HEADER (EXACT PDF MATCH) -->
+<div class="print-header-container mb-3">
+    <div class="d-flex justify-content-between align-items-start pb-2" style="border-bottom: 2px solid #0F172A;">
+        <div>
+            <h2 style="font-weight: 800; font-size: 20px; color: #0F172A; margin: 0; letter-spacing: 0.5px;">SMART POS SYSTEM</h2>
+            <div style="font-weight: 600; font-size: 11px; color: #334155; margin-top: 2px;">Hardware, Fasteners &amp; Industrial Tools Specialist</div>
+            <div style="font-size: 10px; color: #64748b; margin-top: 2px;">Main Market, Lahore | Phone: 0300-0000000</div>
+        </div>
+        <div class="text-end" style="text-align: right;">
+            <h4 style="font-weight: 800; font-size: 14px; color: #0F172A; margin: 0; text-transform: uppercase;">STORE EXPENSES AUDIT REPORT</h4>
+            <div style="font-size: 10px; color: #475569; margin-top: 3px;">Date: <span class="print-current-date font-monospace"></span></div>
+            <div style="font-size: 10px; color: #475569;">Time: <span class="print-current-time font-monospace"></span></div>
+            <div style="font-size: 10px; font-weight: 700; color: #0284c7; margin-top: 1px;">Scope: Operational Expenses</div>
+        </div>
+    </div>
+    
+    <!-- KPI Summary Box matching saved PDF -->
+    {% set total_exp_cnt = expenses|length %}
+    {% set total_exp_sum = expenses|map(attribute='3')|map('float')|sum if expenses else 0 %}
+    <div class="print-kpi-box mt-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <div><strong>Total Expense Entries:</strong> {{ total_exp_cnt }}</div>
+                <div><strong>Total Amount Spent:</strong> <span style="color: #dc2626; font-weight: 700;">Rs. {{ "{:,.2f}".format(total_exp_sum) }}</span></div>
+            </div>
+            <div>
+                <div><strong>Audited Department:</strong> Store Operations &amp; Utilities</div>
+                <div><strong>Verification:</strong> Active Ledger Record</div>
+            </div>
+            <div class="text-end" style="text-align: right;">
+                <div><strong>Status:</strong> Expense Accounted</div>
+                <div style="font-size: 10px; color: #16a34a; font-weight: 700;">Verified Expense Log</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Title & Action Buttons -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h4 class="fw-bold m-0 text-main">
+            <svg width="22" height="22" fill="#ef4444" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+                <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/>
+            </svg>
+            <span class="lang-text" data-en="Expense Management" data-ur="دکان کے اخراجات">Expense Management</span>
+        </h4>
+        <small class="text-muted-custom lang-text" data-en="Track daily store expenses, wages, tea, and utility bills" data-ur="روزمرہ کے اخراجات، چائے، دیہاڑی اور بلز کا اندراج">Track daily store expenses, wages, tea, and utility bills</small>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-dark fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" onclick="window.print()">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            <span class="lang-text" data-en="Print Report" data-ur="پرنٹ رپورٹ">Print Report</span>
+        </button>
+
+        <a href="/api/expenses/pdf?download=1" class="btn btn-sm btn-danger fw-bold px-3 shadow-sm d-inline-flex align-items-center gap-1" title="اخراجات پی ڈی ایف ڈاؤن لوڈ کریں">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+            </svg>
+            <span class="lang-text" data-en="Save as PDF" data-ur="پی ڈی ایف رپورٹ">Save as PDF</span>
+        </a>
+
+        <button class="btn btn-sm btn-primary px-3 fw-bold d-inline-flex align-items-center gap-1 shadow-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+            <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            <span class="lang-text" data-en="Add Expense" data-ur="نیا خرچہ درج کریں">Add Expense</span>
+        </button>
+    </div>
+</div>
+
+<!-- سمری اسٹیٹ کارڈز -->
+<div class="row g-3 mb-4">
+    <!-- آج کا کل خرچہ -->
+    <div class="col-md-6">
+        <div class="stat-card-closing card-today-exp">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="Today's Total Expenses" data-ur="آج کا کل خرچہ">Today's Total Expenses</span>
+                    <h3 class="fw-bold font-monospace text-danger mt-2 mb-0">Rs. {{ "{:,.0f}".format(today_total) }}</h3>
+                    <small class="stat-sub">Daily recorded shop outflows</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 10.781c.148 1.667 1.513 2.85 3.591 3.003V15h1.043v-1.216c2.27-.179 3.678-1.438 3.678-3.3 0-1.59-.947-2.51-2.956-3.028l-.722-.187V3.467c1.122.11 1.879.714 2.07 1.616h1.47c-.166-1.6-1.54-2.748-3.54-2.875V1H7.591v1.233c-1.939.23-3.27 1.472-3.27 3.156 0 1.454.966 2.483 2.661 2.917l.61.162v4.031c-1.149-.17-1.94-.8-2.131-1.718H4z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- اس ماہ کا کل خرچہ -->
+    <div class="col-md-6">
+        <div class="stat-card-closing card-month-exp">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="stat-label text-uppercase lang-text" data-en="This Month Expenses" data-ur="اس ماہ کا کل خرچہ">This Month Expenses</span>
+                    <h3 class="fw-bold font-monospace text-warning mt-2 mb-0">Rs. {{ "{:,.0f}".format(month_total) }}</h3>
+                    <small class="stat-sub">Current month aggregated spend</small>
+                </div>
+                <div class="stat-icon-wrapper">
+                    <svg width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1H1zm7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                        <path d="M0 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V5zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V7a2 2 0 0 1-2-2H3z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- اخراجات کی تفصیلی لسٹ -->
+<div class="custom-card">
+    <h6 class="fw-bold mb-3 custom-card-title">
+        <svg width="18" height="18" fill="#ef4444" class="me-2 inline-block align-text-bottom" viewBox="0 0 16 16">
+            <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/>
+        </svg>
+        <span class="lang-text" data-en="Expense Logs" data-ur="اخراجات کی تفصیلات">Expense Logs</span>
+        <span class="badge bg-danger rounded-pill font-monospace fs-6 align-middle ms-2">{{ expenses|length }} Records</span>
+    </h6>
+
+    <div class="table-responsive">
+        <table class="table table-modern align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th class="lang-text" data-en="Title" data-ur="تفصیل / نام">Title</th>
+                    <th class="lang-text" data-en="Category" data-ur="کیٹیگری">Category</th>
+                    <th class="lang-text" data-en="Amount" data-ur="رقم">Amount</th>
+                    <th class="lang-text" data-en="Date" data-ur="تاریخ">Date</th>
+                    <th class="lang-text" data-en="Notes" data-ur="نوٹ">Notes</th>
+                    <th class="text-center lang-text no-print" data-en="Action" data-ur="ایکشن">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exp in expenses %}
+                <tr>
+                    <td class="font-monospace fw-bold text-muted">{{ loop.index }}</td>
+                    <td class="fw-bold text-dark">{{ exp[1] }}</td>
+                    <td><span class="badge bg-secondary px-2 py-1">{{ exp.category if exp.category else (exp[2] or 'General') }}</span></td>
+                    <td class="font-monospace text-danger fw-bold fs-6">Rs. {{ "{:,.0f}".format(exp[3]) }}</td>
+                    <td class="font-monospace text-muted small">{{ exp[4] }}</td>
+                    <td class="text-muted small">{{ exp[5] or '-' }}</td>
+                    <td class="text-center no-print">
+                        <form action="/delete_expense/{{ exp[0] }}" method="POST" style="display:inline;" onsubmit="return confirmSecureDelete(event, this)">
+                            <button type="submit" class="btn btn-outline-danger btn-sm py-1 px-3 fw-bold">
+                                <span class="lang-text" data-en="Delete" data-ur="ڈیلیٹ">Delete</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted lang-text" data-en="No expenses recorded yet." data-ur="ابھی تک کوئی خرچہ درج نہیں کیا گیا۔">
+                        No expenses recorded yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="print-footer">
+        Thank you for your business! Smart POS System — Quality Hardware &amp; Fasteners Specialist.
+    </div>
+</div>
+
+<!-- نیا خرچہ درج کرنے کا پاپ اپ ماڈل -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold lang-text" data-en="Add New Expense" data-ur="نیا خرچہ درج کریں">نیا خرچہ درج کریں</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/expenses" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Expense Date" data-ur="خرچے کی تاریخ">Expense Date</label>
+                        <input type="date" name="date" class="form-control font-monospace" id="expModalDate">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Expense Title" data-ur="خرچے کی تفصیل">Expense Title</label>
+                        <input type="text" name="title" class="form-control lang-placeholder" data-en="e.g.: Tea, Labour, Electricity Bill" data-ur="مثلاً: چائے، مزدور دیہاڑی، بجلی بل" placeholder="e.g.: Tea, Labour, Electricity Bill" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Category</label>
+                        <select name="category" id="addExpCat" class="form-select">
+                            <option value="General">General</option>
+                            <option value="Rent">Rent / کرایہ</option>
+                            <option value="Bijli">Bijli / بجلی</option>
+                            <option value="Petrol">Petrol / پیٹرول</option>
+                            <option value="Staff">Staff Salary / تنخواہ</option>
+                            <option value="Food">Food / کھانا</option>
+                            <option value="Transport">Transport / گاڑی</option>
+                            <option value="Repair">Repair / مرمت</option>
+                            <option value="Other">Other / دیگر</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Amount (Rs.)" data-ur="رقم (روپے)">Amount (Rs.)</label>
+                        <input type="number" step="any" name="amount" class="form-control font-monospace" placeholder="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small lang-text" data-en="Notes (Optional)" data-ur="اضافی نوٹ (اختیاری)">Notes (Optional)</label>
+                        <textarea name="notes" class="form-control lang-placeholder" data-en="Write notes..." data-ur="تفصیل لکھیں..." rows="2" placeholder="Write notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">کینسل</button>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold px-3">محفوظ کریں</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const savedLang = localStorage.getItem('pos_lang') || 'ur';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+    const expDate = document.getElementById('expModalDate');
+    if (expDate && !expDate.value) {
+        expDate.value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+    }
+});
+
+window.posPrintPagePdf = function() {
+    window.print();
+};
+</script>
+{% endblock %}
